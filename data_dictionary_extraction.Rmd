@@ -13,7 +13,7 @@ library(tidyverse)
 ```{r}
 datadict <- read.csv('MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
 
-
+our_vars <- c()
 ```
 
 Focus on laboratory values
@@ -42,14 +42,65 @@ labdict %>%
 
 
 ```
-For 'obtained', we want to know what choices are expected by redcap for each variable in this categor.
+For 'obtained', we want to know what choices are expected by redcap for each variable in this category.
+The below table shows that the majority of 'obtained' variables have the boolean response 1 (yes) or 0 (no). 
+We will focus on the variabls with yes/no response only for now.
 ```{r}
+labdict %>%
+  filter(vartype == 'obtained') %>%
+  group_by(Choices..Calculations..OR.Slider.Labels) %>%
+  summarise(n_vars = n())
 
+our_vars <- c(our_vars, labdict %>% filter(vartype == 'obtained', Choices..Calculations..OR.Slider.Labels == '1, Yes | 0, No') %>% pull(Variable...Field.Name))
+
+```
+For 'value', we want to know what choices are expected by redcap for each variable in this category.
+The below table shows that the majority of 'value' variables have no specified response. 
+We will assume that this means whatever value is listed in the BCH database can be directly reported to RedCap.
+We will focus on these variables for now.
+```{r}
+labdict %>%
+  filter(vartype == 'value') %>%
+  group_by(Choices..Calculations..OR.Slider.Labels) %>%
+  summarise(n_vars = n())
+
+our_vars <- c(our_vars, labdict %>% filter(vartype == 'value', Choices..Calculations..OR.Slider.Labels == '') %>% pull(Variable...Field.Name))
+
+```
+
+For 'date', we want to know what choices are expected by redcap for each variable in this category.
+The below table shows that none of the 'date' variables have any specified response. 
+We will assume that this means whatever date is reported for the entry in the BCH database can be directly reported to RedCap.
+We will include all 'date' variables for now.
+```{r}
+labdict %>%
+  filter(vartype == 'date') %>%
+  group_by(Choices..Calculations..OR.Slider.Labels) %>%
+  summarise(n_vars = n())
+
+our_vars <- c(our_vars, labdict %>% filter(vartype == 'date') %>% pull(Variable...Field.Name))
 
 ```
 
 
+For 'unit', we want to know what choices are expected by redcap for each variable in this category.
+The below table shows that the majority of 'unit' variables have no specified response. 
+We will assume that this means that for these variables, whatever value is listed in the BCH database under 'UNITS_CD' can be directly reported to RedCap.
+We will focus on the 'unit' variables with unspecified responses for now.
+```{r}
+labdict %>%
+  filter(vartype == 'unit') %>%
+  group_by(Choices..Calculations..OR.Slider.Labels) %>%
+  summarise(n_vars = n())
 
+our_vars <- c(our_vars, labdict %>% filter(vartype == 'unit', Choices..Calculations..OR.Slider.Labels == '') %>% pull(Variable...Field.Name))
+
+```
+
+We now have a set of variables for we can reasonably map reported value in the EHR to expected value in RedCap.
+We can map these variable names to their associated concept_cds using the manually generated 'eCRF to BCH mapping' file.
+Then we can use these concept_CD values to query the BCH database.
+After querying the database, a separate script will map values from the query response to the expected values found in this notebook.
 
 
 
