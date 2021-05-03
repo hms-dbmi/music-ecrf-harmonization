@@ -1,0 +1,62 @@
+---
+title: "Extract Info From Data Dictionary"
+author: "Simran Makwana"
+date: "5/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+
+```{r}
+datadict <- read.csv('MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+
+
+```
+
+Focus on laboratory values
+```{r}
+labdict <- datadict %>% 
+  filter(Form.Name == "laboratory_values")
+
+labdict
+
+```
+
+Sort into variable types
+The table below shows the frequency of various variable type found in the laboratory values eCRF.
+As expected, 'date', 'value', and 'obtained' are the most prevalent, with unit being very prevalent as well. 
+We will focus on these 4 types of variables first.
+```{r}
+
+labdict <- labdict %>%
+  mutate(vartype = gsub("^.*_", "", Variable...Field.Name)) 
+
+labdict %>%
+  select(Variable...Field.Name, vartype) %>%
+  group_by(vartype) %>%
+  summarise(n_vars = n()) %>%
+  arrange(desc(n_vars))
+
+
+```
+For 'obtained', we want to know what choices are expected by redcap for each variable in this categor.
+```{r}
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
