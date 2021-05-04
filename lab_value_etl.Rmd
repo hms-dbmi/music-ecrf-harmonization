@@ -110,7 +110,20 @@ finalTable
 
 Pivot table wider to be compatible with RedCap formatting
 ```{r}
-out <- pivot_wider(finalTable, id_cols = c(PATIENT_NUM, formName, date, time), names_from = variableName, values_from = value)
+
+out <- pivot_wider(finalTable, 
+                   id_cols = c(PATIENT_NUM, formName, date, time), 
+                   names_from = variableName, 
+                   values_from = value)
+
+finalTable %>%
+  group_by(PATIENT_NUM, formName, date, time, variableName) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n))
+
+# should we remove entries with no data?
+finalTable %>% filter(is.na(NVAL_NUM), TVAL_CHAR == '')
+
 
 ```
 
