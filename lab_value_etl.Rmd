@@ -23,7 +23,7 @@ dbGetQuery( con, paste0("select obs.patient_num, obs.concept_cd, obs.start_date,
 ```{r}
 library(tidyverse)
 library(lubridate)
-lab_dictionary <- read.delim("labDictionary.txt", header = TRUE)
+lab_dictionary <- read.delim("labDictionary.txt", header = TRUE, sep = ' ')
 
 
 ```
@@ -122,11 +122,6 @@ Next steps
   - something like:
   variableName | choiceA in eCRF | corrseponding BCH value
 
-Questions for Paul
-- did he understand those columns?
-- how to make this an automatic pipeline: what format are the lab codes in BCH so we can use UMLS?
-- secure file transfer?
-- loading data dict and mapping files to github?
 
 
 
