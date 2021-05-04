@@ -1,0 +1,138 @@
+---
+title: 'Lab Values Example: Data ETL'
+author: "Simran Makwana"
+date: "5/4/2021"
+output: html_document
+---
+
+*derived from `music_lab_Values.R`*
+
+
+Use a modification of the following query to extract the data based on concepts in labDictionary.txt:
+*Query has been previously run and saved*
+
+source("connection.R")
+dbGetQuery( con, paste0("select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, 
+  obs.nval_num, obs.units_cd, pat.admission_date, pat.discharge_date 
+  from observation_fact obs, 
+  sa_diag_mis_c_patients pat 
+  where obs.patient_num = pat.patient_num and 
+  obs.concept_cd in ('", concepts, "') and 
+  obs.start_date >= pat.admission_date" )) 
+  
+```{r}
+library(tidyverse)
+library(lubridate)
+lab_dictionary <- read.delim("labDictionary.txt", header = TRUE)
+
+
+```
+                                   
+Import test data with randomized patient ids
+```{r}
+subset_df <- read.csv('testoutput.csv')
+
+```
+
+Data transformation
+- split `START_DATE` field into `date` and `time`
+- perform a left join to combine extracted data with variables in lab dictionary
+- reformat `ADMISSION_DATE` and `DISCHARGE_DATE` as dates
+- calculate `days_after_admission` and `days_after_discharge`
+```{r}
+subset_df$date <- sapply(strsplit( as.character(subset_df$START_DATE), " "), '[', 1)
+subset_df$time <- sapply(strsplit( as.character(subset_df$START_DATE), " "), '[', 2)
+
+finalTable <- left_join( subset_df, lab_dictionary, by = c("CONCEPT_CD" = "concept_cd") )
+
+finalTable <- finalTable %>%
+  mutate(date = dmy(date),
+         ADMISSION_DATE = dmy(ADMISSION_DATE),
+         DISCHARGE_DATE = dmy(DISCHARGE_DATE),
+         days_after_admission = date - ADMISSION_DATE,
+         days_after_discharge = date - DISCHARGE_DATE)
+
+```
+
+Extract `value` based on type of variable
+- focus on `_date`, `_value`, `_unit`, and `_obtained` variables (identified as most prevalent in `data_dictionary_extraction.Rmd`)
+  - choices accepted for `obtained` variables: 1, 0
+  - choices accepted for `value` variables: no criteria. if NVAL_NUM is not NA, then NVAL_NUM. else TVAL_CHAR
+  - choices accepted for `unit` variables: no criteria. use UNITS_CD column
+  - choices accepted for `date` variables: use date column **in mdy format**
+```{r}
+# Create function to extract value
+getLabValue <- function(row) {
+  
+  # for obtained variables, if the entry is present, the 'value' is automatically 1
+  if (row['vartype'] == 'obtained') {
+    value = 1
+    
+  # for unit variables, use the UNITS_CD column
+  } else if (row['vartype'] == 'unit') {
+    value = row['UNITS_CD']
+    
+  # for date variables, use the date column
+  } else if (row['vartype'] == 'date') {
+    value = row['date']
+    
+  # for value variables, if NVAL_NUM is not NA, use NVAL_NUM. else use TVAL_CHAR
+  } else if (row['vartype'] == 'value') {
+    if(!is.na(row['NVAL_NUM'])){
+      value = row['NVAL_NUM']
+    } else {
+      value = row['TVAL_CHAR']
+    }
+  }
+    
+  # for other variables, mark as 'UNKNOWN' and investigate; there should not be any of these for now
+  else {
+    value = 'UNKNOWN'
+  }
+   
+}
+
+```
+
+```{r}
+finalTable <- finalTable %>%
+  
+  # categorize the variable types
+  mutate(vartype = gsub("^.*_", "", variableName))
+         
+finalTable$value <- apply(finalTable, 1, FUN = getLabValue)
+
+finalTable
+
+```
+
+Pivot table wider to be compatible with RedCap formatting
+```{r}
+out <- pivot_wider(finalTable, id_cols = c(PATIENT_NUM, formName, date, time), names_from = variableName, values_from = value)
+
+```
+
+
+Next steps
+- change date format to mdy
+- mapping for variable with specified choices
+  - try using all upper or all lower responses
+  - something like:
+  variableName | choiceA in eCRF | corrseponding BCH value
+
+Questions for Paul
+- did he understand those columns?
+- how to make this an automatic pipeline: what format are the lab codes in BCH so we can use UMLS?
+- secure file transfer?
+- loading data dict and mapping files to github?
+
+
+
+
+
+
+
+
+
+
+
