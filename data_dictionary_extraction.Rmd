@@ -18,10 +18,10 @@ our_vars <- c()
 
 Focus on laboratory values
 ```{r}
-labdict <- datadict %>% 
+datadict_labonly <- datadict %>% 
   filter(Form.Name == "laboratory_values")
 
-labdict
+datadict_labonly
 
 ```
 
@@ -31,10 +31,10 @@ As expected, 'date', 'value', and 'obtained' are the most prevalent, with unit b
 We will focus on these 4 types of variables first.
 ```{r}
 
-labdict <- labdict %>%
+datadict_labonly <- datadict_labonly %>%
   mutate(vartype = gsub("^.*_", "", Variable...Field.Name)) 
 
-labdict %>%
+datadict_labonly %>%
   select(Variable...Field.Name, vartype) %>%
   group_by(vartype) %>%
   summarise(n_vars = n()) %>%
@@ -46,12 +46,12 @@ For 'obtained', we want to know what choices are expected by redcap for each var
 The below table shows that the majority of 'obtained' variables have the boolean response 1 (yes) or 0 (no). 
 We will focus on the variabls with yes/no response only for now.
 ```{r}
-labdict %>%
+datadict_labonly %>%
   filter(vartype == 'obtained') %>%
   group_by(Choices..Calculations..OR.Slider.Labels) %>%
   summarise(n_vars = n())
 
-our_vars <- c(our_vars, labdict %>% filter(vartype == 'obtained', Choices..Calculations..OR.Slider.Labels == '1, Yes | 0, No') %>% pull(Variable...Field.Name))
+our_vars <- c(our_vars, datadict_labonly %>% filter(vartype == 'obtained', Choices..Calculations..OR.Slider.Labels == '1, Yes | 0, No') %>% pull(Variable...Field.Name))
 
 ```
 For 'value', we want to know what choices are expected by redcap for each variable in this category.
@@ -59,12 +59,12 @@ The below table shows that the majority of 'value' variables have no specified r
 We will assume that this means whatever value is listed in the BCH database can be directly reported to RedCap.
 We will focus on these variables for now.
 ```{r}
-labdict %>%
+datadict_labonly %>%
   filter(vartype == 'value') %>%
   group_by(Choices..Calculations..OR.Slider.Labels) %>%
   summarise(n_vars = n())
 
-our_vars <- c(our_vars, labdict %>% filter(vartype == 'value', Choices..Calculations..OR.Slider.Labels == '') %>% pull(Variable...Field.Name))
+our_vars <- c(our_vars, datadict_labonly %>% filter(vartype == 'value', Choices..Calculations..OR.Slider.Labels == '') %>% pull(Variable...Field.Name))
 
 ```
 
@@ -73,12 +73,12 @@ The below table shows that none of the 'date' variables have any specified respo
 We will assume that this means whatever date is reported for the entry in the BCH database can be directly reported to RedCap.
 We will include all 'date' variables for now.
 ```{r}
-labdict %>%
+datadict_labonly %>%
   filter(vartype == 'date') %>%
   group_by(Choices..Calculations..OR.Slider.Labels) %>%
   summarise(n_vars = n())
 
-our_vars <- c(our_vars, labdict %>% filter(vartype == 'date') %>% pull(Variable...Field.Name))
+our_vars <- c(our_vars, datadict_labonly %>% filter(vartype == 'date') %>% pull(Variable...Field.Name))
 
 ```
 
@@ -88,20 +88,30 @@ The below table shows that the majority of 'unit' variables have no specified re
 We will assume that this means that for these variables, whatever value is listed in the BCH database under 'UNITS_CD' can be directly reported to RedCap.
 We will focus on the 'unit' variables with unspecified responses for now.
 ```{r}
-labdict %>%
+datadict_labonly %>%
   filter(vartype == 'unit') %>%
   group_by(Choices..Calculations..OR.Slider.Labels) %>%
   summarise(n_vars = n())
 
-our_vars <- c(our_vars, labdict %>% filter(vartype == 'unit', Choices..Calculations..OR.Slider.Labels == '') %>% pull(Variable...Field.Name))
+our_vars <- c(our_vars, datadict_labonly %>% filter(vartype == 'unit', Choices..Calculations..OR.Slider.Labels == '') %>% pull(Variable...Field.Name))
 
 ```
 
 We now have a set of variables for we can reasonably map reported value in the EHR to expected value in RedCap.
-We can map these variable names to their associated concept_cds using the manually generated 'eCRF to BCH mapping' file.
+We can map these variable names to their associated concept_cds using the manually generated 'eCRF to BCH mapping' file and create the corresponding `labDictionary` file.
 Then we can use these concept_CD values to query the BCH database.
 After querying the database, a separate script will map values from the query response to the expected values found in this notebook.
+```{r}
+our_vars
 
+mapping <- read.csv('eCRF to BCH mapping.csv') %>%
+  filter(Form.Name == 'laboratory_values')
+
+mapping
+
+labdict 
+
+```
 
 
 
