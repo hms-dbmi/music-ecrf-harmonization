@@ -9,7 +9,7 @@ output: html_document
 library(tidyverse)
 ```
 
-
+Load data
 ```{r}
 datadict <- read.csv('MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
 
