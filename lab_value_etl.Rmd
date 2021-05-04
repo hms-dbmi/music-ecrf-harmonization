@@ -31,6 +31,8 @@ lab_dictionary <- read.delim("labDictionary.txt", header = TRUE)
 Import test data with randomized patient ids
 ```{r}
 subset_df <- read.csv('testoutput.csv')
+#subset_df$PATIENT_NUM <- floor(runif(nrow(subset_df))*100)
+#write.csv(subset_df, 'testoutput.csv', row.names = FALSE)
 
 ```
 
