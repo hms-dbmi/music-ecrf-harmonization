@@ -59,7 +59,7 @@ Extract `value` based on type of variable
   - choices accepted for `obtained` variables: 1, 0
   - choices accepted for `value` variables: no criteria. if NVAL_NUM is not NA, then NVAL_NUM. else TVAL_CHAR
   - choices accepted for `unit` variables: no criteria. use UNITS_CD column
-  - choices accepted for `date` variables: no criteria. use date column
+  - choices accepted for `date` variables: use date column **in mdy format**
 ```{r}
 # Create function to extract value
 getLabValue <- function(row) {
@@ -110,11 +110,21 @@ Pivot table wider to be compatible with RedCap formatting
 ```{r}
 out <- pivot_wider(finalTable, id_cols = c(PATIENT_NUM, formName, date, time), names_from = variableName, values_from = value)
 
-
 ```
 
 
+Next steps
+- change date format to mdy
+- mapping for variable with specified choices
+  - try using all upper or all lower responses
+  - something like:
+  variableName | choiceA in eCRF | corrseponding BCH value
 
+Questions for Paul
+- did he understand those columns?
+- how to make this an automatic pipeline: what format are the lab codes in BCH so we can use UMLS?
+- secure file transfer?
+- loading data dict and mapping files to github?
 
 
 

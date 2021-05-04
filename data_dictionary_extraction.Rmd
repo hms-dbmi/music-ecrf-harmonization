@@ -55,6 +55,8 @@ our_vars <- c(our_vars, datadict_labonly %>% filter(vartype == 'obtained', Choic
 
 ```
 For 'value', we want to know what choices are expected by redcap for each variable in this category.
+**use column "H" in data dict to verify if numeric etc**
+
 The below table shows that the majority of 'value' variables have no specified response. 
 We will assume that this means whatever value is listed in the BCH database can be directly reported to RedCap.
 We will focus on these variables for now.
@@ -70,7 +72,7 @@ our_vars <- c(our_vars, datadict_labonly %>% filter(vartype == 'value', Choices.
 
 For 'date', we want to know what choices are expected by redcap for each variable in this category.
 The below table shows that none of the 'date' variables have any specified response. 
-We will assume that this means whatever date is reported for the entry in the BCH database can be directly reported to RedCap.
+**We will report this data in 'MDY' format**
 We will include all 'date' variables for now.
 ```{r}
 datadict_labonly %>%
@@ -99,6 +101,7 @@ our_vars <- c(our_vars, datadict_labonly %>% filter(vartype == 'unit', Choices..
 
 We now have a set of variables for we can reasonably map reported value in the EHR to expected value in RedCap.
 We can map these variable names to their associated concept_cds using the manually generated 'eCRF to BCH mapping' file and create the corresponding `labDictionary` file.
+For now, we will ignore the variables which we do not have concept codes for.
 Then we can use these concept_CD values to query the BCH database.
 After querying the database, a separate script will map values from the query response to the expected values found in this notebook.
 ```{r}
@@ -107,9 +110,15 @@ our_vars
 mapping <- read.csv('eCRF to BCH mapping.csv') %>%
   filter(Form.Name == 'laboratory_values')
 
-mapping
+labdict <- left_join(as.data.frame(our_vars), mapping, by = c('our_vars' = 'Variable...Field.Name')) %>%
+  rename(variableName = our_vars,
+         formName = Form.Name) %>%
+  select(variableName, concept_cd, formName) %>%
+  
+  # For now, we will ignore the variables which we do not have concept codes for.
+  filter(concept_cd != '')
 
-labdict 
+
 
 ```
 
