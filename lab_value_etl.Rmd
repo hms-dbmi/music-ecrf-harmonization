@@ -113,12 +113,26 @@ finalTable$value <- apply(finalTable, 1, FUN = getLabValue)
 finalTable
 
 ```
+Use dates to determine visit number **uncertain about meaning of redcap_repeat_instance and lab_values_visit**
+- note that entries inputted at different times on the same date are considered as separate events / visits
+```{r}
+finalTable <- finalTable %>% 
+  group_by(PATIENT_NUM, date, time) %>%
+  arrange(date, time) %>%
+  mutate(visit = cur_group_id()) %>%
+  arrange(visit)
+
+finalTable %>% select(PATIENT_NUM, date, time, visit) 
+
+```
+
 
 Pivot table wider and make compatible with RedCap formatting
+**Incorporate visit column, which may represent redcap_repeat_instance or lab_values_visit**
 ```{r}
 
 out <- pivot_wider(finalTable, 
-                   id_cols = c(PATIENT_NUM, formName, date, time), 
+                   id_cols = c(PATIENT_NUM, formName, date, time, visit), 
                    names_from = variableName, 
                    values_from = value, 
                    values_fill = '')
@@ -134,7 +148,7 @@ out <- out %>%
   mutate(redcap_data_access_group = "BCH",
          redcap_event_name = "repeating_forms_arm_1",
          redcap_repeat_instance = 0) %>%
-  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group)
+  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, visit)
 
 
 ```
