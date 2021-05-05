@@ -114,7 +114,7 @@ finalTable
 
 ```
 
-Pivot table wider to be compatible with RedCap formatting
+Pivot table wider and make compatible with RedCap formatting
 ```{r}
 
 out <- pivot_wider(finalTable, 
@@ -127,14 +127,20 @@ out <- pivot_wider(finalTable,
 #finalTable %>% filter(is.na(NVAL_NUM), TVAL_CHAR == '')
 
 
+# Rename columns for redcap
+out <- out %>%
+  rename('record_id' = 'PATIENT_NUM',
+         'redcap_repeat_instrument' = 'formName') %>%
+  mutate(redcap_data_access_group = "BCH",
+         redcap_event_name = "repeating_forms_arm_1",
+         redcap_repeat_instance = 0) %>%
+  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group)
+
+
 ```
 
 
-Next steps
-- mapping for variable with specified choices
-  - try using all upper or all lower responses
-  - something like:
-  variableName | choiceA in eCRF | corrseponding BCH value
+
 
 
 
