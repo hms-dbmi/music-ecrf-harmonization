@@ -14,6 +14,7 @@ This repository contains:
   - `labDictionary.txt` : subset of variables for testing
 
 - **local_ref**
+
   This directory is not tracked by GitHub; it contains data intermediates and outputs. Some scripts may reference it, you may want to create a corresponding directory in your local copy of the repository.
   - `connection.R` : Connection to BCH database
   - `testoutput.csv` : Data extracted from BCH database
