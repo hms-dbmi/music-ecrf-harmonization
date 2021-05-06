@@ -23,7 +23,7 @@ dbGetQuery( con, paste0("select obs.patient_num, obs.concept_cd, obs.start_date,
 ```{r}
 library(tidyverse)
 library(lubridate)
-lab_dictionary <- read.delim("labDictionary.txt", header = TRUE)
+lab_dictionary <- read.delim("labDictionary.txt", header = TRUE, sep = ' ')
 
 
 ```
@@ -31,6 +31,8 @@ lab_dictionary <- read.delim("labDictionary.txt", header = TRUE)
 Import test data with randomized patient ids
 ```{r}
 subset_df <- read.csv('testoutput.csv')
+#subset_df$PATIENT_NUM <- floor(runif(nrow(subset_df))*100)
+#write.csv(subset_df, 'testoutput.csv', row.names = FALSE)
 
 ```
 
@@ -46,9 +48,9 @@ subset_df$time <- sapply(strsplit( as.character(subset_df$START_DATE), " "), '['
 finalTable <- left_join( subset_df, lab_dictionary, by = c("CONCEPT_CD" = "concept_cd") )
 
 finalTable <- finalTable %>%
-  mutate(date = dmy(date),
-         ADMISSION_DATE = dmy(ADMISSION_DATE),
-         DISCHARGE_DATE = dmy(DISCHARGE_DATE),
+  mutate(date = mdy(as.character(dmy(date), format = "%m-%d-%Y")),
+         ADMISSION_DATE = mdy(as.character(dmy(ADMISSION_DATE), format = "%m-%d-%Y")),
+         DISCHARGE_DATE = mdy(as.character(dmy(DISCHARGE_DATE), format = "%m-%d-%Y")),
          days_after_admission = date - ADMISSION_DATE,
          days_after_discharge = date - DISCHARGE_DATE)
 
@@ -59,7 +61,7 @@ Extract `value` based on type of variable
   - choices accepted for `obtained` variables: 1, 0
   - choices accepted for `value` variables: no criteria. if NVAL_NUM is not NA, then NVAL_NUM. else TVAL_CHAR
   - choices accepted for `unit` variables: no criteria. use UNITS_CD column
-  - choices accepted for `date` variables: use date column **in mdy format**
+  - choices accepted for `date` variables: use date column in mdy format
 ```{r}
 # Create function to extract value
 getLabValue <- function(row) {
@@ -74,7 +76,7 @@ getLabValue <- function(row) {
     
   # for date variables, use the date column
   } else if (row['vartype'] == 'date') {
-    value = row['date']
+    value = as.character(ymd(row['date']), format = "%m-%d-%Y")
     
   # for value variables, if NVAL_NUM is not NA, use NVAL_NUM. else use TVAL_CHAR
   } else if (row['vartype'] == 'value') {
@@ -98,33 +100,62 @@ getLabValue <- function(row) {
 finalTable <- finalTable %>%
   
   # categorize the variable types
-  mutate(vartype = gsub("^.*_", "", variableName))
+  mutate(vartype = gsub("^.*_", "", variableName)) %>%
+
+  # remove entries with no data
+  filter(!is.na(NVAL_NUM) | TVAL_CHAR != '') %>%
+
+  # remove duplicated rows
+  distinct
          
 finalTable$value <- apply(finalTable, 1, FUN = getLabValue)
 
 finalTable
 
 ```
-
-Pivot table wider to be compatible with RedCap formatting
+Use dates to determine visit number **uncertain about meaning of redcap_repeat_instance and lab_values_visit**
+- note that entries inputted at different times on the same date are considered as separate events / visits
 ```{r}
-out <- pivot_wider(finalTable, id_cols = c(PATIENT_NUM, formName, date, time), names_from = variableName, values_from = value)
+finalTable <- finalTable %>% 
+  group_by(PATIENT_NUM, date, time) %>%
+  arrange(date, time) %>%
+  mutate(visit = cur_group_id()) %>%
+  arrange(visit)
+
+finalTable %>% select(PATIENT_NUM, date, time, visit) 
 
 ```
 
 
-Next steps
-- change date format to mdy
-- mapping for variable with specified choices
-  - try using all upper or all lower responses
-  - something like:
-  variableName | choiceA in eCRF | corrseponding BCH value
+Pivot table wider and make compatible with RedCap formatting
+**Incorporate visit column, which may represent redcap_repeat_instance or lab_values_visit**
+```{r}
 
-Questions for Paul
-- did he understand those columns?
-- how to make this an automatic pipeline: what format are the lab codes in BCH so we can use UMLS?
-- secure file transfer?
-- loading data dict and mapping files to github?
+out <- pivot_wider(finalTable, 
+                   id_cols = c(PATIENT_NUM, formName, date, time, visit), 
+                   names_from = variableName, 
+                   values_from = value, 
+                   values_fill = '')
+
+# should we remove entries with no data?
+#finalTable %>% filter(is.na(NVAL_NUM), TVAL_CHAR == '')
+
+
+# Rename columns for redcap
+out <- out %>%
+  rename('record_id' = 'PATIENT_NUM',
+         'redcap_repeat_instrument' = 'formName') %>%
+  mutate(redcap_data_access_group = "BCH",
+         redcap_event_name = "repeating_forms_arm_1",
+         redcap_repeat_instance = 0) %>%
+  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, visit)
+
+
+```
+
+
+
+
 
 
 
