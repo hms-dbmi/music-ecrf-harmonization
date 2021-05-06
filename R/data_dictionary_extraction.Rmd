@@ -5,6 +5,7 @@ date: "5/3/2021"
 output: html_document
 ---
 
+# Begin with Exploring the entire Lab Values Data Dictionary
 ```{r setup, include=FALSE}
 library(tidyverse)
 ```
@@ -17,9 +18,11 @@ our_vars <- c()
 ```
 
 Focus on laboratory values
+- combine the "Choices..." column with the "Field.Note" column, as they contain similar info
 ```{r}
 datadict_labonly <- datadict %>% 
-  filter(Form.Name == "laboratory_values")
+  filter(Form.Name == "laboratory_values") %>%
+  mutate(Choices..Calculations..OR.Slider.Labels = paste0(Choices..Calculations..OR.Slider.Labels, Field.Note))
 
 datadict_labonly
 
@@ -64,7 +67,8 @@ We will focus on these variables for now.
 datadict_labonly %>%
   filter(vartype == 'value') %>%
   group_by(Choices..Calculations..OR.Slider.Labels) %>%
-  summarise(n_vars = n())
+  summarise(n_vars = n()) %>% 
+  arrange(desc(n_vars))
 
 our_vars <- c(our_vars, datadict_labonly %>% filter(vartype == 'value', Choices..Calculations..OR.Slider.Labels == '') %>% pull(Variable...Field.Name))
 
@@ -93,7 +97,8 @@ We will focus on the 'unit' variables with unspecified responses for now.
 datadict_labonly %>%
   filter(vartype == 'unit') %>%
   group_by(Choices..Calculations..OR.Slider.Labels) %>%
-  summarise(n_vars = n())
+  summarise(n_vars = n()) %>%
+  arrange(desc(n_vars))
 
 our_vars <- c(our_vars, datadict_labonly %>% filter(vartype == 'unit', Choices..Calculations..OR.Slider.Labels == '') %>% pull(Variable...Field.Name))
 
