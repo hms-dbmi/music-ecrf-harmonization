@@ -112,7 +112,7 @@ After querying the database, a separate script will map values from the query re
 ```{r}
 #our_vars
 
-mapping <- read.csv('eCRF to BCH mapping.csv') %>%
+mapping <- read.csv('../data/eCRF to BCH mapping.csv') %>%
   filter(Form.Name == 'laboratory_values')
 
 labdict <- left_join(as.data.frame(our_vars), mapping, by = c('our_vars' = 'Variable...Field.Name')) %>%
@@ -122,7 +122,6 @@ labdict <- left_join(as.data.frame(our_vars), mapping, by = c('our_vars' = 'Vari
   
   # For now, we will ignore the variables which we do not have concept codes for.
   filter(concept_cd != '')
-
 
 
 ```
