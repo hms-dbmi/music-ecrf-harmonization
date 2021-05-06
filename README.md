@@ -8,14 +8,20 @@ This repository contains:
   - `lab_value_etl.Rmd`: Use identified variables from `data_dictionary_extraction.Rmd` to query database and reformat results to satisfy RedCap specifications
   - `music_lab_values.R` : Initial code for extracting internal and external tables
 
+
+
 - **data**
+
+  *No patient-level data is ever uploaded*
   - `MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv` : Original data dictionary from HealthCore
   - `eCRF to BCH mapping.csv` : Mapping of eCRF variable names to BCH concepts
   - `labDictionary.txt` : subset of variables for testing
 
+
+
 - **local_ref**
 
-  This directory is not tracked by GitHub; it contains data intermediates and outputs. Some scripts may reference it, you may want to create a corresponding directory in your local copy of the repository.
+  *This directory is not tracked by GitHub; it contains patient-level data intermediates and outputs. Some scripts may reference it, you may want to create a corresponding directory in your local copy of the repository.*
   - `connection.R` : Connection to BCH database
   - `testoutput.csv` : Data extracted from BCH database
   - `lab_bch.dsv` : Data extracted from BCH database (?)
