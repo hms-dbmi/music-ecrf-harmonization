@@ -149,7 +149,7 @@ out <- out %>%
          redcap_repeat_instance = 0) %>%
   relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, visit)
 
-
+write.csv(out, '../local_ref/redcap_output.csv', row.names = FALSE)
 ```
 
 
