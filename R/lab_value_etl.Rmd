@@ -31,7 +31,7 @@ Import test data with randomized patient ids
 ```{r}
 subset_df <- read.csv('../local_ref/testoutput.csv')
 #subset_df$PATIENT_NUM <- floor(runif(nrow(subset_df))*100)
-#write.csv(subset_df, 'testoutput.csv', row.names = FALSE)
+#write.csv(subset_df, '../local_ref/testoutput.csv', row.names = FALSE)
 
 ```
 
