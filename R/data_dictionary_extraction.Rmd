@@ -134,6 +134,41 @@ our_vars <- our_vars[!our_vars %in% remove_vars]
 
 ```
 
+Let's view the summaries for the selected variables.
+```{r}
+datadict_labonly %>% 
+  filter(Variable...Field.Name %in% our_vars) %>% 
+  pull(vartype) %>%
+  table()
+
+datadict_labonly %>% 
+  filter(Variable...Field.Name %in% our_vars,
+         vartype == 'date') %>%
+  pull(Choices..Calculations..OR.Slider.Labels) %>%
+  table()
+
+datadict_labonly %>% 
+  filter(Variable...Field.Name %in% our_vars,
+         vartype == 'value') %>%
+  pull(Choices..Calculations..OR.Slider.Labels) %>%
+  table()
+
+datadict_labonly %>% 
+  filter(Variable...Field.Name %in% our_vars,
+         vartype == 'unit') %>%
+  pull(Choices..Calculations..OR.Slider.Labels) %>%
+  table()
+
+datadict_labonly %>% 
+  filter(Variable...Field.Name %in% our_vars,
+         vartype == 'obtained') %>%
+  pull(Choices..Calculations..OR.Slider.Labels) %>%
+  table()
+
+
+
+```
+
 
 We now have our 'phase 1 variables', which we can reasonably map reported value in the EHR to expected value in RedCap.
 We can map these variable names to their associated concept_cds using the manually generated 'eCRF to BCH mapping' file and create the corresponding `labDictionary` file.

@@ -7,7 +7,6 @@ output: html_document
 
 *derived from `music_lab_Values.R`*
 
-
 Use a modification of the following query to extract the data based on concepts in labDictionary.txt:
 *Query has been previously run and saved*
 
