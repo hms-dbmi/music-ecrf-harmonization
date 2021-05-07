@@ -69,9 +69,9 @@ getLabValue <- function(row) {
   if (row['vartype'] == 'obtained') {
     value = 1
     
-  # for unit variables, use the UNITS_CD column
+  # All units will be ‘-88’ because in phase 1, we are only including variables where the unit listed below the Value field was used. 
   } else if (row['vartype'] == 'unit') {
-    value = row['UNITS_CD']
+    value = -88
     
   # for date variables, use the date column
   } else if (row['vartype'] == 'date') {
