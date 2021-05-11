@@ -111,7 +111,7 @@ final$units_cd_transformed <- gsub( "sec", "seconds", final$units_cd_transformed
 final$units_cd_transformed <- gsub( "cells/mcL", "Absolute cells/microliter", final$units_cd_transformed)
 final$units_cd_transformed <- gsub( "unit/L", "U/L", final$units_cd_transformed)
 final$units_cd_transformed <- gsub( "K cells/uL", "x10^3/uL or x10^9/L", final$units_cd_transformed)
-final$Field.Note <- gsub( "x10^3/uL or 10^9/L", "x10^3/uL or x10^9/L", final$units_cd_transformed)
+final[ final$Field.Note =="x10^3/uL or 10^9/L", "Field.Note"] <- "x10^3/uL or x10^9/L"
 ```
 
 After this transformation we check for which variables we still have different units, and for which variables the ranges in the database are out of the expected ranges as appear in the MUSIC dictionary.
