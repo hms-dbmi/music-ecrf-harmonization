@@ -7,7 +7,6 @@ output: html_document
 
 *derived from `music_lab_Values.R`*
 
-
 Use a modification of the following query to extract the data based on concepts in labDictionary.txt:
 *Query has been previously run and saved*
 
@@ -32,7 +31,7 @@ Import test data with randomized patient ids
 ```{r}
 subset_df <- read.csv('../local_ref/testoutput.csv')
 #subset_df$PATIENT_NUM <- floor(runif(nrow(subset_df))*100)
-#write.csv(subset_df, 'testoutput.csv', row.names = FALSE)
+#write.csv(subset_df, '../local_ref/testoutput.csv', row.names = FALSE)
 
 ```
 
@@ -70,9 +69,9 @@ getLabValue <- function(row) {
   if (row['vartype'] == 'obtained') {
     value = 1
     
-  # for unit variables, use the UNITS_CD column
+  # All units will be ‘-88’ because in phase 1, we are only including variables where the unit listed below the Value field was used. 
   } else if (row['vartype'] == 'unit') {
-    value = row['UNITS_CD']
+    value = -88
     
   # for date variables, use the date column
   } else if (row['vartype'] == 'date') {
@@ -150,7 +149,7 @@ out <- out %>%
          redcap_repeat_instance = 0) %>%
   relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, visit)
 
-
+write.csv(out, '../local_ref/redcap_output.csv', row.names = FALSE)
 ```
 
 
