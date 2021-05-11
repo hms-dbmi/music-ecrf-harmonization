@@ -1,7 +1,7 @@
 ---
 title: "exploringMapping"
 author: "Alba Gutiérrez"
-date: "5/5/2021"
+date: "5/11/2021"
 output: html_document
 ---
 
@@ -30,7 +30,7 @@ library(dplyr)
 We read the 'eCRF to BCH mapping.csv' and extract the concept codes for the **laboratory_values**. We create then a string with the values to build the SQL query and extract the data from the DB. 
 
 ```{r}
-ecrftobch <- read.csv("../data/eCRF to BCH mapping.csv")
+ecrftobch <- read.csv("eCRF to BCH mapping.csv")
 ecrftobch <- ecrftobch[ ecrftobch$Form.Name == "laboratory_values",]
 
 labcodes <- unique( ecrftobch$labcodes)
@@ -44,7 +44,7 @@ With the previous vector containing the laboratory concept codes, we build a SQL
 The first step before running any query is to set up the connection:
 ```{r, eval=FALSE}
 # con <- dbConnect(drv, "user-id", "password", dbname="dbhostnameorIP[:port]/dbservice")
-source("../local_ref/connection.R")
+source("connection.R")
 ```
 
 Then we create the SQL query and get the data using dbGetQuery() function. 
@@ -58,7 +58,7 @@ internalDictionary <- DBI::dbGetQuery( con, query)
 First we read the dictionary to extract the laboratory information (extracted from Simran code). Then we select the variables for which we have a corresponding concept code in the pediatric database. Finally we restrict it to those having a numeric value. 
 
 ```{r}
-datadict <- read.csv('../data/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+datadict <- read.csv('MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
 
 datadict_labonly <- datadict %>% 
   filter(Form.Name == "laboratory_values") %>%
@@ -76,7 +76,7 @@ num_lab_values <- inner_join( num_lab_values, ecrftobch )
 Then we extract the same subset of concepts from the pediatric database. 
 ```{r}
 ## BCH data dictionary
-internalDictionary <- read.delim("../local_ref/lab_bch.dsv")
+internalDictionary <- read.delim("lab_bch.dsv")
 internalDictionary_numeric <- internalDictionary[ internalDictionary$CONCEPT_CD %in% num_lab_values$concept_cd, ]
 ```
 
@@ -85,7 +85,7 @@ We summarize the results from the pediatric database group by concept code (conc
 ```{r}
 internalDictionary_numericSummary <- internalDictionary_numeric %>%
   dplyr::group_by(CONCEPT_CD, UNITS_CD, NAME_CHAR) %>%
-  dplyr::summarise( min = min(NVAL_NUM), max = max(NVAL_NUM)) %>%
+  dplyr::summarise( min = min(NVAL_NUM, na.rm = TRUE), max = max(NVAL_NUM, na.rm = TRUE)) %>%
   dplyr::select( CONCEPT_CD, min, max, UNITS_CD, NAME_CHAR)
 colnames(internalDictionary_numericSummary) <- tolower(colnames(internalDictionary_numericSummary))
 ```
@@ -111,6 +111,8 @@ final$units_cd_transformed <- final$units_cd
 final$units_cd_transformed <- gsub( "sec", "seconds", final$units_cd_transformed)
 final$units_cd_transformed <- gsub( "cells/mcL", "Absolute cells/microliter", final$units_cd_transformed)
 final$units_cd_transformed <- gsub( "unit/L", "U/L", final$units_cd_transformed)
+final$units_cd_transformed <- gsub( "K cells/uL", "x10^3/uL or x10^9/L", final$units_cd_transformed)
+final$units_cd_transformed <- gsub( "K cells/uL", "x10^3/uL or 10^9/L", final$units_cd_transformed)
 ```
 
 After this transformation we check for which variables we still have different units, and for which variables the ranges in the database are out of the expected ranges as appear in the MUSIC dictionary.
@@ -118,7 +120,20 @@ After this transformation we check for which variables we still have different u
 ```{r}
 # check the units
 final$checkUnits <- ifelse( final$units_cd_transformed ==  final$Field.Note, "OK", "To check")
+```
 
+```{r}
+#Special cases
+###triglycerids 1, mg/dL | 2, mmol/L | 3, Other; extracted from the excel but another column
+final[ final$concept_desc == "Triglycerides" & final$Field.Note == "Specify units below", "Field.Note"] <- "1, mg/dL | 2, mmol/L | 3, Other"
+final[ final$concept_desc == "Triglycerides", "checkUnits" ] <- ifelse( final[ final$concept_desc == "Triglycerides", "units_cd" ] %in% c("mg/dL","mmol/L","Other"), "OK", "To check")
+
+###CRP 1, mg/L | 2, mg/dL | 3, Other; extracted from the excel but another column
+final[ final$concept_desc == "C-Reactive Protein" & final$Field.Note == "Specify units below", "Field.Note"] <- "1, mg/L | 2, mg/dL | 3, Other"
+final[ final$concept_desc == "C-Reactive Protein", "checkUnits" ] <- ifelse( final[ final$concept_desc == "C-Reactive Protein", "units_cd" ] %in% c("mg/L","mg/dL","Other"), "OK", "To check")
+```
+
+```{r}
 # check the range when units correct
 final$checkRange <- ifelse( final$checkUnits == "OK", ifelse(as.numeric(final$min) >= as.numeric(final$Text.Validation.Min) & as.numeric(final$max) <= as.numeric(final$Text.Validation.Max), "OK", "To check"), "To check")
 
@@ -129,7 +144,8 @@ Finally we generate a file with this mapping output for us to have as reference 
 
 ```{r}
 # export as file
-write.table(final, file = "../data/numericlabsToReview.txt", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE)
+final <- final[, c("concept_cd", "concept_desc", "min", "max", "units_cd", "units_cd_transformed","Variable...Field.Name","Text.Validation.Min","Text.Validation.Max","Field.Note", "checkUnits", "checkRange","concept_path", "Form.Name")]
+write.table(final, file = "numericlabsToReview.txt", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE)
 ```
 
 ### R session information
