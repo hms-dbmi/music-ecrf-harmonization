@@ -221,6 +221,18 @@ remaining_vars %>% arrange(desc(n_vars_affected))
 
 ```
 
+# Phase 2
+What are the types of non-numeric vars?
+```{r}
+datadict_labonly %>%
+  #filter(vartype == 'value') %>%
+  filter(Text.Validation.Type.OR.Show.Slider.Number != 'number')
+
+```
+
+
+
+
 
 
 
