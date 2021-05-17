@@ -112,16 +112,84 @@ finalTable$value <- apply(finalTable, 1, FUN = getLabValue)
 finalTable
 
 ```
-Use dates to determine visit number **uncertain about meaning of redcap_repeat_instance and lab_values_visit**
-- note that entries inputted at different times on the same date are considered as separate events / visits
+
+lab_values_visit
+1, Admission/first obtained during MIS-C hospitalization
+2, Closest to discharge during MIS-C hospitalization
+3, 2 Weeks Post Discharge
+4, 6 Weeks Post Discharge
+6, 6 Months Post Discharge
+25, Hospital readmission within 6 months of initial hospital discharge **Note** : need to clairfy in vs out patient
+23, 'Worst Values During Hosp' **Note**: waiting to hear back about 'worst' values. For now, taking **max** of all labs.
 ```{r}
-finalTable <- finalTable %>% 
+finalTable
+
+# 1, Admission/first obtained during MIS-C hospitalization
+group_1 <- finalTable %>% 
+  group_by(PATIENT_NUM, variableName) %>%
+  filter(START_DATE == min(START_DATE)) %>%
+  mutate(lab_values_visit = 1)
+
+# 2, Closest to discharge during MIS-C hospitalization
+group_2 <- finalTable %>% 
+  group_by(PATIENT_NUM, variableName) %>%
+  filter(date >= (ADMISSION_DATE),
+         date <= (DISCHARGE_DATE)) %>% #start date must be within hospitalization
+  filter(days_after_discharge == max(days_after_discharge)) %>%
+  mutate(lab_values_visit = 2)
+
+# 3, 2 Weeks Post Discharge
+group_3 <- finalTable %>% 
+  group_by(PATIENT_NUM, variableName) %>%
+  filter(days_after_discharge == 14) %>% # currently using *exactly* 2 weeks post discharge
+  mutate(lab_values_visit = 3)
+
+#4, 6 Weeks Post Discharge
+group_4 <- finalTable %>% 
+  group_by(PATIENT_NUM, variableName) %>%
+  filter(days_after_discharge == 42) %>% # currently using *exactly* 6 weeks post discharge
+  mutate(lab_values_visit = 4)
+
+# 6, 6 Months Post Discharge
+group_6 <- finalTable %>% 
+  group_by(PATIENT_NUM, variableName) %>%
+  filter(days_after_discharge == 182) %>% # currently using *exactly* 6 months post discharge
+  mutate(lab_values_visit = 6)
+
+# 25, Hospital readmission within 6 months of initial hospital discharge 
+#group_25 <- finalTable %>%
+#  group_by(PATIENT_NUM, variableName) %>%
+#  mutate(initial_discharge = min(DISCHARGE_DATE)) %>%
+#  filter(date > initial_discharge) %>%
+#  mutate(lab_values_visit = 25)
+
+# 23, 'Worst Values During Hosp' **Note**: waiting to hear back about 'worst' values. For now, taking **max** of all labs.
+group_23 <- finalTable %>% 
+  group_by(PATIENT_NUM, variableName) %>%
+  mutate(value = as.numeric(value)) %>%
+  filter(vartype == 'value',
+         value == max(value, na.rm = TRUE)) %>%
+  mutate(lab_values_visit = 23,
+         value = as.character(value))
+
+
+combinedFinal <- bind_rows(group_1, group_2, group_3, group_4, group_6, group_23) # currently not including gorup 25
+
+```
+
+redcap_repeat_instance
+- Using dates to determine visit number **uncertain about meaning of redcap_repeat_instance and lab_values_visit**
+- note that entries inputted at different times on the same date are considered as separate events / visits
+
+
+```{r}
+combinedFinal <- combinedFinal %>% 
   group_by(PATIENT_NUM, date, time) %>%
   arrange(date, time) %>%
-  mutate(visit = cur_group_id()) %>%
-  arrange(visit)
+  mutate(redcap_repeat_instance = cur_group_id()) %>%
+  arrange(redcap_repeat_instance)
 
-finalTable %>% select(PATIENT_NUM, date, time, visit) 
+combinedFinal %>% select(PATIENT_NUM, date, time, redcap_repeat_instance) 
 
 ```
 
@@ -130,8 +198,8 @@ Pivot table wider and make compatible with RedCap formatting
 **Incorporate visit column, which may represent redcap_repeat_instance or lab_values_visit**
 ```{r}
 
-out <- pivot_wider(finalTable, 
-                   id_cols = c(PATIENT_NUM, formName, date, time, visit), 
+out <- pivot_wider(combinedFinal, 
+                   id_cols = c(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance), 
                    names_from = variableName, 
                    values_from = value, 
                    values_fill = '')
@@ -144,10 +212,9 @@ out <- pivot_wider(finalTable,
 out <- out %>%
   rename('record_id' = 'PATIENT_NUM',
          'redcap_repeat_instrument' = 'formName') %>%
-  mutate(redcap_data_access_group = "BCH",
-         redcap_event_name = "repeating_forms_arm_1",
-         redcap_repeat_instance = 0) %>%
-  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, visit)
+  mutate(redcap_data_access_group = "120_boston_childe",
+         redcap_event_name = "repeating_forms_arm_1") %>%
+  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, lab_values_visit)
 
 write.csv(out, '../local_ref/redcap_output.csv', row.names = FALSE)
 ```
