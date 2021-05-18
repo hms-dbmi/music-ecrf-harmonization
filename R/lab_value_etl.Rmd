@@ -204,7 +204,7 @@ Pivot table wider and make compatible with RedCap formatting
 ```{r}
 
 out <- pivot_wider(combinedFinal, 
-                   id_cols = c(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance), 
+                   id_cols = c(PATIENT_NUM, formName, date, time, lab_values_visit, lab_values_visit_discrepancy, redcap_repeat_instance), 
                    names_from = variableName, 
                    values_from = value, 
                    values_fill = '')
