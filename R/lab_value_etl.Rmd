@@ -128,6 +128,7 @@ finalTable
 group_1 <- finalTable %>% 
   group_by(PATIENT_NUM, variableName) %>%
   filter(START_DATE == min(START_DATE)) %>%
+  mutate(lab_values_visit_discrepancy =  as_date(0) - as_date(0)) %>%
   mutate(lab_values_visit = 1)
 
 # 2, Closest to discharge during MIS-C hospitalization
@@ -136,24 +137,28 @@ group_2 <- finalTable %>%
   filter(date >= (ADMISSION_DATE),
          date <= (DISCHARGE_DATE)) %>% #start date must be within hospitalization
   filter(days_after_discharge == max(days_after_discharge)) %>%
+  mutate(lab_values_visit_discrepancy = days_after_discharge) %>%
   mutate(lab_values_visit = 2)
 
 # 3, 2 Weeks Post Discharge
 group_3 <- finalTable %>% 
   group_by(PATIENT_NUM, variableName) %>%
-  filter(days_after_discharge == 14) %>% # currently using *exactly* 2 weeks post discharge
+  mutate(lab_values_visit_discrepancy = days_after_discharge - 14) %>%
+  filter(lab_values_visit_discrepancy == min(abs(lab_values_visit_discrepancy))) %>% # use date closest to 2 weeks post discharge
   mutate(lab_values_visit = 3)
 
 #4, 6 Weeks Post Discharge
 group_4 <- finalTable %>% 
   group_by(PATIENT_NUM, variableName) %>%
-  filter(days_after_discharge == 42) %>% # currently using *exactly* 6 weeks post discharge
+  mutate(lab_values_visit_discrepancy = days_after_discharge - 42) %>%
+  filter(lab_values_visit_discrepancy == min(abs(lab_values_visit_discrepancy))) %>% # use date closest to 6 weeks post discharge
   mutate(lab_values_visit = 4)
 
 # 6, 6 Months Post Discharge
 group_6 <- finalTable %>% 
   group_by(PATIENT_NUM, variableName) %>%
-  filter(days_after_discharge == 182) %>% # currently using *exactly* 6 months post discharge
+  mutate(lab_values_visit_discrepancy = days_after_discharge - 182) %>%
+  filter(lab_values_visit_discrepancy == min(abs(lab_values_visit_discrepancy))) %>% # use date closest to 6 months post discharge
   mutate(lab_values_visit = 6)
 
 # 25, Hospital readmission within 6 months of initial hospital discharge 
@@ -173,7 +178,7 @@ group_23 <- finalTable %>%
          value = as.character(value))
 
 
-combinedFinal <- bind_rows(group_1, group_2, group_3, group_4, group_6, group_23) # currently not including gorup 25
+combinedFinal <- bind_rows(group_1, group_2, group_3, group_4, group_6, group_23) # currently not including group 25
 
 ```
 
