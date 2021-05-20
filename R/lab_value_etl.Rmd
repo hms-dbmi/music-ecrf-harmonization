@@ -121,69 +121,65 @@ lab_values_visit
 6, 6 Months Post Discharge
 25, Hospital readmission within 6 months of initial hospital discharge **Note** : need to clairfy in vs out patient
 23, 'Worst Values During Hosp' **Note**: waiting to hear back about 'worst' values. For now, taking **max** of all labs.
+
 ```{r}
-finalTable
+# note: there are no 'time' tiebreakers
+# not currently defining 'worst' values
 
-# 1, Admission/first obtained during MIS-C hospitalization
-group_1 <- finalTable %>% 
+# this function defines the *dates*; will still need to go back after and find which are good for each patient (will be multiples)
+define_window <- function(days_after_admission, days_after_discharge){
+  
+  # the value closest to hospital admission  (no further than 48 hours before or after)
+  # if multiple within +/- 48 hour range, take the one closest to admission
+  ifelse(test = days_after_admission >= -2 & days_after_admission <= 2 & days_after_admission == min(days_after_admission),
+         yes = 1,
+         
+         # the value closest to discharge (3 days or less before discharge)
+         # if multiple within range, take the one closest to discharge
+         no = ifelse(test = days_after_discharge >= -3 & days_after_discharge <=0 & days_after_discharge == min(days_after_discharge),
+                     yes = 2,
+                     
+                     # if the observation is not categorized as admission or discharge, but happens during hospitalization, it has potential to be 'worst' value 
+                     no = ifelse(test = days_after_admission >= 0 & days_after_discharge <= 0,
+                                 yes = 23, 
+                     
+                                 # 2 weeks post discharge (after discharge until less than three weeks)
+                                 # if multiple within range, take one closest to exactly three weeks after
+                                 no = ifelse(test = days_after_discharge >= 0 & days_after_discharge < 21 & abs(days_after_discharge-21) == min(abs(days_after_discharge - 21)),
+                                             yes = 3,
+                                             
+                                             # 6 weeks post discharge (3 weeks to less then 9 weeks)
+                                             # if multiple within range, take one closest to exactly 6 weeks after
+                                             no = ifelse(test = days_after_discharge >= 21 & days_after_discharge < 63 & abs(days_after_discharge-42) == min(abs(days_after_discharge - 42)),
+                                                         yes = 4,
+                                                         
+                                                         # 6 months post discharge (9 weeks to less than one year)
+                                                         no = ifelse(test = days_after_discharge >= 63 & days_after_discharge < 365 & abs(days_after_discharge-180) == min(abs(days_after_discharge - 180)),
+                                                                     yes = 6,
+                                                                     
+                                                                     # readmission will be determined through timeline
+                                                                     no = NA)
+                                             )
+                                 )
+                     )
+         )
+  )
+  
+  
+}
+
+
+```
+
+```{r}
+finalTable <- finalTable %>% 
   group_by(PATIENT_NUM, variableName) %>%
-  filter(START_DATE == min(START_DATE)) %>%
-  mutate(lab_values_visit_discrepancy =  as_date(0) - as_date(0)) %>%
-  mutate(lab_values_visit = 1)
-
-# 2, Closest to discharge during MIS-C hospitalization
-group_2 <- finalTable %>% 
-  group_by(PATIENT_NUM, variableName) %>%
-  filter(date >= (ADMISSION_DATE),
-         date <= (DISCHARGE_DATE)) %>% #start date must be within hospitalization
-  filter(days_after_discharge == max(days_after_discharge)) %>%
-  mutate(lab_values_visit_discrepancy = days_after_discharge) %>%
-  mutate(lab_values_visit = 2)
-
-# 3, 2 Weeks Post Discharge
-group_3 <- finalTable %>% 
-  group_by(PATIENT_NUM, variableName) %>%
-  mutate(lab_values_visit_discrepancy = days_after_discharge - 14) %>%
-  filter(lab_values_visit_discrepancy == min(abs(lab_values_visit_discrepancy))) %>% # use date closest to 2 weeks post discharge
-  mutate(lab_values_visit = 3)
-
-#4, 6 Weeks Post Discharge
-group_4 <- finalTable %>% 
-  group_by(PATIENT_NUM, variableName) %>%
-  mutate(lab_values_visit_discrepancy = days_after_discharge - 42) %>%
-  filter(lab_values_visit_discrepancy == min(abs(lab_values_visit_discrepancy))) %>% # use date closest to 6 weeks post discharge
-  mutate(lab_values_visit = 4)
-
-# 6, 6 Months Post Discharge
-group_6 <- finalTable %>% 
-  group_by(PATIENT_NUM, variableName) %>%
-  mutate(lab_values_visit_discrepancy = days_after_discharge - 182) %>%
-  filter(lab_values_visit_discrepancy == min(abs(lab_values_visit_discrepancy))) %>% # use date closest to 6 months post discharge
-  mutate(lab_values_visit = 6)
-
-# 25, Hospital readmission within 6 months of initial hospital discharge 
-#group_25 <- finalTable %>%
-#  group_by(PATIENT_NUM, variableName) %>%
-#  mutate(initial_discharge = min(DISCHARGE_DATE)) %>%
-#  filter(date > initial_discharge) %>%
-#  mutate(lab_values_visit = 25)
-
-# 23, 'Worst Values During Hosp' **Note**: waiting to hear back about 'worst' values. For now, taking **max** of all labs.
-group_23 <- finalTable %>% 
-  group_by(PATIENT_NUM, variableName) %>%
-  mutate(value = as.numeric(value)) %>%
-  filter(vartype == 'value',
-         value == max(value, na.rm = TRUE)) %>%
-  mutate(lab_values_visit = 23,
-         value = as.character(value))
-
-
-combinedFinal <- bind_rows(group_1, group_2, group_3, group_4, group_6, group_23) # currently not including group 25
+  mutate(window_def = define_window(days_after_admission, days_after_discharge)) 
 
 ```
 
 redcap_repeat_instance
-- Using dates to determine visit number **uncertain about meaning of redcap_repeat_instance and lab_values_visit**
+- Using dates to determine visit number 
 - note that entries inputted at different times on the same date are considered as separate events / visits
 
 
