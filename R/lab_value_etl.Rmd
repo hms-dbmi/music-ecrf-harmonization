@@ -174,7 +174,7 @@ define_window <- function(days_after_admission, days_after_discharge){
 ```{r}
 finalTable <- finalTable %>% 
   group_by(PATIENT_NUM, variableName) %>%
-  mutate(window_def = define_window(days_after_admission, days_after_discharge)) 
+  mutate(lab_values_visit = define_window(days_after_admission, days_after_discharge)) 
 
 ```
 
@@ -184,23 +184,23 @@ redcap_repeat_instance
 
 
 ```{r}
-combinedFinal <- combinedFinal %>% 
+finalTable <- finalTable %>% 
   group_by(PATIENT_NUM, date, time) %>%
   arrange(date, time) %>%
   mutate(redcap_repeat_instance = cur_group_id()) %>%
   arrange(redcap_repeat_instance)
 
-combinedFinal %>% select(PATIENT_NUM, date, time, redcap_repeat_instance) 
-
 ```
 
 
 Pivot table wider and make compatible with RedCap formatting
-**Incorporate visit column, which may represent redcap_repeat_instance or lab_values_visit**
 ```{r}
 
-out <- pivot_wider(combinedFinal, 
-                   id_cols = c(PATIENT_NUM, formName, date, time, lab_values_visit, lab_values_visit_discrepancy, redcap_repeat_instance), 
+# for cases where a patient has multiple values for a lab at the exact same date / time, just choose the first one
+out <- finalTable %>%
+  group_by(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance, variableName) %>%
+  summarise(value = first(value)) %>%
+  pivot_wider(id_cols = c(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance), 
                    names_from = variableName, 
                    values_from = value, 
                    values_fill = '')
