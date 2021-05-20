@@ -100,6 +100,9 @@ finalTable <- finalTable %>%
   
   # categorize the variable types
   mutate(vartype = gsub("^.*_", "", variableName)) %>%
+  
+  # categorize the variable prefixes
+  mutate(prefix = gsub('_{1}[[:alnum:]]+$', '', variableName)) %>%
 
   # remove entries with no data
   filter(!is.na(NVAL_NUM) | TVAL_CHAR != '') %>%
@@ -178,11 +181,44 @@ finalTable <- finalTable %>%
 
 ```
 
+
+define 'worst' values
+currently do not know which is worst; use high as default
+```{r}
+# create dummy df for mapping variable prefix to whether high or low is worst, in this case all are 'high'
+worst_values <- data.frame(prefix = unique(finalTable$prefix), worst = 'high')
+
+#value_vars <- data.frame(variableName = unique(finalTable$variableName[grepl('_value', finalTable$variableName)]),
+#                         worst = 'high')
+
+finalTable <- left_join(finalTable, worst_values)
+
+define_worst <- function(lab_values_visit, NVAL_NUM, worst) {
+  ifelse(test = lab_values_visit != 23,
+         yes = FALSE,
+         no = ifelse(test = worst == 'high',
+                     yes = NVAL_NUM == max(NVAL_NUM),
+                     no = ifelse(test = worst == 'low',
+                                 yes = NVAL_NUM == min(NVAL_NUM),
+                                 no = 'ERROR'
+                                 )
+                     )
+  )
+}
+
+finalTable <- finalTable %>% 
+  group_by(PATIENT_NUM, prefix) %>%
+  mutate(is_worst = define_worst(lab_values_visit, NVAL_NUM, worst)) %>%
+  # filter out variables where labvaluesvisit == 23 and worst == false
+  filter(!(lab_values_visit == 23 & is_worst == FALSE))
+
+
+
+```
+
 redcap_repeat_instance
 - Using dates to determine visit number 
 - note that entries inputted at different times on the same date are considered as separate events / visits
-
-
 ```{r}
 finalTable <- finalTable %>% 
   group_by(PATIENT_NUM, date, time) %>%
@@ -207,7 +243,6 @@ out <- finalTable %>%
 
 # should we remove entries with no data?
 #finalTable %>% filter(is.na(NVAL_NUM), TVAL_CHAR == '')
-
 
 # Rename columns for redcap
 out <- out %>%
