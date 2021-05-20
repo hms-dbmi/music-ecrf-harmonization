@@ -102,7 +102,7 @@ finalTable <- finalTable %>%
   mutate(vartype = gsub("^.*_", "", variableName)) %>%
   
   # categorize the variable prefixes
-  mutate(prefix = gsub('_{1}[[:alnum:]]+$', '', variableName)) %>%
+  #mutate(prefix = gsub('_{1}[[:alnum:]]+$', '', variableName)) %>%
 
   # remove entries with no data
   filter(!is.na(NVAL_NUM) | TVAL_CHAR != '') %>%
@@ -185,8 +185,9 @@ finalTable <- finalTable %>%
 define 'worst' values
 currently do not know which is worst; use high as default
 ```{r}
-# create dummy df for mapping variable prefix to whether high or low is worst, in this case all are 'high'
-worst_values <- data.frame(prefix = unique(finalTable$prefix), worst = 'high')
+# create dummy df for mapping variable name to whether high or low is worst, in this case all are 'high'
+# this can be changed to reference variable prefix in the future if that is more convenient
+worst_values <- data.frame(variableName = unique(finalTable$variableName), worst = 'high')
 
 #value_vars <- data.frame(variableName = unique(finalTable$variableName[grepl('_value', finalTable$variableName)]),
 #                         worst = 'high')
@@ -207,7 +208,7 @@ define_worst <- function(lab_values_visit, NVAL_NUM, worst) {
 }
 
 finalTable <- finalTable %>% 
-  group_by(PATIENT_NUM, prefix) %>%
+  group_by(PATIENT_NUM, variableName) %>%
   mutate(is_worst = define_worst(lab_values_visit, NVAL_NUM, worst)) %>%
   # filter out variables where labvaluesvisit == 23 and worst == false
   filter(!(lab_values_visit == 23 & is_worst == FALSE))
@@ -250,9 +251,10 @@ out <- out %>%
          'redcap_repeat_instrument' = 'formName') %>%
   mutate(redcap_data_access_group = "120_boston_childe",
          redcap_event_name = "repeating_forms_arm_1") %>%
-  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, lab_values_visit)
+  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, lab_values_visit) %>%
+  arrange(record_id, redcap_repeat_instance, lab_values_visit)
 
-write.csv(out, '../local_ref/redcap_output.csv', row.names = FALSE)
+write.csv(out[,-1], '../local_ref/redcap_output.csv', row.names = FALSE)
 ```
 
 
