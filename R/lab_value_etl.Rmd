@@ -35,6 +35,35 @@ subset_df <- read.csv('../local_ref/testoutput.csv')
 
 ```
 
+Import timeline...
+```{r}
+timeline <- read.csv('../local_ref/patient_timeline.csv')
+
+timeline$date <- sapply(strsplit( as.character(timeline$START_DATE), " "), '[', 1)
+timeline$date <- mdy(as.character(dmy(timeline$date), format = "%m-%d-%Y"))
+
+
+timeline_hosp <- timeline %>% 
+  dplyr::filter( INOUT_CD == "Inpatient", 
+                 LENGTH_OF_STAY > 1) 
+output <- timeline_hosp %>% 
+  dplyr::group_by( PATIENT_NUM ) %>%
+  dplyr::summarise( hosp = mean( length( PATIENT_NUM)), 
+                    length = mean( LENGTH_OF_STAY)) %>%
+  dplyr::select( PATIENT_NUM, hosp, length )
+output %>% dplyr::filter( hosp > 1 )
+
+timeline %>% filter(PATIENT_NUM == 'A75C4588-156D-2EC3-E053-DC90240ABE72') %>% 
+  ggplot() + 
+  geom_point(aes(x = date, y = LENGTH_OF_STAY, group = INOUT_CD, color = INOUT_CD), size = 3) + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Length of stay") +
+  xlab('Date') 
+
+
+```
+
+
 Data transformation
 - split `START_DATE` field into `date` and `time`
 - perform a left join to combine extracted data with variables in lab dictionary
