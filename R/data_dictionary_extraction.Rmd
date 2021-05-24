@@ -119,16 +119,26 @@ datadict_labonly %>%
   summarise(n_vars = n()) %>%
   arrange(desc(n_vars))
 
-
 ```
+
 
 We will now select all variables which are associated with the numeric laboratory variables we filtered for previously.
 Remove any variables that were filtered out when examining obtained, unit, or date variables.
+
+account for: "I reviewed the CRP and Tryglicerides, that were as “specify units below”
+they had multiple options with the categorical format: e.g., ###CRP 1, mg/L | 2, mg/dL | 3, Other ….. triglycerids 1, mg/dL | 2, mmol/L | 3, Other; (edited) 
+I just checked that the units we had were one of the options they were giving, but not sure were the specific option should be displayed in the final file"
+
 ```{r}
 remove_vars <- c(paste0(remove_prefixes, '_obtained'), 
               paste0(remove_prefixes, '_value'),
               paste0(remove_prefixes, '_unit'),
               paste0(remove_prefixes, '_date'))
+
+# crp ad triglyceride 
+remove_vars <- c(remove_vars,
+                 paste0('crp', c('_obtained', '_date', '_value', '_unit')),
+                 paste0('triglycerid', c('_obtained', '_date', '_value', '_unit')))
 
 our_vars <- our_vars[!our_vars %in% remove_vars]
 
@@ -198,6 +208,25 @@ write.table(labdict, '../data/labDictionary.txt', quote = FALSE, row.name = FALS
 
 # for manual SQL query:
 write.table(labdict$concept_cd, '../local_ref/concepts_for_query.txt', row.names = FALSE, col.names = FALSE, eol = "', '", quote = FALSE)
+
+```
+
+# Identify variables left out of phase 1
+```{r}
+remaining_vars <- data.frame("filter" = c('non-numeric', 'unit-mismatch', 'range-mismatch', 'associated-var-mismatch'),
+                             "n_vars_affected" = c(300, 3, 27, 3))
+
+
+remaining_vars %>% arrange(desc(n_vars_affected))
+
+```
+
+# Phase 2
+What are the types of non-numeric vars?
+```{r}
+datadict_labonly %>%
+  #filter(vartype == 'value') %>%
+  filter(Text.Validation.Type.OR.Show.Slider.Number != 'number')
 
 ```
 

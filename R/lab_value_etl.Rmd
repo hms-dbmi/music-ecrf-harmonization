@@ -35,6 +35,35 @@ subset_df <- read.csv('../local_ref/testoutput.csv')
 
 ```
 
+Import timeline...
+```{r}
+timeline <- read.csv('../local_ref/patient_timeline.csv')
+
+timeline$date <- sapply(strsplit( as.character(timeline$START_DATE), " "), '[', 1)
+timeline$date <- mdy(as.character(dmy(timeline$date), format = "%m-%d-%Y"))
+
+
+timeline_hosp <- timeline %>% 
+  dplyr::filter( INOUT_CD == "Inpatient", 
+                 LENGTH_OF_STAY > 1) 
+output <- timeline_hosp %>% 
+  dplyr::group_by( PATIENT_NUM ) %>%
+  dplyr::summarise( hosp = mean( length( PATIENT_NUM)), 
+                    length = mean( LENGTH_OF_STAY)) %>%
+  dplyr::select( PATIENT_NUM, hosp, length )
+output %>% dplyr::filter( hosp > 1 )
+
+timeline %>% filter(PATIENT_NUM == 'A75C4588-156D-2EC3-E053-DC90240ABE72') %>% 
+  ggplot() + 
+  geom_point(aes(x = date, y = LENGTH_OF_STAY, group = INOUT_CD, color = INOUT_CD), size = 3) + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Length of stay") +
+  xlab('Date') 
+
+
+```
+
+
 Data transformation
 - split `START_DATE` field into `date` and `time`
 - perform a left join to combine extracted data with variables in lab dictionary
@@ -100,6 +129,9 @@ finalTable <- finalTable %>%
   
   # categorize the variable types
   mutate(vartype = gsub("^.*_", "", variableName)) %>%
+  
+  # categorize the variable prefixes
+  #mutate(prefix = gsub('_{1}[[:alnum:]]+$', '', variableName)) %>%
 
   # remove entries with no data
   filter(!is.na(NVAL_NUM) | TVAL_CHAR != '') %>%
@@ -112,26 +144,129 @@ finalTable$value <- apply(finalTable, 1, FUN = getLabValue)
 finalTable
 
 ```
-Use dates to determine visit number **uncertain about meaning of redcap_repeat_instance and lab_values_visit**
+
+lab_values_visit
+1, Admission/first obtained during MIS-C hospitalization
+2, Closest to discharge during MIS-C hospitalization
+3, 2 Weeks Post Discharge
+4, 6 Weeks Post Discharge
+6, 6 Months Post Discharge
+25, Hospital readmission within 6 months of initial hospital discharge **Note** : need to clairfy in vs out patient
+23, 'Worst Values During Hosp' **Note**: waiting to hear back about 'worst' values. For now, taking **max** of all labs.
+
+```{r}
+# note: there are no 'time' tiebreakers
+# not currently defining 'worst' values
+
+# this function defines the *dates*; will still need to go back after and find which are good for each patient (will be multiples)
+define_window <- function(days_after_admission, days_after_discharge){
+  
+  # the value closest to hospital admission  (no further than 48 hours before or after)
+  # if multiple within +/- 48 hour range, take the one closest to admission
+  ifelse(test = days_after_admission >= -2 & days_after_admission <= 2 & days_after_admission == min(days_after_admission),
+         yes = 1,
+         
+         # the value closest to discharge (3 days or less before discharge)
+         # if multiple within range, take the one closest to discharge
+         no = ifelse(test = days_after_discharge >= -3 & days_after_discharge <=0 & days_after_discharge == min(days_after_discharge),
+                     yes = 2,
+                     
+                     # if the observation is not categorized as admission or discharge, but happens during hospitalization, it has potential to be 'worst' value 
+                     no = ifelse(test = days_after_admission >= 0 & days_after_discharge <= 0,
+                                 yes = 23, 
+                     
+                                 # 2 weeks post discharge (after discharge until less than three weeks)
+                                 # if multiple within range, take one closest to exactly three weeks after
+                                 no = ifelse(test = days_after_discharge >= 0 & days_after_discharge < 21 & abs(days_after_discharge-21) == min(abs(days_after_discharge - 21)),
+                                             yes = 3,
+                                             
+                                             # 6 weeks post discharge (3 weeks to less then 9 weeks)
+                                             # if multiple within range, take one closest to exactly 6 weeks after
+                                             no = ifelse(test = days_after_discharge >= 21 & days_after_discharge < 63 & abs(days_after_discharge-42) == min(abs(days_after_discharge - 42)),
+                                                         yes = 4,
+                                                         
+                                                         # 6 months post discharge (9 weeks to less than one year)
+                                                         no = ifelse(test = days_after_discharge >= 63 & days_after_discharge < 365 & abs(days_after_discharge-180) == min(abs(days_after_discharge - 180)),
+                                                                     yes = 6,
+                                                                     
+                                                                     # readmission will be determined through timeline
+                                                                     no = NA)
+                                             )
+                                 )
+                     )
+         )
+  )
+  
+  
+}
+
+
+```
+
+```{r}
+finalTable <- finalTable %>% 
+  group_by(PATIENT_NUM, variableName) %>%
+  mutate(lab_values_visit = define_window(days_after_admission, days_after_discharge)) 
+
+```
+
+
+define 'worst' values
+currently do not know which is worst; use high as default
+```{r}
+# create dummy df for mapping variable name to whether high or low is worst, in this case all are 'high'
+# this can be changed to reference variable prefix in the future if that is more convenient
+worst_values <- data.frame(variableName = unique(finalTable$variableName), worst = 'high')
+
+#value_vars <- data.frame(variableName = unique(finalTable$variableName[grepl('_value', finalTable$variableName)]),
+#                         worst = 'high')
+
+finalTable <- left_join(finalTable, worst_values)
+
+define_worst <- function(lab_values_visit, NVAL_NUM, worst) {
+  ifelse(test = lab_values_visit != 23,
+         yes = FALSE,
+         no = ifelse(test = worst == 'high',
+                     yes = NVAL_NUM == max(NVAL_NUM),
+                     no = ifelse(test = worst == 'low',
+                                 yes = NVAL_NUM == min(NVAL_NUM),
+                                 no = 'ERROR'
+                                 )
+                     )
+  )
+}
+
+finalTable <- finalTable %>% 
+  group_by(PATIENT_NUM, variableName) %>%
+  mutate(is_worst = define_worst(lab_values_visit, NVAL_NUM, worst)) %>%
+  # filter out variables where labvaluesvisit == 23 and worst == false
+  filter(!(lab_values_visit == 23 & is_worst == FALSE))
+
+
+
+```
+
+redcap_repeat_instance
+- Using dates to determine visit number 
 - note that entries inputted at different times on the same date are considered as separate events / visits
 ```{r}
 finalTable <- finalTable %>% 
   group_by(PATIENT_NUM, date, time) %>%
   arrange(date, time) %>%
-  mutate(visit = cur_group_id()) %>%
-  arrange(visit)
-
-finalTable %>% select(PATIENT_NUM, date, time, visit) 
+  mutate(redcap_repeat_instance = cur_group_id()) %>%
+  arrange(redcap_repeat_instance)
 
 ```
 
 
 Pivot table wider and make compatible with RedCap formatting
-**Incorporate visit column, which may represent redcap_repeat_instance or lab_values_visit**
 ```{r}
 
-out <- pivot_wider(finalTable, 
-                   id_cols = c(PATIENT_NUM, formName, date, time, visit), 
+# for cases where a patient has multiple values for a lab at the exact same date / time, just choose the first one
+out <- finalTable %>%
+  group_by(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance, variableName) %>%
+  summarise(value = first(value)) %>%
+  pivot_wider(id_cols = c(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance), 
                    names_from = variableName, 
                    values_from = value, 
                    values_fill = '')
@@ -139,17 +274,16 @@ out <- pivot_wider(finalTable,
 # should we remove entries with no data?
 #finalTable %>% filter(is.na(NVAL_NUM), TVAL_CHAR == '')
 
-
 # Rename columns for redcap
 out <- out %>%
   rename('record_id' = 'PATIENT_NUM',
          'redcap_repeat_instrument' = 'formName') %>%
-  mutate(redcap_data_access_group = "BCH",
-         redcap_event_name = "repeating_forms_arm_1",
-         redcap_repeat_instance = 0) %>%
-  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, visit)
+  mutate(redcap_data_access_group = "120_boston_childe",
+         redcap_event_name = "repeating_forms_arm_1") %>%
+  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, lab_values_visit) %>%
+  arrange(record_id, redcap_repeat_instance, lab_values_visit)
 
-write.csv(out, '../local_ref/redcap_output.csv', row.names = FALSE)
+write.csv(out[,-1], '../local_ref/redcap_output.csv', row.names = FALSE)
 ```
 
 

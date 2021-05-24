@@ -7,6 +7,7 @@ ast_sgpt_obtained LAB:3775138 laboratory_values
 glucose_obtained LAB:3775603 laboratory_values
 iga_obtained LAB:3775615 laboratory_values
 igm_obtained LAB:3775619 laboratory_values
+platelets_obtained LAB:3775660 laboratory_values
 esr_obtained LAB:3775678 laboratory_values
 cd3_obtained LAB:3775804 laboratory_values
 cd3_cd4_obtained LAB:3775805 laboratory_values
@@ -29,6 +30,7 @@ ast_sgpt_value LAB:3775138 laboratory_values
 glucose_value LAB:3775603 laboratory_values
 iga_value LAB:3775615 laboratory_values
 igm_value LAB:3775619 laboratory_values
+platelets_value LAB:3775660 laboratory_values
 esr_value LAB:3775678 laboratory_values
 cd3_value LAB:3775804 laboratory_values
 cd3_cd4_value LAB:3775805 laboratory_values
@@ -51,6 +53,7 @@ ast_sgpt_unit LAB:3775138 laboratory_values
 glucose_unit LAB:3775603 laboratory_values
 iga_unit LAB:3775615 laboratory_values
 igm_unit LAB:3775619 laboratory_values
+platelets_unit LAB:3775660 laboratory_values
 esr_unit LAB:3775678 laboratory_values
 cd3_unit LAB:3775804 laboratory_values
 cd3_cd4_unit LAB:3775805 laboratory_values
@@ -73,6 +76,7 @@ ast_sgpt_date LAB:3775138 laboratory_values
 glucose_date LAB:3775603 laboratory_values
 iga_date LAB:3775615 laboratory_values
 igm_date LAB:3775619 laboratory_values
+platelets_date LAB:3775660 laboratory_values
 esr_date LAB:3775678 laboratory_values
 cd3_date LAB:3775804 laboratory_values
 cd3_cd4_date LAB:3775805 laboratory_values
