@@ -39,8 +39,10 @@ Import timeline...
 ```{r}
 timeline <- read.csv('../local_ref/patient_timeline.csv')
 
-timeline$date <- sapply(strsplit( as.character(timeline$START_DATE), " "), '[', 1)
-timeline$date <- mdy(as.character(dmy(timeline$date), format = "%m-%d-%Y"))
+timeline$admit_start <- sapply(strsplit( as.character(timeline$START_DATE), " "), '[', 1)
+timeline$admit_start <- mdy(as.character(dmy(timeline$admit_start), format = "%m-%d-%Y"))
+timeline$admit_end <- sapply(strsplit( as.character(timeline$END_DATE), " "), '[', 1)
+timeline$admit_end <- mdy(as.character(dmy(timeline$admit_end), format = "%m-%d-%Y"))
 
 # filter for 'inpaitent' visits with a length of stay > 1
 timeline_hosp <- timeline %>% 
@@ -53,31 +55,34 @@ timeline_hosp_summary <- timeline_hosp %>%
   dplyr::group_by( PATIENT_NUM ) %>%
   dplyr::summarise( n_hosp = mean( length( PATIENT_NUM)), 
                     avg_length_of_stay = mean( LENGTH_OF_STAY),
-                    admission_dates = paste(date, collapse=',')) %>%
+                    admission_dates = paste(admit_start, collapse=',')) %>%
   dplyr::select( PATIENT_NUM, n_hosp, avg_length_of_stay, admission_dates)
 timeline_hosp_summary %>% dplyr::filter( n_hosp > 1 )
+
 
 example_timeline <- timeline_hosp_summary %>% dplyr::filter( n_hosp > 1 ) %>% pull(PATIENT_NUM)
 example_timeline <- example_timeline[1]
 
 timeline %>% filter(PATIENT_NUM == example_timeline) %>% 
   ggplot() + 
-  geom_point(aes(x = date, y = LENGTH_OF_STAY, group = INOUT_CD, color = INOUT_CD), size = 3) + 
+  geom_point(aes(x = admit_start, y = LENGTH_OF_STAY, group = INOUT_CD, color = INOUT_CD), size = 3) + 
   theme(axis.text.x = element_text(angle = 90)) +
   ylab("Length of stay") +
   xlab('Date') 
 
-
+# 25, Hospital readmission within 6 months of initial hospital discharge
 readmission_table <- timeline_hosp %>% 
   group_by( PATIENT_NUM) %>%
   summarise(n_hosp = mean(length( PATIENT_NUM)),
             ADMISSIONDATE = ADMISSIONDATE,
-            date = date,
+            admit_start = admit_start,
+            admit_end = admit_end,
             START_DATE = START_DATE,
             END_DATE = END_DATE) %>%
   filter(n_hosp > 1,
-         date != dmy(ADMISSIONDATE)) %>%    # remove initial admission dates
-  select( PATIENT_NUM, n_hosp, ADMISSIONDATE, date, START_DATE, END_DATE)
+         admit_start != dmy(ADMISSIONDATE), # remove initial admission dates
+         admit_start - dmy(ADMISSIONDATE) <= 180) %>%    # categorize readmission as within 6 months of initial hospital discharge
+  select( PATIENT_NUM, n_hosp, ADMISSIONDATE, admit_start, admit_end, START_DATE, END_DATE)
 
 readmission_table
 
@@ -173,14 +178,11 @@ lab_values_visit
 3, 2 Weeks Post Discharge
 4, 6 Weeks Post Discharge
 6, 6 Months Post Discharge
-25, Hospital readmission within 6 months of initial hospital discharge **Note** : need to clairfy in vs out patient
-23, 'Worst Values During Hosp' **Note**: waiting to hear back about 'worst' values. For now, taking **max** of all labs.
 
 ```{r}
 # note: there are no 'time' tiebreakers
 # not currently defining 'worst' values
 
-# this function defines the *dates*; will still need to go back after and find which are good for each patient (will be multiples)
 define_window <- function(days_after_admission, days_after_discharge){
   
   # the value closest to hospital admission  (no further than 48 hours before or after)
@@ -208,10 +210,11 @@ define_window <- function(days_after_admission, days_after_discharge){
                                                          yes = 4,
                                                          
                                                          # 6 months post discharge (9 weeks to less than one year)
+                                                         # if multiple within range, take one closest to exactly 6 months after
                                                          no = ifelse(test = days_after_discharge >= 63 & days_after_discharge < 365 & abs(days_after_discharge-180) == min(abs(days_after_discharge - 180)),
                                                                      yes = 6,
                                                                      
-                                                                     # readmission will be determined through timeline
+                                                                     # readmission will be determined through timeline and specific dates
                                                                      no = NA)
                                              )
                                  )
@@ -232,7 +235,25 @@ finalTable <- finalTable %>%
 
 ```
 
+lab_values_visit
+25, Hospital readmission within 6 months of initial hospital discharge **Note** : need to clarify in vs out patient
+```{r}
 
+for (patient in readmission_table$PATIENT_NUM){
+  
+  # replace rows in final table which are readmissions so that lab_values_visit = 25
+  d1 <- readmission_table %>% filter(PATIENT_NUM == patient) %>% pull(admit_start)
+  d2 <- readmission_table %>% filter(PATIENT_NUM == patient) %>% pull(admit_end)
+  finalTable[finalTable$PATIENT_NUM == patient & finalTable$date >= d1 & finalTable$date <= d2, ]$lab_values_visit <- 25
+
+}
+
+
+```
+
+
+lab_values_visit
+23, 'Worst Values During Hosp' **Note**: waiting to hear back about 'worst' values. For now, taking **max** of all labs.
 define 'worst' values
 currently do not know which is worst; use high as default
 ```{r}
