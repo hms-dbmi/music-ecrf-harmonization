@@ -1,7 +1,7 @@
 ---
 title: "Summary Lab Values"
 author: "Alba Gutierrez"
-date: "5/21/2021"
+date: "5/26/2021"
 output: html_document
 ---
 
@@ -41,7 +41,10 @@ To run this code we need:
 ```{r}
 library(tidyverse)
 library(dplyr)
+library(lubridate)
 ```
+
+
 
 
 ## Format the table with all the concepts in the database
@@ -110,7 +113,7 @@ From the laboratory information of the MISC patients, we select those concepts t
 ```{r}
 subset <- observationFactsLabs %>%
   dplyr::filter( concept_cd %in%ecrftobch$concept_cd, 
-                 date >= admissiondate, 
+                 #dmy(date) >= dmy(admissiondate), 
                  nval_num != "") %>%
   dplyr::select(patient_num, date, admissiondate, 
                 concept_cd, tval_char, nval_num, units_cd)
@@ -133,8 +136,8 @@ check_summary <- subset %>%
   dplyr::group_by(concept_cd, units_cd) %>%
   dplyr::summarise( min_val = min(nval_num, na.rm = TRUE), 
                     max_val = max(nval_num, na.rm = TRUE), 
-                    min_date = min( date ), 
-                    max_date = max( date ), 
+                    min_date = min( dmy( date ) ), 
+                    max_date = max( dmy( date ) ), 
                     distinct_patients = length(unique(patient_num)), 
                     distinct_observations = length(patient_num)) %>%
   dplyr::select( concept_cd, min_date, max_date, 
@@ -199,9 +202,31 @@ After this transformation we check for which variables we still have different u
 
 ```{r}
 # add the check columns 
-check_summary$checkUnits <- ifelse( check_summary$units_cd_transformed ==  check_summary$Field.Note, "OK", "To check")
-check_summary$checkRange <- ifelse( check_summary$checkUnits == "OK", ifelse(as.numeric(check_summary$min_val) >= as.numeric(check_summary$Text.Validation.Min) & as.numeric(check_summary$max_val) <= as.numeric(check_summary$Text.Validation.Max), "OK", "To check"), "To check")
+check_summary$checkUnits <- ifelse( check_summary$units_cd_transformed ==  check_summary$Field.Note, "OK", ifelse( check_summary$Field.Note %in% c("units", "ratio", "%"), "OK", "To check"))
+#check_summary$checkRange <- ifelse( check_summary$checkUnits == "OK", ifelse(as.numeric(check_summary$min_val) >= as.numeric(check_summary$Text.Validation.Min) & as.numeric(check_summary$max_val) <= as.numeric(check_summary$Text.Validation.Max), "OK", "To check"), "To check")
 ```
+
+```{r}
+#Special cases
+check_summary <- check_summary %>% 
+  dplyr::filter( !grepl("_unit_value",variable))
+###triglycerids 1, mg/dL | 2, mmol/L | 3, Other; extracted from the excel but another column
+check_summary[ is.na( check_summary ) ] <- ""
+check_summary[ check_summary$name_char == "Triglycerides" & check_summary$Field.Note == "Specify units below", "Field.Note"] <- "1, mg/dL | 2, mmol/L | 3, Other"
+check_summary[ check_summary$name_char == "Triglycerides", "checkUnits" ] <- ifelse( check_summary[ check_summary$name_char == "Triglycerides", "units_cd" ] %in% c("mg/dL","mmol/L","Other"), "OK", "To check")
+
+###CRP 1, mg/L | 2, mg/dL | 3, Other; extracted from the excel but another column
+check_summary[ check_summary$name_char == "C-Reactive Protein" & check_summary$Field.Note == "Specify units below", "Field.Note"] <- "1, mg/L | 2, mg/dL | 3, Other"
+check_summary[ check_summary$name_char == "C-Reactive Protein", "checkUnits" ] <- ifelse( check_summary[ check_summary$name_char == "C-Reactive Protein", "units_cd" ] %in% c("mg/L","mg/dL","Other"), "OK", "To check")
+```
+
+Replace OK with more meaningful text, as "expected and current units match" and "to check" with the expected and current values.
+```{r}
+check_summary$checkUnits <- gsub("OK", "Expected and current units match", check_summary$checkUnits)
+
+check_summary$checkUnits <- ifelse( check_summary$checkUnits == "To check", paste0( "Expected unit value: '", check_summary$Field.Note, "'; current unit value: '", check_summary$units_cd_transformed, "'"), check_summary$checkUnits)
+```
+
 
 Finally we write the output table. 
 
@@ -209,7 +234,7 @@ Finally we write the output table.
 # remove the \n from the section header that will make the excel to break the line
 check_summary$Section.Header <- gsub( "\n", " ", check_summary$Section.Header)
 #write the output table
-write.table(check_summary, file="check_summary_v1.txt", col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
+write.table(check_summary, file="check_summary_v2.txt", col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
 ```
 
 ## Variables not present in the MISC patients
