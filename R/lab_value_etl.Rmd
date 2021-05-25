@@ -49,14 +49,15 @@ timeline_hosp <- timeline %>%
 
 # calculate mean length of stay for each patient
 # identify which patients have cases of readmission
-output <- timeline_hosp %>% 
+timeline_hosp_summary <- timeline_hosp %>% 
   dplyr::group_by( PATIENT_NUM ) %>%
-  dplyr::summarise( hosp = mean( length( PATIENT_NUM)), 
-                    length = mean( LENGTH_OF_STAY)) %>%
-  dplyr::select( PATIENT_NUM, hosp, length )
-output %>% dplyr::filter( hosp > 1 )
+  dplyr::summarise( n_hosp = mean( length( PATIENT_NUM)), 
+                    avg_length_of_stay = mean( LENGTH_OF_STAY),
+                    admission_dates = paste(date, collapse=',')) %>%
+  dplyr::select( PATIENT_NUM, n_hosp, avg_length_of_stay, admission_dates)
+timeline_hosp_summary %>% dplyr::filter( n_hosp > 1 )
 
-example_timeline <- output %>% dplyr::filter( hosp > 1 ) %>% pull(PATIENT_NUM)
+example_timeline <- timeline_hosp_summary %>% dplyr::filter( n_hosp > 1 ) %>% pull(PATIENT_NUM)
 example_timeline <- example_timeline[1]
 
 timeline %>% filter(PATIENT_NUM == example_timeline) %>% 
@@ -65,6 +66,21 @@ timeline %>% filter(PATIENT_NUM == example_timeline) %>%
   theme(axis.text.x = element_text(angle = 90)) +
   ylab("Length of stay") +
   xlab('Date') 
+
+
+readmission_table <- timeline_hosp %>% 
+  group_by( PATIENT_NUM) %>%
+  summarise(n_hosp = mean(length( PATIENT_NUM)),
+            ADMISSIONDATE = ADMISSIONDATE,
+            date = date,
+            START_DATE = START_DATE,
+            END_DATE = END_DATE) %>%
+  filter(n_hosp > 1,
+         date != dmy(ADMISSIONDATE)) %>%    # remove initial admission dates
+  select( PATIENT_NUM, n_hosp, ADMISSIONDATE, date, START_DATE, END_DATE)
+
+readmission_table
+
 
 
 ```
