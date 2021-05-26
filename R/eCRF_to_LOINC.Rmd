@@ -1,0 +1,22 @@
+---
+title: "Create eCRF to LOINC Mapping Table"
+author: "Simran Makwana"
+date: "5/26/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+
+datadict <- read.csv('../data/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+datadict_labonly <- datadict %>% filter(Form.Name == 'laboratory_values')
+
+umls_loinc <- read.csv('../data/umls_loinc_db.csv')
+```
+
+```{r}
+
+
+```
+
+
