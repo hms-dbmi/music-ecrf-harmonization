@@ -30,86 +30,117 @@ umls_loinc <- umls_loinc %>%
 ## Use GREP to identify potential mappings.
 Try to focus the keywordsso that there are <100 results.
 ```{r}
-remaining_vars <- man %>% filter(manual_review_1 == 0) %>% pull(prefix) %>% unique()
+potential_vars <- data.frame('SAB' = '',
+                             'TTY' = '',
+                             'CODE' = '',
+                             'STR' = '',
+                             'eCRF_var' = '')[-1,]
 
 # ac4_cd8_ratio (Lymphocyte Subsets: CD4/CD8 ratio)
-umls_loinc[grep('cd4.*cd8|cd8.*cd4', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('cd4.*cd8|cd8.*cd4', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'ac4_cd8_ratio'), potential_vars)
 
 # ah50 
 
 # albumin
 
-
 # alc (Absolute lymphocyte count)
-umls_loinc[grep('lymphocyte.*count', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('lymphocyte.*count', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'alc'), potential_vars)
 
 # anc (Absolute neutrophil count)
 umls_loinc[grep('neutrophil.*count', umls_loinc$STR, ignore.case = TRUE),]
 
 # anti_sars_igg (Anti-SARS CoV-2 IgG)
-umls_loinc[grep('sars.*igg|igg.*sars', umls_loinc$STR, ignore.case = TRUE),]
-umls_loinc[grep('sars.*anti|anti.*sars', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('sars.*igg|igg.*sars', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'anti_sars_igg'), potential_vars)
+
+x <- umls_loinc[grep('sars.*anti|anti.*sars', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'anti_sars_igg'), potential_vars)
 
 # anti_sars_igm (Anti-SARS CoV-2 IgM)
-umls_loinc[grep('sars.*igm|igm.*sars', umls_loinc$STR, ignore.case = TRUE),]
-umls_loinc[grep('sars.*anti|anti.*sars', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('sars.*igm|igm.*sars', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'anti_sars_igm'), potential_vars)
+
+x <- umls_loinc[grep('sars.*anti|anti.*sars', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'anti_sars_igm'), potential_vars)
 
 # aptt_ptt (APTT or PTT (seconds))
-umls_loinc[grep('appt|ptt', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('appt|ptt', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'aptt_ptt'), potential_vars)
 
 # ast_sgot (AST/SGOT (U/L))
 # aspartate aminotransferase AST test aka SGOT
-umls_loinc[grep('^ast ', umls_loinc$STR, ignore.case = TRUE),]
-umls_loinc[grep('aspartate aminotransferase', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('^ast ', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'ast_sgot'), potential_vars)
+
+x <- umls_loinc[grep('aspartate aminotransferase', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'ast_sgot'), potential_vars)
 
 # ast_sgpt (ALT/SGPT (U/L))
 # alanine aminotransferase ALT test aka AGPT
-umls_loinc[grep('alanine aminotransferase', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('alanine aminotransferase', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'ast_sgpt'), potential_vars)
 
 # bicarbonate (Bicarbonate (mmol/L))
-umls_loinc[grep('bicarbonate', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('bicarbonate', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'bicarbonate'), potential_vars)
 
 # bnp (B-type natriuretic peptide (BNP) (pg/mL))
-umls_loinc[grep('natriuretic peptide', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('natriuretic peptide', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'bnp'), potential_vars)
 
 # c3 (Complement levels: C3 (mg/dL))
-umls_loinc[grep('complement.*c3.*massvolume', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('complement.*c3.*massvolume', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'c3'), potential_vars)
 
 # c4 (Complement levels: C4 (mg/dL))
-umls_loinc[grep('complement.*c4.*massvolume', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('complement.*c4.*massvolume', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'c4'), potential_vars)
 
 # cd19 (Lymphocyte Subsets: CD19+ (%))
-umls_loinc[grep('cd19 ', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('cd19 ', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'cd19'), potential_vars)
 
 # cd19_abs (Lymphocyte Subsets: CD+19, Absolute)
-umls_loinc[grep('cd19 ', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('cd19 ', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'cd19_abs'), potential_vars)
 
 # cd3 (Lymphocyte Subsets: CD3+ (%))
-umls_loinc[grep('cd3 ', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('cd3 ', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'cd3'), potential_vars)
 
 # cd3_abs (Lymphocyte Subsets: CD3+, Absolute)
-umls_loinc[grep('cd3 ', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('cd3 ', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'cd3_abs'), potential_vars)
 
 # cd3_cd16_cd56 (Lymphocyte Subsets: CD3-%/CD16+ or CD56+%)
-umls_loinc[grep('cd3cd16 |cd56 ', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('cd3cd16 |cd56 ', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'cd3_cd16_cd56'), potential_vars)
 
 # cd3_cd4 (Lymphocyte Subsets: CD3+%/CD4+%)
-umls_loinc[grep('cd3cd4|cd4cd3 ', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('cd3cd4|cd4cd3 ', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'cd3_cd4'), potential_vars)
 
 # cd3_cd4_abs (Lymphocyte Subsets: CD3+ CD4+, Absolute)
-umls_loinc[grep('cd3cd4|cd4cd3 ', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('cd3cd4|cd4cd3 ', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'cd3_cd4_abs'), potential_vars)
 
 # cd3_cd8 (Lymphocyte Subsets: CD3+%/CD8+%)
-umls_loinc[grep('cd3cd8|cd8cd4 ', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('cd3cd8|cd8cd4 ', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'cd3_cd8'), potential_vars)
 
 # cd3_cd8_abs (Lymphocyte Subsets: CD3+ CD8+, Absolute)
-umls_loinc[grep('cd3cd8|cd8cd4 ', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('cd3cd8|cd8cd4 ', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'cd3_cd8_abs'), potential_vars)
 
 # ch50 (Complement levels: CH50 (%))
-umls_loinc[grep('ch50 ', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('ch50 ', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'ch50'), potential_vars)
 
 # creatine_kin (Creatine kinase (U/L))
-umls_loinc[grep('creatinine.*kinase', umls_loinc$STR, ignore.case = TRUE),]
+x <- umls_loinc[grep('creatinine.*kinase', umls_loinc$STR, ignore.case = TRUE),]
+potential_vars <- rbind(x %>% mutate('eCRF_var' = 'creatine_kin'), potential_vars)
 
 # creatinine
 
