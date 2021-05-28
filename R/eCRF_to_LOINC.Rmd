@@ -11,8 +11,7 @@ We will use a semi-manual approach to create a mapping from the eCRF variables t
 3. Combine potential LOINC mappings into a single dataframe for review.
 4. Potential check: determine how many identified LOINC mapping have corresponding entries in BCH. 
 
-
-Load the necessary packages and files
+## Load the necessary packages and files
 - data dictionary
 - umls database extraction
 ```{r}
@@ -28,12 +27,18 @@ umls_loinc <- umls_loinc %>%
   mutate(STR = gsub('[[:punct:]]', '', STR))
 ```
 
-goal: focus grep so that there are <100 results
+## Use GREP to identify potential mappings.
+Try to focus the keywordsso that there are <100 results.
 ```{r}
 remaining_vars <- man %>% filter(manual_review_1 == 0) %>% pull(prefix) %>% unique()
 
-# ac4_cd5_ratio (Lymphocyte Subsets: CD4/CD8 ratio)
+# ac4_cd8_ratio (Lymphocyte Subsets: CD4/CD8 ratio)
 umls_loinc[grep('cd4.*cd8|cd8.*cd4', umls_loinc$STR, ignore.case = TRUE),]
+
+# ah50 
+
+# albumin
+
 
 # alc (Absolute lymphocyte count)
 umls_loinc[grep('lymphocyte.*count', umls_loinc$STR, ignore.case = TRUE),]
@@ -106,6 +111,8 @@ umls_loinc[grep('ch50 ', umls_loinc$STR, ignore.case = TRUE),]
 # creatine_kin (Creatine kinase (U/L))
 umls_loinc[grep('creatinine.*kinase', umls_loinc$STR, ignore.case = TRUE),]
 
+# creatinine
+
 # crp (C-Reactive Protein, CRP (circle: mg/L or mg/dL)))
 
 # cxcl9 (Cytokine panel: CXCL9 (pg/mL))
@@ -122,9 +129,21 @@ umls_loinc[grep('creatinine.*kinase', umls_loinc$STR, ignore.case = TRUE),]
 
 # ggtp (Gamma-glutamyl transferase (GGT/GGTP) (U/L))
 
+# glucose
+
 # hematocrit (Hematocrit (%))
 
+# hemoglobin
+
 # ifn_gamma (Cytokine panel: IFN-gamma (pg/mL))
+
+# iga
+
+# ige
+
+# igg
+
+# igm
 
 # il_1 (Cytokine panel: IL-1 (pg/mL))
 
@@ -142,84 +161,68 @@ umls_loinc[grep('creatinine.*kinase', umls_loinc$STR, ignore.case = TRUE),]
 
 # il_2_receptor (Cytokine panel: IL-2 receptor soluble serum (pg/mL))
 
-# il_4
+# il_4 (Cytokine panel: IL-4 (pg/mL))
 
-# il_5
+# il_5 (Cytokine panel: IL-5 (pg/mL))
 
-# il_6
+# il_6 (Cytokine panel: IL-6 (pg/mL))
 
-# il_8
+# il_8 (Cytokine panel: IL-8 (pg/mL))
 
-# inr
+# inr (INR (units))
 
-# ld
+# lactate (Lactate (mmol/L))
 
-# neutrophil
+# ldh (LDH (U/L))
 
-# nl
+# lymphocyt (Lymphocytes (%))
 
-# nt_probnp
+# neutrophil (Neutrophils (%))
 
-# platelets
+# nl (Neutrophil/lymphocyte ratio)
 
-# potassium
+# nt_probnp (NT-proBNP (pg/mL))
 
-# procalcit
+# platelets (Platelets (x10^3/uL or x10^9/L))
 
-# pt_seconds
+# potassium (Potassium (mmol/L))
 
-# sars_cov2_antig
+# procalcit (Procalcitonin (ng/mL))
 
-# sars_cov2ntpcr
+# pt_seconds (PT (seconds))
 
-# t_sum
+# sars_cov2_antig (SARS-CoV-2 antigen)
 
-# thrombin_tm
+# sars_cov2ntpcr (SARS CoV-2 NT PCR)
 
-# tnf_alpha
+# sodium (Sodium (mmol/L))
 
-# total_bilir
+# t_sum (Lymphocyte Subsets: %T-sum)
 
-# total_protein
+# thrombin_tm (Thrombin time (seconds))
 
-# triglycerid
+# tnf_alpha (Cytokine panel: TNF-alpha (pg/mL))
 
-# troponin_l
+# total_anti (Total Antibody)
 
-# troponin_t
+# total_bilir (Total bilirubin (mg/dL))
 
-# wbc
+# total_protein (Total protein (g/dL))
 
+# triglycerid (Triglycerides (circle: mg/dL or mmol/L))
 
+# troponin_l (Troponin I (ng/mL))
 
-```
+# troponin_t (Troponin T (ng/mL))
 
-```{r}
-datadict_labonly <- datadict_labonly %>% 
-  mutate(prefix = gsub('_{1}[[:alnum:]]+$', '', Variable...Field.Name),
-         keywords = str_replace(prefix, '_', ' '),
-         CODE = '')
+# urea (Urea (BUN) (mg/dL))
 
-for (variable in datadict_labonly$Variable...Field.Name) {
-  key <- datadict_labonly[datadict_labonly$Variable...Field.Name == variable,]$keywords
-  
-  if (any(grepl(key, umls_loinc$STR, ignore.case = TRUE))){
-    datadict_labonly[datadict_labonly$Variable...Field.Name == variable,]$CODE <- paste(umls_loinc$CODE[(grep(key, umls_loinc$STR, ignore.case = TRUE))], collapse = ',')
-  }
-}
+# wbc (WBC Count (x10^3/uL or 10^9/L))
 
-
-test <- datadict_labonly %>%
-  filter(CODE != '') %>%
-  separate_rows(CODE, sep = ',')
-
-test2 <- merge(test, umls_loinc) %>%
-  select(Variable...Field.Name, Section.Header, CODE, STR)
-
-  #separate_rows(Choices..Calculations..OR.Slider.Labels, sep = '\\| ') %>%
-  #separate(Choices..Calculations..OR.Slider.Labels, into = c('Value', 'Meaning'), sep = ', ')
 
 
 ```
+
+
 
 
