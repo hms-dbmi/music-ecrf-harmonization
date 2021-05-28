@@ -11,10 +11,246 @@ library(tidyverse)
 datadict <- read.csv('../data/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
 datadict_labonly <- datadict %>% filter(Form.Name == 'laboratory_values')
 
+keywords <- read.csv('../data/lab_values_ecrf_loinc_keywords.csv')
+
 umls_loinc <- read.csv('../data/umls_loinc_db.csv')
+umls_loinc <- umls_loinc %>%
+  mutate(STR = gsub('[[:punct:]]', '', STR))
 ```
 
 ```{r}
+keywords <- keywords %>% 
+  filter(!is.na(Keywords.specific))
+
+key_df <- keywords %>% 
+  mutate(prefix = gsub('_{1}[[:alnum:]]+$', '', Variable...Field.Name)) %>%
+  group_by(prefix, Keywords.specific) %>%
+  summarise(Section.Header = first(Section.Header)) %>%
+  separate_rows(Keywords.specific, sep = ',') %>%
+  mutate(LOINC_CODE = '',
+         LOINC_STR = '',
+         manual_review_1 = '') %>%
+  select(prefix, Section.Header, Keywords.specific, LOINC_STR, LOINC_CODE, manual_review_1) %>%
+  filter(Keywords.specific != '')
+
+for (key in unique(key_df$Keywords.specific)) {
+
+  if (any(grepl(key, umls_loinc$STR, ignore.case = TRUE))){
+    key_df[key_df$Keywords.specific == key,]$LOINC_STR <- paste(umls_loinc$STR[(grep(key, umls_loinc$STR, ignore.case = TRUE))], collapse = ',')
+  }
+}
+
+df <- key_df %>% separate_rows(LOINC_STR, sep = ',')
+
+ready_for_mannual_review <- df %>% group_by(Keywords.specific) %>% mutate(nres = n()) %>% filter(nres <= 100)
+# download those with a reasonable number of results (<=100) for review
+write.csv(ready_for_mannual_review, '../data/lab_values_ecrf_loinc_keywords_review_1.csv', row.names = FALSE)
+
+sum <- as.data.frame(table(df$Keywords.specific))
+
+
+test <- df %>% filter(Keywords.specific == ' igg ', grepl('immuno', LOINC_STR, ignore.case = TRUE))
+
+```
+post manual review
+```{r}
+man <- read.csv('../data/lab_values_ecrf_loinc_keywords_review_1.csv')
+man %>% 
+  filter(manual_review_1  == 1) %>%
+  group_by(prefix) %>%
+  summarise(Section.Header = first(Section.Header),
+            n = n_distinct(LOINC_STR)) %>%
+  arrange(desc(n))
+
+n_distinct(man$prefix)
+```
+we still have 50 keywords with no matches
+goal: focus grep so that there are <100 results
+```{r}
+remaining_vars <- man %>% filter(manual_review_1 == 0) %>% pull(prefix) %>% unique()
+
+# ac4_cd5_ratio (Lymphocyte Subsets: CD4/CD8 ratio)
+umls_loinc[grep('cd4.*cd8|cd8.*cd4', umls_loinc$STR, ignore.case = TRUE),]
+
+# alc (Absolute lymphocyte count)
+umls_loinc[grep('lymphocyte.*count', umls_loinc$STR, ignore.case = TRUE),]
+
+# anc (Absolute neutrophil count)
+umls_loinc[grep('neutrophil.*count', umls_loinc$STR, ignore.case = TRUE),]
+
+# anti_sars_igg (Anti-SARS CoV-2 IgG)
+umls_loinc[grep('sars.*igg|igg.*sars', umls_loinc$STR, ignore.case = TRUE),]
+umls_loinc[grep('sars.*anti|anti.*sars', umls_loinc$STR, ignore.case = TRUE),]
+
+# anti_sars_igm (Anti-SARS CoV-2 IgM)
+umls_loinc[grep('sars.*igm|igm.*sars', umls_loinc$STR, ignore.case = TRUE),]
+umls_loinc[grep('sars.*anti|anti.*sars', umls_loinc$STR, ignore.case = TRUE),]
+
+# aptt_ptt (APTT or PTT (seconds))
+umls_loinc[grep('appt|ptt', umls_loinc$STR, ignore.case = TRUE),]
+
+# ast_sgot (AST/SGOT (U/L))
+# aspartate aminotransferase AST test aka SGOT
+umls_loinc[grep('^ast ', umls_loinc$STR, ignore.case = TRUE),]
+umls_loinc[grep('aspartate aminotransferase', umls_loinc$STR, ignore.case = TRUE),]
+
+# ast_sgpt (ALT/SGPT (U/L))
+# alanine aminotransferase ALT test aka AGPT
+umls_loinc[grep('alanine aminotransferase', umls_loinc$STR, ignore.case = TRUE),]
+
+# bicarbonate (Bicarbonate (mmol/L))
+umls_loinc[grep('bicarbonate', umls_loinc$STR, ignore.case = TRUE),]
+
+# bnp (B-type natriuretic peptide (BNP) (pg/mL))
+umls_loinc[grep('natriuretic peptide', umls_loinc$STR, ignore.case = TRUE),]
+
+# c3 (Complement levels: C3 (mg/dL))
+umls_loinc[grep('complement.*c3.*massvolume', umls_loinc$STR, ignore.case = TRUE),]
+
+# c4 (Complement levels: C4 (mg/dL))
+umls_loinc[grep('complement.*c4.*massvolume', umls_loinc$STR, ignore.case = TRUE),]
+
+# cd19 (Lymphocyte Subsets: CD19+ (%))
+umls_loinc[grep('cd19 ', umls_loinc$STR, ignore.case = TRUE),]
+
+# cd19_abs (Lymphocyte Subsets: CD+19, Absolute)
+umls_loinc[grep('cd19 ', umls_loinc$STR, ignore.case = TRUE),]
+
+# cd3 (Lymphocyte Subsets: CD3+ (%))
+umls_loinc[grep('cd3 ', umls_loinc$STR, ignore.case = TRUE),]
+
+# cd3_abs (Lymphocyte Subsets: CD3+, Absolute)
+umls_loinc[grep('cd3 ', umls_loinc$STR, ignore.case = TRUE),]
+
+# cd3_cd16_cd56 (Lymphocyte Subsets: CD3-%/CD16+ or CD56+%)
+umls_loinc[grep('cd3cd16 |cd56 ', umls_loinc$STR, ignore.case = TRUE),]
+
+# cd3_cd4
+
+# cd3_cd4_abs
+
+# cd3_cd8
+
+# cd3_cd8_abs
+
+# ch50
+
+# creatine_kin
+
+# crp
+
+# crp_unit
+
+# cxcl9
+
+# d_dimer
+
+# direct_bilir
+
+# esr
+
+# ferritin
+
+# fibrinogen
+
+# ggtp
+
+# hematocrit
+
+# ifn_gamma
+
+# il_1
+
+# il_10
+
+# il_12
+
+# il_13
+
+# il_17
+
+# il_19
+
+# il_2
+
+# il_2_receptor
+
+# il_4
+
+# il_5
+
+# il_6
+
+# il_8
+
+# inr
+
+# ld
+
+# neutrophil
+
+# nl
+
+# nt_probnp
+
+# platelets
+
+# potassium
+
+# procalcit
+
+# pt_seconds
+
+# sars_cov2_antig
+
+# sars_cov2ntpcr
+
+# t_sum
+
+# thrombin_tm
+
+# tnf_alpha
+
+# total_bilir
+
+# total_protein
+
+# triglycerid
+
+# troponin_l
+
+# troponin_t
+
+# wbc
+
+
+
+```
+
+```{r}
+datadict_labonly <- datadict_labonly %>% 
+  mutate(prefix = gsub('_{1}[[:alnum:]]+$', '', Variable...Field.Name),
+         keywords = str_replace(prefix, '_', ' '),
+         CODE = '')
+
+for (variable in datadict_labonly$Variable...Field.Name) {
+  key <- datadict_labonly[datadict_labonly$Variable...Field.Name == variable,]$keywords
+  
+  if (any(grepl(key, umls_loinc$STR, ignore.case = TRUE))){
+    datadict_labonly[datadict_labonly$Variable...Field.Name == variable,]$CODE <- paste(umls_loinc$CODE[(grep(key, umls_loinc$STR, ignore.case = TRUE))], collapse = ',')
+  }
+}
+
+
+test <- datadict_labonly %>%
+  filter(CODE != '') %>%
+  separate_rows(CODE, sep = ',')
+
+test2 <- merge(test, umls_loinc) %>%
+  select(Variable...Field.Name, Section.Header, CODE, STR)
+
+  #separate_rows(Choices..Calculations..OR.Slider.Labels, sep = '\\| ') %>%
+  #separate(Choices..Calculations..OR.Slider.Labels, into = c('Value', 'Meaning'), sep = ', ')
 
 
 ```
