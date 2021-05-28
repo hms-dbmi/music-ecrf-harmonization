@@ -5,69 +5,23 @@ date: "5/26/2021"
 output: html_document
 ---
 
+Load the necessary packages and files
+- data dictionary
+- umls database extraction
 ```{r}
 library(tidyverse)
 
 datadict <- read.csv('../data/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
 datadict_labonly <- datadict %>% filter(Form.Name == 'laboratory_values')
 
-keywords <- read.csv('../data/lab_values_ecrf_loinc_keywords.csv')
 
 umls_loinc <- read.csv('../data/umls_loinc_db.csv')
 umls_loinc <- umls_loinc %>%
   mutate(STR = gsub('[[:punct:]]', '', STR))
 ```
 
-```{r}
-keywords <- keywords %>% 
-  filter(!is.na(Keywords.specific))
-
-key_df <- keywords %>% 
-  mutate(prefix = gsub('_{1}[[:alnum:]]+$', '', Variable...Field.Name)) %>%
-  group_by(prefix, Keywords.specific) %>%
-  summarise(Section.Header = first(Section.Header)) %>%
-  separate_rows(Keywords.specific, sep = ',') %>%
-  mutate(LOINC_CODE = '',
-         LOINC_STR = '',
-         manual_review_1 = '') %>%
-  select(prefix, Section.Header, Keywords.specific, LOINC_STR, LOINC_CODE, manual_review_1) %>%
-  filter(Keywords.specific != '')
-
-for (key in unique(key_df$Keywords.specific)) {
-
-  if (any(grepl(key, umls_loinc$STR, ignore.case = TRUE))){
-    key_df[key_df$Keywords.specific == key,]$LOINC_STR <- paste(umls_loinc$STR[(grep(key, umls_loinc$STR, ignore.case = TRUE))], collapse = ',')
-  }
-}
-
-df <- key_df %>% separate_rows(LOINC_STR, sep = ',')
-
-ready_for_mannual_review <- df %>% group_by(Keywords.specific) %>% mutate(nres = n()) %>% filter(nres <= 100)
-# download those with a reasonable number of results (<=100) for review
-write.csv(ready_for_mannual_review, '../data/lab_values_ecrf_loinc_keywords_review_1.csv', row.names = FALSE)
-
-sum <- as.data.frame(table(df$Keywords.specific))
-
-
-test <- df %>% filter(Keywords.specific == ' igg ', grepl('immuno', LOINC_STR, ignore.case = TRUE))
-
-```
-post manual review
-```{r}
-man <- read.csv('../data/lab_values_ecrf_loinc_keywords_review_1.csv')
-man %>% 
-  filter(manual_review_1  == 1) %>%
-  group_by(prefix) %>%
-  summarise(Section.Header = first(Section.Header),
-            n = n_distinct(LOINC_STR)) %>%
-  arrange(desc(n))
-
-n_distinct(man$prefix)
-```
-we still have 50 keywords with no matches
 goal: focus grep so that there are <100 results
 ```{r}
-remaining_vars <- man %>% filter(manual_review_1 == 0) %>% pull(prefix) %>% unique()
 
 # ac4_cd5_ratio (Lymphocyte Subsets: CD4/CD8 ratio)
 umls_loinc[grep('cd4.*cd8|cd8.*cd4', umls_loinc$STR, ignore.case = TRUE),]
@@ -125,55 +79,59 @@ umls_loinc[grep('cd3 ', umls_loinc$STR, ignore.case = TRUE),]
 # cd3_cd16_cd56 (Lymphocyte Subsets: CD3-%/CD16+ or CD56+%)
 umls_loinc[grep('cd3cd16 |cd56 ', umls_loinc$STR, ignore.case = TRUE),]
 
-# cd3_cd4
+# cd3_cd4 (Lymphocyte Subsets: CD3+%/CD4+%)
+umls_loinc[grep('cd3cd4|cd4cd3 ', umls_loinc$STR, ignore.case = TRUE),]
 
-# cd3_cd4_abs
+# cd3_cd4_abs (Lymphocyte Subsets: CD3+ CD4+, Absolute)
+umls_loinc[grep('cd3cd4|cd4cd3 ', umls_loinc$STR, ignore.case = TRUE),]
 
-# cd3_cd8
+# cd3_cd8 (Lymphocyte Subsets: CD3+%/CD8+%)
+umls_loinc[grep('cd3cd8|cd8cd4 ', umls_loinc$STR, ignore.case = TRUE),]
 
-# cd3_cd8_abs
+# cd3_cd8_abs (Lymphocyte Subsets: CD3+ CD8+, Absolute)
+umls_loinc[grep('cd3cd8|cd8cd4 ', umls_loinc$STR, ignore.case = TRUE),]
 
-# ch50
+# ch50 (Complement levels: CH50 (%))
+umls_loinc[grep('ch50 ', umls_loinc$STR, ignore.case = TRUE),]
 
-# creatine_kin
+# creatine_kin (Creatine kinase (U/L))
+umls_loinc[grep('creatinine.*kinase', umls_loinc$STR, ignore.case = TRUE),]
 
-# crp
+# crp (C-Reactive Protein, CRP (circle: mg/L or mg/dL)))
 
-# crp_unit
+# cxcl9 (Cytokine panel: CXCL9 (pg/mL))
 
-# cxcl9
+# d_dimer (D-dimer (mcg/mL FEU))
 
-# d_dimer
+# direct_bilir (Direct bilirubin (mg/dL))
 
-# direct_bilir
+# esr (ESR (mm/hr))
 
-# esr
+# ferritin (Ferritin (ng/mL))
 
-# ferritin
+# fibrinogen (Fibrinogen (mg/dL))
 
-# fibrinogen
+# ggtp (Gamma-glutamyl transferase (GGT/GGTP) (U/L))
 
-# ggtp
+# hematocrit (Hematocrit (%))
 
-# hematocrit
+# ifn_gamma (Cytokine panel: IFN-gamma (pg/mL))
 
-# ifn_gamma
+# il_1 (Cytokine panel: IL-1 (pg/mL))
 
-# il_1
+# il_10 (Cytokine panel: IL-10 (pg/mL))
 
-# il_10
+# il_12 (Cytokine panel: IL-12 (pg/mL))
 
-# il_12
+# il_13 (Cytokine panel: IL-13 (pg/mL))
 
-# il_13
+# il_17 (Cytokine panel: IL-17 (pg/mL))
 
-# il_17
+# il_19 (Cytokine panel: IL-19 units)
 
-# il_19
+# il_2 (Cytokine panel: IL-2 (pg/mL))
 
-# il_2
-
-# il_2_receptor
+# il_2_receptor (Cytokine panel: IL-2 receptor soluble serum (pg/mL))
 
 # il_4
 
