@@ -4,6 +4,13 @@ author: "Simran Makwana"
 date: "5/26/2021"
 output: html_document
 ---
+# Summary
+We will use a semi-manual approach to create a mapping from the eCRF variables to the LOINC codes.
+1. Load the necessary files: MUSIC data dictionary and UMLS database extract
+2. For each variable prefix, identify a set of potential LOINC mappings. This is done by manually searching (grep) keywords from the eCRF variable in the STR description of the LOINC codes. **in progress**
+3. Combine potential LOINC mappings into a single dataframe for review.
+4. Potential check: determine how many identified LOINC mapping have corresponding entries in BCH. 
+
 
 Load the necessary packages and files
 - data dictionary
@@ -12,8 +19,9 @@ Load the necessary packages and files
 library(tidyverse)
 
 datadict <- read.csv('../data/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
-datadict_labonly <- datadict %>% filter(Form.Name == 'laboratory_values')
-
+datadict_labonly <- datadict %>% 
+  filter(Form.Name == 'laboratory_values') %>%
+  mutate(prefix = gsub('_{1}[[:alnum:]]+$', '', Variable...Field.Name))
 
 umls_loinc <- read.csv('../data/umls_loinc_db.csv')
 umls_loinc <- umls_loinc %>%
@@ -22,6 +30,7 @@ umls_loinc <- umls_loinc %>%
 
 goal: focus grep so that there are <100 results
 ```{r}
+remaining_vars <- man %>% filter(manual_review_1 == 0) %>% pull(prefix) %>% unique()
 
 # ac4_cd5_ratio (Lymphocyte Subsets: CD4/CD8 ratio)
 umls_loinc[grep('cd4.*cd8|cd8.*cd4', umls_loinc$STR, ignore.case = TRUE),]
