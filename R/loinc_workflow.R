@@ -1,5 +1,4 @@
 rm(list=ls())
-setwd("/Users/alba/Desktop/MUSIC/LOINCmap/")
 library(dplyr)
 library(lubridate)
 #read the file from UMLS that contains those loincs that are clinical attributes
@@ -10,10 +9,10 @@ library(lubridate)
 # where conso.cui = sty.cui and
 # conso.sab = 'LNC' and conso.tty = 'LN' and sty.sty = 'Clinical Attribute';
 
-umls_subset <- read.delim("./loinc_clinicalAttributes.dsv")
+umls_subset <- read.delim("../local_ref/loinc_clinicalAttributes.dsv")
 
 #load the keywords (manually checked previously)
-lab_keywords <- read.delim("./lab_keywords.tsv" )
+lab_keywords <- read.delim("../local_ref//lab_keywords.tsv" )
 lab_keywords <- lab_keywords %>%
   dplyr::filter( Position %in% c('beginning', 'anywhere'))
 cutOff <- 10
@@ -63,13 +62,13 @@ for( i in 1:nrow(lab_keywords)){
 output <- unique( output )
 
 # check how many map to BCH
-bch_loinc_map <- read.csv("./BCH_Lab_Loinc_cd_Map_data.csv")
+bch_loinc_map <- read.csv("../local_ref/BCH_Lab_Loinc_cd_Map_data.csv")
 
 mappingToBch <- bch_loinc_map %>%
   dplyr::filter( LOINC_LAB_CODE %in% output$CODE)
 
 # check how many in MISC patients
-observationFactsLabs <- read.delim("../music_labs_observation_withUnits.dsv")
+observationFactsLabs <- read.delim("../local_ref/music_labs_observation_withUnits.dsv")
 observationFactsLabs$date <- sapply(strsplit( as.character(observationFactsLabs$START_DATE), "[ ]"), '[', 1)
 colnames( observationFactsLabs ) <- tolower( colnames( observationFactsLabs ) )
 
@@ -98,3 +97,4 @@ check_summary <- left_join( check_summary, output )
 
 check_summary <- check_summary %>% 
   dplyr::filter( units_cd != 'NOT DEFINED IN SOURCE')
+
