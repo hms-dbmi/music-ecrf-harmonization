@@ -89,7 +89,42 @@ readmission_table
 
 
 ```
+Data transformation using full lab data dict with 'handling' column
+*currently not loading full data dict*
+| term | explanation |
+| ----------- | ---------------------------------------------------------|
+| discard |	variable does not need to be extracted / formatted for REDCap |
+| obtained	| if patient has the concept, 1. else, 0 |
+| categorical |	an additional mapping is needed |
+| numeric	| reported value |
+| manual	| needs manual review (perhaps through lab values spreadsheet) |
+| unit_other |	if corresponding unit variable == 3, reported unit |
+| unit	| if unit listed below value field was used, -88. else, reported unit |
+| calculated |	calculate value based on choices/calculations column |
+| any_panel |	if any value in this panel was recorded, 1. else, 0 |
 
+anc
+alc
+nl_ratio
+
+([wbc_value]*[neutrophil_value])*10
+([wbc_value]*[lymphocyt_value])*10
+[anc]/[alc]
+```{r}
+
+# there are 3 calculated values (are these autocalculated from redcap)
+
+# if wbc_obtained == 1 and neutrophil_obtained == 1:
+  # anc = (wbc_value * neutrophil_value)*10
+
+# if wbc_obtained == 1 and lymphocyt_obtained == 1:
+  # alc = (wbc_value * lymphocyt_value)*10
+
+# if anc and alc present:
+  # anc / alc
+
+
+```
 
 Data transformation
 - split `START_DATE` field into `date` and `time`
