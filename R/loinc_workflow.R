@@ -12,7 +12,7 @@ library(lubridate)
 umls_subset <- read.delim("../local_ref/loinc_clinicalAttributes.dsv")
 
 #load the keywords (manually checked previously)
-lab_keywords <- read.delim("../local_ref//lab_keywords.tsv" )
+lab_keywords <- read.delim("../local_ref/lab_keywords_sm.tsv" )   #loading sm
 lab_keywords <- lab_keywords %>%
   dplyr::filter( Position %in% c('beginning', 'anywhere'))
 cutOff <- 10
@@ -60,6 +60,7 @@ for( i in 1:nrow(lab_keywords)){
 }
 
 output <- unique( output )
+ranked_list_sm <- output %>% group_by(Section.Header) %>% summarise(n = n_distinct(CODE)) %>% arrange(desc(n)) # testing
 
 # check how many map to BCH
 bch_loinc_map <- read.csv("../local_ref/BCH_Lab_Loinc_cd_Map_data.csv")
