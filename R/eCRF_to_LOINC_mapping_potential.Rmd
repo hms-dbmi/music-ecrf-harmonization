@@ -1,3 +1,11 @@
+---
+title: "Generate Potential eCRF to LOINC Mapping"
+author: "Simran Makwana"
+date: "6/11/2021"
+output: html_document
+---
+
+```{r}
 rm(list=ls())
 library(dplyr)
 library(lubridate)
@@ -99,3 +107,6 @@ check_summary <- left_join( check_summary, output )
 check_summary <- check_summary %>% 
   dplyr::filter( units_cd != 'NOT DEFINED IN SOURCE')
 
+
+
+```
