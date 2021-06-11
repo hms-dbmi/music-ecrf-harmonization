@@ -1,5 +1,7 @@
 # music-ecrf-harmonization
 
+![Workflow](data/workflow.png)
+
 This repository contains:
 
 - **R**
