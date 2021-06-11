@@ -5,27 +5,40 @@ date: "6/11/2021"
 output: html_document
 ---
 
+# Load Packages
 ```{r}
-rm(list=ls())
 library(dplyr)
 library(lubridate)
-#read the file from UMLS that contains those loincs that are clinical attributes
-# #SQL code to generate the subset
-# create table ag440_loinc_clinicalAttributes as
-# select conso.cui, conso.lat, conso.sab, conso.tty, conso.code, conso.str, sty.sty 
-# from mrconso conso, mrsty sty 
-# where conso.cui = sty.cui and
-# conso.sab = 'LNC' and conso.tty = 'LN' and sty.sty = 'Clinical Attribute';
 
+```
+
+# Load UMLS database subset (all LOINCs which are clinical attributes)
+The following SQL was used to generate the subset:
+create table ag440_loinc_clinicalAttributes as
+select conso.cui, conso.lat, conso.sab, conso.tty, conso.code, conso.str, sty.sty 
+from mrconso conso, mrsty sty 
+where conso.cui = sty.cui and
+conso.sab = 'LNC' and conso.tty = 'LN' and sty.sty = 'Clinical Attribute';
+
+```{r}
 umls_subset <- read.delim("../local_ref/loinc_clinicalAttributes.dsv")
 
-#load the keywords (manually checked previously)
-lab_keywords <- read.delim("../local_ref/lab_keywords_sm.tsv" )   #loading sm
+```
+
+# Load the manually generated keywords
+The full list of keywords can be viewed in the GitHub repository at this link.
+Set the 'cutOff' value. Keyword queries which exceed the cutoff will have the additional 'Ser/Plas' and 'Pt:Bld' filters applied.
+```{r}
+lab_keywords <- read.delim("../data/lab_keywords.tsv" )
 lab_keywords <- lab_keywords %>%
   dplyr::filter( Position %in% c('beginning', 'anywhere'))
 cutOff <- 10
+```
 
-#extract the loincs that contain the keywords
+# Extract the list of potential LOINC codes
+Search through the UMLS subset for the keywords associated with the eCRF terms.
+```{r}
+
 for( i in 1:nrow(lab_keywords)){
   position <- lab_keywords$Position[i]
   if( position == "anywhere"){
@@ -49,7 +62,7 @@ for( i in 1:nrow(lab_keywords)){
     }else{
       print( paste0("No entry found for keyword: ", lab_keywords$Keyword[i]))
     }
-    print( paste0( nrow( output), " LOINC terms found for keyword: ", lab_keywords$Keyword[i]))
+    print( paste0( nrow( output), " LOINC terms found for eCRF Term: ", lab_keywords$Section.Header[i], " with keyword: ", lab_keywords$Keyword[i]))
     output$Section.Header <- lab_keywords$Section.Header[i]
   }else{
     if( nrow(narrowQ) == 0 ){
@@ -61,22 +74,48 @@ for( i in 1:nrow(lab_keywords)){
     }else{
       print( paste0("No entry found for keyword: ", lab_keywords$Keyword[i]))
     }
-    print( paste0( nrow( int_output), " LOINC terms found for keyword: ", lab_keywords$Keyword[i]))
+    print( paste0( nrow( int_output), " LOINC terms found for eCRF Term: ", lab_keywords$Section.Header[i], " with keyword: ", lab_keywords$Keyword[i]))
     int_output$Section.Header <- lab_keywords$Section.Header[i]
     output <- rbind( output, int_output)
   }
 }
 
-output <- unique( output )
-ranked_list_sm <- output %>% group_by(Section.Header) %>% summarise(n = n_distinct(CODE)) %>% arrange(desc(n)) # testing
+output <- unique(output)
+ranked_list <- output %>% group_by(Section.Header) %>% summarise(n = n_distinct(CODE)) %>% arrange(desc(n)) # testing
 
-# check how many map to BCH
-bch_loinc_map <- read.csv("../local_ref/BCH_Lab_Loinc_cd_Map_data.csv")
+
+```
+# Save list of potential LOINC codes for clinician check
+
+```{r}
+out <- output %>%
+  mutate(webpage = paste0("https://loinc.org/",CODE,"/"),
+         clinical_review = '') %>%
+  rename(`LOINC CODE` = CODE,
+         `LOINC DESCRIPTION` = STR,
+         `eCRF TERM DESCRIPTION` = Section.Header,
+         `CLINICIAN REVIEW: DO THE DESCRIPTIONS MATCH?` = clinical_review,
+         `LOINC WEBPAGE - EXTENDED DESCRIPTION` = webpage)
+
+write.csv(out, '../data/eCRF_to_LOINC_forReview.csv', row.names = FALSE)
+
+```
+
+# Site - Specific Steps
+
+## BCH
+
+### Which of the identified potential LOINC codes are present in the site-specific concept mapping?
+```{r}
+bch_loinc_map <- read.csv("../data/BCH_Lab_Loinc_cd_Map_data.csv")
 
 mappingToBch <- bch_loinc_map %>%
-  dplyr::filter( LOINC_LAB_CODE %in% output$CODE)
+  dplyr::filter(LOINC_LAB_CODE %in% output$CODE)
 
-# check how many in MISC patients
+```
+
+### Of those LOINC codes which map to the internal concepts, which many LOINC codes are present in the MIS-C patients at this site?
+```{r}
 observationFactsLabs <- read.delim("../local_ref/music_labs_observation_withUnits.dsv")
 observationFactsLabs$date <- sapply(strsplit( as.character(observationFactsLabs$START_DATE), "[ ]"), '[', 1)
 colnames( observationFactsLabs ) <- tolower( colnames( observationFactsLabs ) )
@@ -106,7 +145,6 @@ check_summary <- left_join( check_summary, output )
 
 check_summary <- check_summary %>% 
   dplyr::filter( units_cd != 'NOT DEFINED IN SOURCE')
-
 
 
 ```
