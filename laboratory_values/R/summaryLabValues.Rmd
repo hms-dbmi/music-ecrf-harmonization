@@ -90,7 +90,7 @@ ecrftobch$formName <- "laboratory_values"
 First we read the dictionary to extract the laboratory information (extracted from Simran code). Then we select the variables of interest, including the name, the section header, the expected minimum and maximum value and the expected units. 
 
 ```{r}
-datadict <- read.csv('MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
 datadict_labonly <- datadict %>% 
   filter(Form.Name == "laboratory_values") %>%
   select( Variable...Field.Name, Form.Name, Section.Header,Choices..Calculations..OR.Slider.Labels, Field.Note,Text.Validation.Min, Text.Validation.Max, Text.Validation.Type.OR.Show.Slider.Number
