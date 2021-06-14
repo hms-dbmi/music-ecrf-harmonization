@@ -259,7 +259,20 @@ currently do not know which is worst; use high as default
 ```{r}
 # create dummy df for mapping variable name to whether high or low is worst, in this case all are 'high'
 # this can be changed to reference variable prefix in the future if that is more convenient
-worst_values <- data.frame(variableName = unique(finalTable$variableName), worst = 'high')
+#worst_values <- data.frame(variableName = unique(finalTable$variableName), worst = 'high')
+worst_values <- read.csv('../data/worst_values.csv', skip = 1)
+
+# using "option 3" defined in email chain: if a lab value could be 'worst' at either min or max, ignore the worst value specification
+# if we do not know if we should use min or max, ignore the worst value specification
+worst_values <- worst_values %>% 
+  filter(worst == 'Min' | worst == 'Max') %>%
+  unique()
+
+worst_values <- rbind(worst_values, 
+                      worst_values %>% mutate(variableName = gsub('_value', '_obtained', variableName)),
+                      worst_values %>% mutate(variableName = gsub('_value', '_date', variableName)),
+                      worst_values %>% mutate(variableName = gsub('_value', '_unit', variableName))
+                      )
 
 #value_vars <- data.frame(variableName = unique(finalTable$variableName[grepl('_value', finalTable$variableName)]),
 #                         worst = 'high')
@@ -269,9 +282,9 @@ finalTable <- left_join(finalTable, worst_values)
 define_worst <- function(lab_values_visit, NVAL_NUM, worst) {
   ifelse(test = lab_values_visit != 23,
          yes = FALSE,
-         no = ifelse(test = worst == 'high',
+         no = ifelse(test = worst == 'Max',
                      yes = NVAL_NUM == max(NVAL_NUM),
-                     no = ifelse(test = worst == 'low',
+                     no = ifelse(test = worst == 'Min',
                                  yes = NVAL_NUM == min(NVAL_NUM),
                                  no = 'ERROR'
                                  )
