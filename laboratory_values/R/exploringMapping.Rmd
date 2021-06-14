@@ -58,7 +58,7 @@ internalDictionary <- DBI::dbGetQuery( con, query)
 First we read the dictionary to extract the laboratory information (extracted from Simran code). Then we select the variables for which we have a corresponding concept code in the pediatric database. Finally we restrict it to those having a numeric value. 
 
 ```{r}
-datadict <- read.csv('MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
 
 datadict_labonly <- datadict %>% 
   filter(Form.Name == "laboratory_values") %>%
