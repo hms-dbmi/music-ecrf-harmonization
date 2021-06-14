@@ -277,6 +277,7 @@ worst_values <- rbind(worst_values,
 #value_vars <- data.frame(variableName = unique(finalTable$variableName[grepl('_value', finalTable$variableName)]),
 #                         worst = 'high')
 
+
 finalTable <- left_join(finalTable, worst_values)
 
 define_worst <- function(lab_values_visit, NVAL_NUM, worst) {
@@ -295,8 +296,8 @@ define_worst <- function(lab_values_visit, NVAL_NUM, worst) {
 finalTable <- finalTable %>% 
   group_by(PATIENT_NUM, variableName) %>%
   mutate(is_worst = define_worst(lab_values_visit, NVAL_NUM, worst)) %>%
-  # filter out variables where labvaluesvisit == 23 and worst == false
-  filter(!(lab_values_visit == 23 & is_worst == FALSE))
+  # filter out variables where labvaluesvisit == 23 (it had the potential to be the worst) and worst == false (and it was not the worst)
+  filter(!(lab_values_visit == 23 & is_worst == FALSE)) 
 
 
 
