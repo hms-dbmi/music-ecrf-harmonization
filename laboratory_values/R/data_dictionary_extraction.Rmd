@@ -12,7 +12,7 @@ library(tidyverse)
 
 Load data
 ```{r}
-datadict <- read.csv('../data/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
 checked_vars <- read.csv('../data/numericalLabsToReview.csv', header = FALSE) 
 colnames(checked_vars) <- checked_vars[2,]
 checked_vars <- checked_vars[-c(1,2),]
