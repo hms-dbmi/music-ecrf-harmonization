@@ -1,0 +1,298 @@
+---
+title: "Summary Lab Values"
+author: "Alba Gutierrez"
+date: "5/26/2021"
+output: html_document
+---
+
+## General description
+This notebook contains the step by step to create a summary table for the lab values between the MUSIC dictionary file and the data in the pediatric database we are querying. 
+
+### What this table will contain?
+From the eCRF:  
+- Form name
+- Section header
+- Variable/Field name 
+- The minimum expected value
+- The maximum expected value
+- The units
+
+From the database:
+- Concept path
+- Concept description 
+- Concept cd
+- Minimum start date
+- Maximum start date
+- Number of patients
+- Number of observations
+- Min value
+- Max value
+- Units (if any)
+- Transformed units (if necessary)
+
+## Required input
+To run this code we need:
+1. A file containing the mapping from the eCRF concept to the concepts in the format that they appear in the database we are querying ('eCRF to BCH mapping complete.csv')
+2. The MUSIC dictionary file: 'MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv'
+3. A table with the actual values for the selected concepts including the concept code, the value, and the units. 
+
+## Load the libraries
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+```
+
+
+
+
+## Format the table with all the concepts in the database
+We read the 'conceptDimension_labs.dsv' and extract the concept codes, concept paths and the concept description, removing potential duplciates. We transform the column names to all lower case. to avoid inconsistencies with other tables colnames.
+
+```{r}
+conceptdimensionLabs <- read.delim("conceptDimension_labs.dsv")
+conceptdimensionLabs <- unique( conceptdimensionLabs[, c("CONCEPT_CD","CONCEPT_PATH", "NAME_CHAR")])
+colnames(conceptdimensionLabs) <- tolower( colnames(conceptdimensionLabs) )
+```
+
+## Query the DB
+We extract all the lab values for the MISC patients present in the database (music_labs_observation_withUnits.dsv) and we format the date column, removing the part with the time, and as before, transform the column names to all lower case.
+```{r}
+observationFactsLabs <- read.delim("music_labs_observation_withUnits.dsv")
+observationFactsLabs$date <- sapply(strsplit( as.character(observationFactsLabs$START_DATE), "[ ]"), '[', 1)
+colnames( observationFactsLabs ) <- tolower( colnames( observationFactsLabs ) )
+```
+
+
+## Select the laboratory related concepts
+We read the 'eCRF to BCH mapping complete.csv' and extract the concept codes for the **laboratory_values**.
+
+```{r}
+ecrftobch <- read.delim("eCRF to BCH mapping complete.csv", sep = ",")
+ecrftobch <- ecrftobch[ ecrftobch$Form.Name == "laboratory_values" & 
+                          ecrftobch$Auto.extraction == "Yes" &
+                          ecrftobch$concept_cd != "",]
+
+```
+
+We remove the last part of the variable names after the last "_" to avoid having the same variable multiple times (e.g., "lactate_value", "lactate_obtained", "lactate_unit", all of them are transformed into one variable, "lactate"). And we add a new column with the form name, in this case "laboratory_values".
+
+```{r}
+ecrftobch$variable <- sub('[_][^_]+$', '', ecrftobch$Variable...Field.Name)
+ecrftobch <- unique( ecrftobch[, c("variable", "concept_cd")])
+ecrftobch$formName <- "laboratory_values"
+```
+
+
+
+## Extract relevant information from the MUSIC dictionary
+First we read the dictionary to extract the laboratory information (extracted from Simran code). Then we select the variables of interest, including the name, the section header, the expected minimum and maximum value and the expected units. 
+
+```{r}
+datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+datadict_labonly <- datadict %>% 
+  filter(Form.Name == "laboratory_values") %>%
+  select( Variable...Field.Name, Form.Name, Section.Header,Choices..Calculations..OR.Slider.Labels, Field.Note,Text.Validation.Min, Text.Validation.Max, Text.Validation.Type.OR.Show.Slider.Number
+  )
+```
+
+As before, we transform the name of the variables after the last "_" to avoid having the same variable multiple times and we merge this information with the concept descriptions for those concepts that we found for the laboratory variables.
+
+```{r}
+datadict_labonly$variable <- sub('[_][^_]+$', '', datadict_labonly$Variable...Field.Name)
+
+# extract the concept description when available
+ecrftobch <- left_join( ecrftobch, conceptdimensionLabs)
+
+```
+
+## Data selection 
+From the laboratory information of the MISC patients, we select those concepts that are present in the previous table (those eCRF variables for what we have a concept in the database). We select those that are present during and after the first MISC hospitalization, and in this case the ones with numerical values.
+
+```{r}
+subset <- observationFactsLabs %>%
+  dplyr::filter( concept_cd %in%ecrftobch$concept_cd, 
+                 #dmy(date) >= dmy(admissiondate), 
+                 nval_num != "") %>%
+  dplyr::select(patient_num, date, admissiondate, 
+                concept_cd, tval_char, nval_num, units_cd)
+```
+
+
+We observed that for some concepts we have the same units with upper and lower cases (e.g., MMOL/L to mmol/L). We fixed these distinct units using "gsub". 
+
+```{r}
+subset$units_cd <- gsub( "MMOL/L", "mmol/L", subset$units_cd)
+subset$units_cd <- gsub( "MG/DL", "mg/dL", subset$units_cd)
+subset$units_cd <- gsub( "G/DL", "g/dL", subset$units_cd)
+```
+
+We summarize the results from the pediatric database group by concept code (concept_cd) and units (units_cd). For each one we extract the date range, value range, the units as well as distinct patients and observations. This will enable us to do a first quality control, and guarantee that the concepts as we find them in the database is what are expected for the eCRF. We then add this information to the variable information present in the ecrf mapping. 
+
+```{r}
+# create the summary for each concept_cd
+check_summary <- subset %>%
+  dplyr::group_by(concept_cd, units_cd) %>%
+  dplyr::summarise( min_val = min(nval_num, na.rm = TRUE), 
+                    max_val = max(nval_num, na.rm = TRUE), 
+                    min_date = min( dmy( date ) ), 
+                    max_date = max( dmy( date ) ), 
+                    distinct_patients = length(unique(patient_num)), 
+                    distinct_observations = length(patient_num)) %>%
+  dplyr::select( concept_cd, min_date, max_date, 
+                 distinct_patients, distinct_observations, 
+                 min_val, max_val, units_cd)
+
+# add the concept path, variable name, etc. 
+check_summary <- left_join( check_summary, ecrftobch)
+```
+
+We extract the "Section header" from the dictionary and we add it to the previous table. 
+
+```{r}
+# select the rows regarding this variables from the dictionary
+sectionHeader <- datadict_labonly %>%
+  dplyr::filter( variable %in% check_summary$variable, 
+                 Section.Header != "") %>%
+  dplyr::select( Section.Header, variable )
+
+check_summary <- left_join( check_summary, sectionHeader )
+```
+
+We extract the numerical ranges and units from the dictionary and we add it to the previous table. 
+```{r}
+num_lab_values <- datadict_labonly %>%
+  dplyr::filter( Text.Validation.Type.OR.Show.Slider.Number == "number") %>%
+  dplyr::select( variable, Text.Validation.Min, Text.Validation.Max, Field.Note)
+
+check_summary <- left_join( check_summary, num_lab_values)
+```
+
+We observe that the are some units that even referring to the same appear in a different way in the MUSIC dictionary and in the database (e.g., "sec" and "seconds"). We create a new column, called "units_cd_transformed" and manually transform some of those based on a first review of the results. We create a new column to always be able to go back to the original information as is in the database. 
+
+
+```{r}
+# add the units transformation 
+check_summary$units_cd_transformed <- check_summary$units_cd
+check_summary$units_cd_transformed <- gsub( "sec", "seconds", check_summary$units_cd_transformed)
+check_summary$units_cd_transformed <- gsub( "cells/mcL", "Absolute cells/microliter", check_summary$units_cd_transformed)
+check_summary$units_cd_transformed <- gsub( "unit/L", "U/L", check_summary$units_cd_transformed)
+check_summary$units_cd_transformed <- gsub( "K cells/uL", "x10^3/uL or x10^9/L", check_summary$units_cd_transformed)
+check_summary$Field.Note <- gsub( " 10", " x10", check_summary$Field.Note)
+```
+
+Then we sort the colums according to the procedence of the data and from more general to more specific. We sort them in alphabetical order. 
+```{r}
+#sort the columns 
+check_summary$variable <- paste0(check_summary$variable, "_value")
+check_summary <- check_summary[ , c("formName", "Section.Header","variable", 
+                                    "Text.Validation.Min", "Text.Validation.Max", 
+                                    "Field.Note","concept_path", 
+                                    "name_char", "concept_cd", "min_date", 
+                                    "max_date", "distinct_patients", 
+                                    "distinct_observations", "min_val","max_val", 
+                                    "units_cd", "units_cd_transformed" )]
+
+check_summary <- check_summary[ order( check_summary$variable, decreasing = FALSE), ]
+```
+
+
+After this transformation we check for which variables we still have different units, and for which variables the ranges in the database are out of the expected ranges as appear in the MUSIC dictionary.
+
+```{r}
+# add the check columns 
+check_summary$checkUnits <- ifelse( check_summary$units_cd_transformed ==  check_summary$Field.Note, "OK", ifelse( check_summary$Field.Note %in% c("units", "ratio", "%"), "OK", "To check"))
+#check_summary$checkRange <- ifelse( check_summary$checkUnits == "OK", ifelse(as.numeric(check_summary$min_val) >= as.numeric(check_summary$Text.Validation.Min) & as.numeric(check_summary$max_val) <= as.numeric(check_summary$Text.Validation.Max), "OK", "To check"), "To check")
+```
+
+```{r}
+#Special cases
+check_summary <- check_summary %>% 
+  dplyr::filter( !grepl("_unit_value",variable))
+###triglycerids 1, mg/dL | 2, mmol/L | 3, Other; extracted from the excel but another column
+check_summary[ is.na( check_summary ) ] <- ""
+check_summary[ check_summary$name_char == "Triglycerides" & check_summary$Field.Note == "Specify units below", "Field.Note"] <- "1, mg/dL | 2, mmol/L | 3, Other"
+check_summary[ check_summary$name_char == "Triglycerides", "checkUnits" ] <- ifelse( check_summary[ check_summary$name_char == "Triglycerides", "units_cd" ] %in% c("mg/dL","mmol/L","Other"), "OK", "To check")
+
+###CRP 1, mg/L | 2, mg/dL | 3, Other; extracted from the excel but another column
+check_summary[ check_summary$name_char == "C-Reactive Protein" & check_summary$Field.Note == "Specify units below", "Field.Note"] <- "1, mg/L | 2, mg/dL | 3, Other"
+check_summary[ check_summary$name_char == "C-Reactive Protein", "checkUnits" ] <- ifelse( check_summary[ check_summary$name_char == "C-Reactive Protein", "units_cd" ] %in% c("mg/L","mg/dL","Other"), "OK", "To check")
+```
+
+Replace OK with more meaningful text, as "expected and current units match" and "to check" with the expected and current values.
+```{r}
+check_summary$checkUnits <- gsub("OK", "Expected and current units match", check_summary$checkUnits)
+
+check_summary$checkUnits <- ifelse( check_summary$checkUnits == "To check", paste0( "Expected unit value: '", check_summary$Field.Note, "'; current unit value: '", check_summary$units_cd_transformed, "'"), check_summary$checkUnits)
+```
+
+
+Finally we write the output table. 
+
+```{r}
+# remove the \n from the section header that will make the excel to break the line
+check_summary$Section.Header <- gsub( "\n", " ", check_summary$Section.Header)
+#write the output table
+write.table(check_summary, file="check_summary_v2.txt", col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
+```
+
+## Variables not present in the MISC patients
+We observed that there are some variables for what we found a potential corresponding concept in the database but that are not present in any of the MISC patients. We want to also extract this variables to take this into account when reviewing the information. 
+
+We first filter the observation facts by those having numerical values and that happen during or after the first MISC hospitalization. 
+```{r}
+### concepts that we mapped and founded in concept_dimension table but that are not present in MISC patients
+concepts_in_obsFacts <- observationFactsLabs %>%
+  dplyr::filter( date >= admissiondate, 
+                 nval_num != "") %>%
+  dplyr::select(patient_num, date, admissiondate, 
+                concept_cd, tval_char, nval_num, units_cd)
+```
+
+We then select those that are in our ecrf to bch mapping file. 
+```{r}
+notinmisc <- ecrftobch  %>%
+  dplyr::filter( ! concept_cd %in%observationFactsLabs$concept_cd ) %>%
+  dplyr::select( concept_path, concept_cd, name_char, variable)
+
+```
+
+And to have as much information as possible for this variables too, we also add the corresponding information for the variables present in the MUSIC dictionary, including the header, range expected values and units. 
+
+```{r}
+sectionHeader2 <- datadict_labonly %>%
+  dplyr::filter( variable %in% notinmisc$variable, 
+                 Section.Header != "") %>%
+  dplyr::select( Section.Header, variable )
+
+notinmisc <- left_join( notinmisc, sectionHeader2 )
+
+notinmisc <- left_join( notinmisc, num_lab_values)
+```
+
+We add the name of the form, transform the variable name and sort the variables in the same way that we did before. 
+
+```{r}
+notinmisc$formName <- "laboratory_values"
+notinmisc$variable <- paste0( notinmisc$variable, "_value")
+notinmisc <- notinmisc[ , c("formName", "Section.Header","variable", 
+                                    "Text.Validation.Min", "Text.Validation.Max", 
+                                    "Field.Note","concept_path", 
+                                    "name_char", "concept_cd" )]
+
+```
+
+We finally write the table. 
+
+```{r}
+write.table(notinmisc, file="notinmisc_v1.txt", col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
+```
+
+### R session information
+
+```{r}
+sessionInfo()
+```
+
+

@@ -1,0 +1,345 @@
+---
+title: 'Lab Values Example: Data ETL'
+author: "Simran Makwana"
+date: "5/4/2021"
+output: html_document
+---
+
+*derived from `music_lab_Values.R`*
+
+Use a modification of the following query to extract the data based on concepts in labDictionary.txt:
+*Query has been previously run and saved*
+
+source("connection.R")
+dbGetQuery( con, paste0("select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, 
+  obs.nval_num, obs.units_cd, pat.admission_date, pat.discharge_date 
+  from observation_fact obs, 
+  sa_diag_mis_c_patients pat 
+  where obs.patient_num = pat.patient_num and 
+  obs.concept_cd in ('", concepts, "') and 
+  obs.start_date >= pat.admission_date" )) 
+  
+```{r}
+library(tidyverse)
+library(lubridate)
+lab_dictionary <- read.delim("../data/labDictionary.txt", header = TRUE, sep = ' ')
+
+
+```
+                                   
+Import test data with randomized patient ids
+```{r}
+subset_df <- read.csv('../local_ref/testoutput.csv')
+#subset_df$PATIENT_NUM <- floor(runif(nrow(subset_df))*100)
+#write.csv(subset_df, '../local_ref/testoutput.csv', row.names = FALSE)
+
+```
+
+Import timeline...
+```{r}
+timeline <- read.csv('../local_ref/patient_timeline.csv')
+
+timeline$admit_start <- sapply(strsplit( as.character(timeline$START_DATE), " "), '[', 1)
+timeline$admit_start <- mdy(as.character(dmy(timeline$admit_start), format = "%m-%d-%Y"))
+timeline$admit_end <- sapply(strsplit( as.character(timeline$END_DATE), " "), '[', 1)
+timeline$admit_end <- mdy(as.character(dmy(timeline$admit_end), format = "%m-%d-%Y"))
+
+# filter for 'inpaitent' visits with a length of stay > 1
+timeline_hosp <- timeline %>% 
+  dplyr::filter( INOUT_CD == "Inpatient", 
+                 LENGTH_OF_STAY > 1) 
+
+# calculate mean length of stay for each patient
+# identify which patients have cases of readmission
+timeline_hosp_summary <- timeline_hosp %>% 
+  dplyr::group_by( PATIENT_NUM ) %>%
+  dplyr::summarise( n_hosp = mean( length( PATIENT_NUM)), 
+                    avg_length_of_stay = mean( LENGTH_OF_STAY),
+                    admission_dates = paste(admit_start, collapse=',')) %>%
+  dplyr::select( PATIENT_NUM, n_hosp, avg_length_of_stay, admission_dates)
+timeline_hosp_summary %>% dplyr::filter( n_hosp > 1 )
+
+
+example_timeline <- timeline_hosp_summary %>% dplyr::filter( n_hosp > 1 ) %>% pull(PATIENT_NUM)
+example_timeline <- example_timeline[1]
+
+timeline %>% filter(PATIENT_NUM == example_timeline) %>% 
+  ggplot() + 
+  geom_point(aes(x = admit_start, y = LENGTH_OF_STAY, group = INOUT_CD, color = INOUT_CD), size = 3) + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Length of stay") +
+  xlab('Date') 
+
+# 25, Hospital readmission within 6 months of initial hospital discharge
+readmission_table <- timeline_hosp %>% 
+  group_by( PATIENT_NUM) %>%
+  summarise(n_hosp = mean(length( PATIENT_NUM)),
+            ADMISSIONDATE = ADMISSIONDATE,
+            admit_start = admit_start,
+            admit_end = admit_end,
+            START_DATE = START_DATE,
+            END_DATE = END_DATE) %>%
+  filter(n_hosp > 1,
+         admit_start != dmy(ADMISSIONDATE), # remove initial admission dates
+         admit_start - dmy(ADMISSIONDATE) <= 180) %>%    # categorize readmission as within 6 months of initial hospital discharge
+  select( PATIENT_NUM, n_hosp, ADMISSIONDATE, admit_start, admit_end, START_DATE, END_DATE)
+
+readmission_table
+
+
+
+```
+
+
+Data transformation
+- split `START_DATE` field into `date` and `time`
+- perform a left join to combine extracted data with variables in lab dictionary
+- reformat `ADMISSION_DATE` and `DISCHARGE_DATE` as dates
+- calculate `days_after_admission` and `days_after_discharge`
+```{r}
+subset_df$date <- sapply(strsplit( as.character(subset_df$START_DATE), " "), '[', 1)
+subset_df$time <- sapply(strsplit( as.character(subset_df$START_DATE), " "), '[', 2)
+
+finalTable <- left_join( subset_df, lab_dictionary, by = c("CONCEPT_CD" = "concept_cd") )
+
+finalTable <- finalTable %>%
+  mutate(date = mdy(as.character(dmy(date), format = "%m-%d-%Y")),
+         ADMISSION_DATE = mdy(as.character(dmy(ADMISSION_DATE), format = "%m-%d-%Y")),
+         DISCHARGE_DATE = mdy(as.character(dmy(DISCHARGE_DATE), format = "%m-%d-%Y")),
+         days_after_admission = date - ADMISSION_DATE,
+         days_after_discharge = date - DISCHARGE_DATE)
+
+```
+
+Extract `value` based on type of variable
+- focus on `_date`, `_value`, `_unit`, and `_obtained` variables (identified as most prevalent in `data_dictionary_extraction.Rmd`)
+  - choices accepted for `obtained` variables: 1, 0
+  - choices accepted for `value` variables: no criteria. if NVAL_NUM is not NA, then NVAL_NUM. else TVAL_CHAR
+  - choices accepted for `unit` variables: no criteria. use UNITS_CD column
+  - choices accepted for `date` variables: use date column in mdy format
+```{r}
+# Create function to extract value
+getLabValue <- function(row) {
+  
+  # for obtained variables, if the entry is present, the 'value' is automatically 1
+  if (row['vartype'] == 'obtained') {
+    value = 1
+    
+  # All units will be ‘-88’ because in phase 1, we are only including variables where the unit listed below the Value field was used. 
+  } else if (row['vartype'] == 'unit') {
+    value = -88
+    
+  # for date variables, use the date column
+  } else if (row['vartype'] == 'date') {
+    value = as.character(ymd(row['date']), format = "%m-%d-%Y")
+    
+  # for value variables, if NVAL_NUM is not NA, use NVAL_NUM. else use TVAL_CHAR
+  } else if (row['vartype'] == 'value') {
+    if(!is.na(row['NVAL_NUM'])){
+      value = row['NVAL_NUM']
+    } else {
+      value = row['TVAL_CHAR']
+    }
+  }
+    
+  # for other variables, mark as 'UNKNOWN' and investigate; there should not be any of these for now
+  else {
+    value = 'UNKNOWN'
+  }
+   
+}
+
+```
+
+```{r}
+finalTable <- finalTable %>%
+  
+  # categorize the variable types
+  mutate(vartype = gsub("^.*_", "", variableName)) %>%
+  
+  # categorize the variable prefixes
+  #mutate(prefix = gsub('_{1}[[:alnum:]]+$', '', variableName)) %>%
+
+  # remove entries with no data
+  filter(!is.na(NVAL_NUM) | TVAL_CHAR != '') %>%
+
+  # remove duplicated rows
+  distinct
+         
+finalTable$value <- apply(finalTable, 1, FUN = getLabValue)
+
+finalTable
+
+```
+
+lab_values_visit
+1, Admission/first obtained during MIS-C hospitalization
+2, Closest to discharge during MIS-C hospitalization
+3, 2 Weeks Post Discharge
+4, 6 Weeks Post Discharge
+6, 6 Months Post Discharge
+
+```{r}
+# note: there are no 'time' tiebreakers
+# not currently defining 'worst' values
+
+define_window <- function(days_after_admission, days_after_discharge){
+  
+  # the value closest to hospital admission  (no further than 48 hours before or after)
+  # if multiple within +/- 48 hour range, take the one closest to admission
+  ifelse(test = days_after_admission >= -2 & days_after_admission <= 2 & days_after_admission == min(days_after_admission),
+         yes = 1,
+         
+         # the value closest to discharge (3 days or less before discharge)
+         # if multiple within range, take the one closest to discharge
+         no = ifelse(test = days_after_discharge >= -3 & days_after_discharge <=0 & days_after_discharge == min(days_after_discharge),
+                     yes = 2,
+                     
+                     # if the observation is not categorized as admission or discharge, but happens during hospitalization, it has potential to be 'worst' value 
+                     no = ifelse(test = days_after_admission >= 0 & days_after_discharge <= 0,
+                                 yes = 23, 
+                     
+                                 # 2 weeks post discharge (after discharge until less than three weeks)
+                                 # if multiple within range, take one closest to exactly three weeks after
+                                 no = ifelse(test = days_after_discharge >= 0 & days_after_discharge < 21 & abs(days_after_discharge-21) == min(abs(days_after_discharge - 21)),
+                                             yes = 3,
+                                             
+                                             # 6 weeks post discharge (3 weeks to less then 9 weeks)
+                                             # if multiple within range, take one closest to exactly 6 weeks after
+                                             no = ifelse(test = days_after_discharge >= 21 & days_after_discharge < 63 & abs(days_after_discharge-42) == min(abs(days_after_discharge - 42)),
+                                                         yes = 4,
+                                                         
+                                                         # 6 months post discharge (9 weeks to less than one year)
+                                                         # if multiple within range, take one closest to exactly 6 months after
+                                                         no = ifelse(test = days_after_discharge >= 63 & days_after_discharge < 365 & abs(days_after_discharge-180) == min(abs(days_after_discharge - 180)),
+                                                                     yes = 6,
+                                                                     
+                                                                     # readmission will be determined through timeline and specific dates
+                                                                     no = NA)
+                                             )
+                                 )
+                     )
+         )
+  )
+  
+  
+}
+
+
+```
+
+```{r}
+finalTable <- finalTable %>% 
+  group_by(PATIENT_NUM, variableName) %>%
+  mutate(lab_values_visit = define_window(days_after_admission, days_after_discharge)) 
+
+```
+
+lab_values_visit
+25, Hospital readmission within 6 months of initial hospital discharge **Note** : need to clarify in vs out patient
+```{r}
+
+for (patient in readmission_table$PATIENT_NUM){
+  
+  # replace rows in final table which are readmissions so that lab_values_visit = 25
+  d1 <- readmission_table %>% filter(PATIENT_NUM == patient) %>% pull(admit_start)
+  d2 <- readmission_table %>% filter(PATIENT_NUM == patient) %>% pull(admit_end)
+  finalTable[finalTable$PATIENT_NUM == patient & finalTable$date >= d1 & finalTable$date <= d2, ]$lab_values_visit <- 25
+
+}
+
+
+```
+
+
+lab_values_visit
+23, 'Worst Values During Hosp' **Note**: waiting to hear back about 'worst' values. For now, taking **max** of all labs.
+define 'worst' values
+currently do not know which is worst; use high as default
+```{r}
+# create dummy df for mapping variable name to whether high or low is worst, in this case all are 'high'
+# this can be changed to reference variable prefix in the future if that is more convenient
+worst_values <- data.frame(variableName = unique(finalTable$variableName), worst = 'high')
+
+#value_vars <- data.frame(variableName = unique(finalTable$variableName[grepl('_value', finalTable$variableName)]),
+#                         worst = 'high')
+
+finalTable <- left_join(finalTable, worst_values)
+
+define_worst <- function(lab_values_visit, NVAL_NUM, worst) {
+  ifelse(test = lab_values_visit != 23,
+         yes = FALSE,
+         no = ifelse(test = worst == 'high',
+                     yes = NVAL_NUM == max(NVAL_NUM),
+                     no = ifelse(test = worst == 'low',
+                                 yes = NVAL_NUM == min(NVAL_NUM),
+                                 no = 'ERROR'
+                                 )
+                     )
+  )
+}
+
+finalTable <- finalTable %>% 
+  group_by(PATIENT_NUM, variableName) %>%
+  mutate(is_worst = define_worst(lab_values_visit, NVAL_NUM, worst)) %>%
+  # filter out variables where labvaluesvisit == 23 and worst == false
+  filter(!(lab_values_visit == 23 & is_worst == FALSE))
+
+
+
+```
+
+redcap_repeat_instance
+- Using dates to determine visit number 
+- note that entries inputted at different times on the same date are considered as separate events / visits
+```{r}
+finalTable <- finalTable %>% 
+  group_by(PATIENT_NUM, date, time) %>%
+  arrange(date, time) %>%
+  mutate(redcap_repeat_instance = cur_group_id()) %>%
+  arrange(redcap_repeat_instance)
+
+```
+
+
+Pivot table wider and make compatible with RedCap formatting
+```{r}
+
+# for cases where a patient has multiple values for a lab at the exact same date / time, just choose the first one
+out <- finalTable %>%
+  group_by(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance, variableName) %>%
+  summarise(value = first(value)) %>%
+  pivot_wider(id_cols = c(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance), 
+                   names_from = variableName, 
+                   values_from = value, 
+                   values_fill = '')
+
+# should we remove entries with no data?
+#finalTable %>% filter(is.na(NVAL_NUM), TVAL_CHAR == '')
+
+# Rename columns for redcap
+out <- out %>%
+  rename('record_id' = 'PATIENT_NUM',
+         'redcap_repeat_instrument' = 'formName') %>%
+  mutate(redcap_data_access_group = "120_boston_childe",
+         redcap_event_name = "repeating_forms_arm_1") %>%
+  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, lab_values_visit) %>%
+  arrange(record_id, redcap_repeat_instance, lab_values_visit)
+
+write.csv(out[,-1], '../local_ref/redcap_output.csv', row.names = FALSE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

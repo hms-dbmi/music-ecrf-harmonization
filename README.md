@@ -1,3 +1,4 @@
+Reorganization: separate directory per eCRF
 # music-ecrf-harmonization
 
 ![Workflow](data/workflow.png)
