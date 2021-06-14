@@ -17,7 +17,7 @@ We will use a semi-manual approach to create a mapping from the eCRF variables t
 ```{r}
 library(tidyverse)
 
-datadict <- read.csv('../data/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
 datadict_labonly <- datadict %>% 
   filter(Form.Name == 'laboratory_values') %>%
   mutate(prefix = gsub('_{1}[[:alnum:]]+$', '', Variable...Field.Name))
