@@ -1,0 +1,92 @@
+---
+title: 'ETL: Medications Before and After Hospitilization eCRf'
+author: "Simran Makwana"
+date: "6/15/2021"
+output: html_document
+---
+
+# This notebook contains the following steps:
+1.Load data extract for the concept of interest
+2. Determine expected values for REDCap 
+3. Transforma and format
+
+# 0. Libraries
+```{r}
+library(tidyverse)
+
+```
+
+# 1. Load data extract for the concept of interest
+
+Example: In BCH, we run the following query to obtain the data extract for the selected concepts.
+
+We are currently using the concepts which were identified in Sajad's initial eCRF variable to BCH concept cd mapping.
+
+source("connection.R")
+dbGetQuery( con, paste0("select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, 
+  obs.nval_num, obs.units_cd, pat.admission_date, pat.discharge_date 
+  from observation_fact obs, 
+  sa_diag_mis_c_patients pat 
+  where obs.patient_num = pat.patient_num and 
+  obs.concept_cd in ('", concepts, "') and 
+  obs.start_date >= pat.admission_date" )) 
+  
+The results of the above query have been saved.
+
+```{r}
+data <- read.csv('../local_ref/testmedications.csv')
+
+```
+
+# 2. Determine expected values for REDCap 
+
+Right now, we are using Sajad's mapping. 
+
+In the future, we will use the CSV generated from the meds code list. 
+
+```{r}
+expected_vals <- read.csv('../data/eCRF to BCH mapping_ medications - medications_before_and_after_hosp.csv')
+
+test <- left_join(data, expected_vals %>% select(concept_cd, expected.value, Variable...Field.Name), by = c("CONCEPT_CD" = "concept_cd"))
+
+```
+
+*Note the following criteria: "If this is the Week 2 - Month 6 Follow-Up visit, please exclude aspirin."*
+
+*Will need to import timeline to determine below *
+
+The variable medcur1_current is a checkbox variable where sites check off which time points the medication was taken.  Each follow up visit, if the participant is still on the medication, the site can return to the same form already entered for that medication, and check off the box saying they are still on it.  In the data dictionary, it’s codelist is: 
+0, Before hospitalization for MIS-C (for pre-existing conditions)
+1, Between
+hospital discharge and 2 Week visit
+2, 2 Weeks Post-Discharge
+3, Between the 2 Week and 6 Week visit
+4, 6 Weeks Post-Discharge
+5, Between the 6 Week and 3 Month visit
+6, 3 Months Post-Discharge
+7, Between the 3 Month and 6 Month visit
+8, 6 Months Post-Discharge
+9, Between the 6 Month and 1 Year visit
+10, 1 Year Post-Discharge
+11, Between the 1 Year and 2 Year visit
+12, 2 Years Post-Discharge
+13, Between the 2 Year and 3 Year visit
+14, 3 Years Post-Discharge
+15, Between the 3 Year and 4 Year visit
+16, 4 Years Post-Discharge
+17, Between the 4 Year and 5 Year visit
+18, 5 Years Post-Discharge
+20, At the time of readmission to the hospital (only readmissions related to MIS-C/COVID-19 symptoms/complications that occurred within 6 months of the initial hospitalization for MIS-C)
+19, Medication given during a readmission to the hospital (only readmissions related to MIS-C/COVID-19 symptoms/complications that occurred within 6 months of the initial hospitalization for MIS-C)
+
+
+```{r}
+
+
+```
+
+
+
+
+
+  
