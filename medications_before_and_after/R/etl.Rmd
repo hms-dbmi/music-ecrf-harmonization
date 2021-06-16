@@ -8,8 +8,9 @@ output: html_document
 # This notebook contains the following steps:
 1.Load data extract for the concept of interest
 2. Determine expected values for REDCap 
-3. Incorporate patient timeline (or just start and end date) to determine medcur1_current variable
-4. Transforma and format
+3. Calculate medcur1_current column
+  a. Incorporate patient timeline (or just start and end date) to determine medcur1_current variable
+4. Transform and format
 
 # 0. Libraries
 ```{r}
@@ -81,12 +82,6 @@ The variable medcur1_current is a checkbox variable where sites check off which 
 - 19: Medication given during a readmission to the hospital (only readmissions related to MIS-C/COVID-19 symptoms/complications that occurred within 6 months of the initial hospitalization for MIS-C)
 
 ```{r}
-df <- df %>%
-  mutate(date = dmy(sapply(strsplit( as.character(START_DATE), " "), '[', 1)),
-         ADMISSION_DATE = dmy(ADMISSION_DATE),
-         DISCHARGE_DATE = dmy(DISCHARGE_DATE),
-         days_after_admission = date - ADMISSION_DATE,
-         days_after_discharge = date - DISCHARGE_DATE)
 
 calculate_medcur1_current <- function(days_after_admission, days_after_discharge){
   # no need to wrap statements in ifelse loop because they are mutually exclusive
@@ -101,7 +96,7 @@ calculate_medcur1_current <- function(days_after_admission, days_after_discharge
   if (days_after_discharge == 180) {return(8)} # 8: 6 Months Post-Discharge
   if (days_after_discharge > 180 & days_after_discharge < 365) {return(9)} # 9: Between the 6 Month and 1 Year visit
   if (days_after_discharge == 365) {return(10)} # 10: 1 Year Post-Discharge
-  
+  ?
   if (days_after_discharge > 365 & days_after_discharge < 720) {return(11)} # 11: Between the 1 Year and 2 Year visit
   if (days_after_discharge == 720) {return(12)} # 12: 2 Years Post-Discharge
   if (days_after_discharge > 720 & days_after_discharge < 1095) {return(13)} # 13: Between the 2 Year and 3 Year visit
@@ -114,11 +109,50 @@ calculate_medcur1_current <- function(days_after_admission, days_after_discharge
   # 20: At the time of readmission to the hospital (only readmissions related to MIS-C/COVID-19 symptoms/complications that occurred within 6 months of the initial hospitalization for MIS-C)
 }
 
+df <- df %>%
+  mutate(date = dmy(sapply(strsplit( as.character(START_DATE), " "), '[', 1)),
+         ADMISSION_DATE = dmy(ADMISSION_DATE),
+         DISCHARGE_DATE = dmy(DISCHARGE_DATE),
+         days_after_admission = date - ADMISSION_DATE,
+         days_after_discharge = date - DISCHARGE_DATE) %>%
+  rowwise %>%
+  mutate(medcur1_current = calculate_medcur1_current(days_after_admission, days_after_discharge))
+
+
+## add in the visit number column here
+df2 <- df %>%
+  group_by(PATIENT_NUM) %>%
+  mutate9
+  #summarise(dates = paste0(unique(date), collapse = ', '))
+
 ```
+
+
+4. Transform and format
 
 *Note the following criteria: "If this is the Week 2 - Month 6 Follow-Up visit, please exclude aspirin."*
 
-*Will need to import timeline to determine below *
+Desired columns:
+- record_id (patient_num)	
+- redcap_event_name	(repeating_forms_arm_1) ??
+- redcap_repeat_instrument (medications_before_and_after)
+- redcap_repeat_instance	
+- current_meds_fu_na (acknowledgement of participant eligibility - ignore / mark as 1 (acknowledged for all))
+- medcur1_current (detailed in healthcore question document, but not in eCRF or in example redcap output)
+- eCRF variables (with expected value)
+
+```{r}
+
+test <- pivot_wider(df,
+                    id_cols = c(PATIENT_NUM, medcur1_current),     # include redcap repeat instance here
+                    names_from = Variable...Field.Name,
+                    values_from = expected.value,
+                    values_fill = NA,
+                    values_fn = list) # this suppresses a warning, must fix this
+
+
+  
+```
 
 
 
