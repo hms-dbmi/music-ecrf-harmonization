@@ -20,23 +20,46 @@ library(lubridate)
 
 # 1. Load data extract for the concept of interest
 
-Example: In BCH, we run the following query to obtain the data extract for the selected concepts.
+Example: In BCH, we run the following query to obtain the data extract for all medication data for our MISC patietns.
+create table ag440_music_meds as 
+select obs.patient_num, obs.concept_cd, obs.start_date, misc.admissiondate, misc.end_date, misc.length_of_stay 
+from observation_fact obs, ag440_misc_patients_may misc 
+where (concept_cd like 'HOMEMED:%' or concept_cd like 'ADMINMED:%' or concept_cd like 'AG:%') and obs.patient_num = misc.patient_num;
 
-We are currently using the concepts which were identified in Sajad's initial eCRF variable to BCH concept cd mapping.
-
-source("connection.R")
-dbGetQuery( con, paste0("select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, 
-  obs.nval_num, obs.units_cd, pat.admission_date, pat.discharge_date 
-  from observation_fact obs, 
-  sa_diag_mis_c_patients pat 
-  where obs.patient_num = pat.patient_num and 
-  obs.concept_cd in ('", concepts, "') and 
-  obs.start_date >= pat.admission_date" )) 
-  
 The results of the above query have been saved.
 
 ```{r}
-df <- read.csv('../local_ref/testmedications.csv')
+
+agg_music_meds <- read.csv('../local_ref/agg40_music_meds.csv')
+
+```
+
+We are currently using the concepts which were identified in Sajad's initial eCRF variable to BCH concept cd mapping.
+
+```{r}
+# This code is used to convert the list of medication mapping found in eCRF to BCH mapping_ medications - medications_before_and_after_hosp.csv into a list of concepts to test query
+
+data <- read.csv('../data/eCRF to BCH mapping_ medications - medications_before_and_after_hosp.csv')
+
+subdf <- data %>% 
+  filter(Notes == '') %>%
+  select(Variable...Field.Name,concept_cd,expected.value,expected.value.description)
+
+# uncomment the code below if you would like to test using a smaller subset of Sajad's concepts
+
+# sample_subdf <- sample_n(subdf, 50, replace = FALSE)
+
+# sample_concepts <- sample_subdf %>% pull(concept_cd) %>% paste0(collapse = "', '")
+
+#sample_query <- paste0("select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, obs.nval_num, obs.units_cd, pat.admission_date, pat.discharge_date 
+#  from observation_fact obs, sa_diag_mis_c_patients pat 
+#  where obs.patient_num = pat.patient_num 
+#  and obs.concept_cd in ('", 
+#                       sample_concepts, 
+#                       "');")
+#                       
+
+#write.table(sample_query, '../local_ref/initial_extraction.sql.txt', row.names = FALSE, quote = FALSE, col.names = FALSE)
 
 ```
 
@@ -111,6 +134,7 @@ calculate_medcur1_current <- function(days_after_admission, days_after_discharge
 
 df <- df %>%
   mutate(date = dmy(sapply(strsplit( as.character(START_DATE), " "), '[', 1)),
+         time = sapply(strsplit( as.character(START_DATE), " "), '[', 2),
          ADMISSION_DATE = dmy(ADMISSION_DATE),
          DISCHARGE_DATE = dmy(DISCHARGE_DATE),
          days_after_admission = date - ADMISSION_DATE,
@@ -119,11 +143,13 @@ df <- df %>%
   mutate(medcur1_current = calculate_medcur1_current(days_after_admission, days_after_discharge))
 
 
-## add in the visit number column here
-df2 <- df %>%
-  group_by(PATIENT_NUM) %>%
-  mutate9
-  #summarise(dates = paste0(unique(date), collapse = ', '))
+## add in redcap_repeat_instance (increments with each unique date / time combination
+df2  <- df %>% 
+  group_by(PATIENT_NUM, date, time) %>%
+  arrange(date, time) %>%
+  mutate(redcap_repeat_instance = cur_group_id()) %>%
+  arrange(redcap_repeat_instance)
+
 
 ```
 
