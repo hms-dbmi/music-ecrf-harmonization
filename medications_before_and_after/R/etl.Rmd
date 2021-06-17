@@ -32,6 +32,10 @@ The results of the above query have been saved.
 
 agg_music_meds <- read.csv('../local_ref/agg40_music_meds.csv')
 
+# filter dataframe to only include 'HOMEMED' codes as we are only interested in medications taken before and after hospitalization
+# 'ADMINMED' codes are given during hospitalization and 'AG' codes are for allergies
+agg_music_meds <- agg_music_meds %>% filter(!grepl('AG|ADMINMED', CONCEPT_CD))
+
 ```
 
 We are currently using the concepts which were identified in Sajad's initial eCRF variable to BCH concept cd mapping.
