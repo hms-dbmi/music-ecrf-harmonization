@@ -5,6 +5,8 @@ date: "6/15/2021"
 output: html_document
 ---
 
+*this notebook should be using HOMEMED concepts, but Sajad only mapped these variables to ADMINMED concepts. we are using the ADMINMED concepts here but will need to change it later*
+
 # This notebook contains the following steps:
 1.Load data extract for the concept of interest
 2. Determine expected values for REDCap 
@@ -34,7 +36,7 @@ agg_music_meds <- read.csv('../local_ref/agg40_music_meds.csv')
 
 # filter dataframe to only include 'HOMEMED' codes as we are only interested in medications taken before and after hospitalization
 # 'ADMINMED' codes are given during hospitalization and 'AG' codes are for allergies
-agg_music_meds <- agg_music_meds %>% filter(!grepl('AG|ADMINMED', CONCEPT_CD))
+#agg_music_meds <- agg_music_meds %>% filter(!grepl('AG|ADMINMED', CONCEPT_CD))
 
 ```
 
@@ -43,9 +45,9 @@ We are currently using the concepts which were identified in Sajad's initial eCR
 ```{r}
 # This code is used to convert the list of medication mapping found in eCRF to BCH mapping_ medications - medications_before_and_after_hosp.csv into a list of concepts to test query
 
-data <- read.csv('../data/eCRF to BCH mapping_ medications - medications_before_and_after_hosp.csv')
+mapping <- read.csv('../data/eCRF to BCH mapping_ medications - medications_before_and_after_hosp.csv')
 
-subdf <- data %>% 
+submapping <- mapping %>% 
   filter(Notes == '') %>%
   select(Variable...Field.Name,concept_cd,expected.value,expected.value.description)
 
