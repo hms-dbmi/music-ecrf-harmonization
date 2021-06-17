@@ -76,9 +76,8 @@ Right now, we are using Sajad's mapping.
 In the future, we will use the CSV generated from the meds code list. 
 
 ```{r}
-expected_vals <- read.csv('../data/eCRF to BCH mapping_ medications - medications_before_and_after_hosp.csv')
 
-df <- left_join(df, expected_vals %>% select(concept_cd, expected.value, Variable...Field.Name), by = c("CONCEPT_CD" = "concept_cd"))
+df <- left_join(agg_music_meds, submapping %>% select(concept_cd, expected.value, Variable...Field.Name), by = c("CONCEPT_CD" = "concept_cd"))
 
 ```
 
@@ -125,7 +124,7 @@ calculate_medcur1_current <- function(days_after_admission, days_after_discharge
   if (days_after_discharge == 180) {return(8)} # 8: 6 Months Post-Discharge
   if (days_after_discharge > 180 & days_after_discharge < 365) {return(9)} # 9: Between the 6 Month and 1 Year visit
   if (days_after_discharge == 365) {return(10)} # 10: 1 Year Post-Discharge
-  ?
+  
   if (days_after_discharge > 365 & days_after_discharge < 720) {return(11)} # 11: Between the 1 Year and 2 Year visit
   if (days_after_discharge == 720) {return(12)} # 12: 2 Years Post-Discharge
   if (days_after_discharge > 720 & days_after_discharge < 1095) {return(13)} # 13: Between the 2 Year and 3 Year visit
@@ -136,25 +135,31 @@ calculate_medcur1_current <- function(days_after_admission, days_after_discharge
   if (days_after_discharge == 1825) {return(18)} # 18: 5 Years Post-Discharge
   # 19: Medication given during a readmission to the hospital (only readmissions related to MIS-C/COVID-19 symptoms/complications that occurred within 6 months of the initial hospitalization for MIS-C)
   # 20: At the time of readmission to the hospital (only readmissions related to MIS-C/COVID-19 symptoms/complications that occurred within 6 months of the initial hospitalization for MIS-C)
+  
+  if (days_after_admission >= 0 & days_after_discharge <= 0) {return(-88)} # this means that the code happens during hospitalization -- should not be reported here - made up number
+  if (days_after_discharge > 1825) {return(100)} # this means the code happens later than defined in the scope of study -- use a made up number to report
 }
 
 df <- df %>%
   mutate(date = dmy(sapply(strsplit( as.character(START_DATE), " "), '[', 1)),
          time = sapply(strsplit( as.character(START_DATE), " "), '[', 2),
-         ADMISSION_DATE = dmy(ADMISSION_DATE),
-         DISCHARGE_DATE = dmy(DISCHARGE_DATE),
+         DISCHARGE_DATE = dmy(sapply(strsplit( as.character(END_DATE), " "), '[', 1)),
+         ADMISSION_DATE = dmy(ADMISSIONDATE),
          days_after_admission = date - ADMISSION_DATE,
          days_after_discharge = date - DISCHARGE_DATE) %>%
   rowwise %>%
   mutate(medcur1_current = calculate_medcur1_current(days_after_admission, days_after_discharge))
 
+# remove any entries with medcur1_current value of -88 (happened during hospitalization) or 100 (happened after scope of study)
+df <- df %>% filter(!medcur1_current %in% c(-88, 100))
 
 ## add in redcap_repeat_instance (increments with each unique date / time combination
 df2  <- df %>% 
   group_by(PATIENT_NUM, date, time) %>%
   arrange(date, time) %>%
   mutate(redcap_repeat_instance = cur_group_id()) %>%
-  arrange(redcap_repeat_instance)
+  arrange(redcap_repeat_instance) %>%
+  unique() # remove duplicated rows
 
 
 ```
