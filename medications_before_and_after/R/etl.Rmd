@@ -79,6 +79,8 @@ In the future, we will use the CSV generated from the meds code list.
 
 df <- left_join(agg_music_meds, submapping %>% select(concept_cd, expected.value, Variable...Field.Name), by = c("CONCEPT_CD" = "concept_cd"))
 
+# remove data that we have for the MISC patients which do not map to eCRF variables
+df <- df %>% filter(!is.na(Variable...Field.Name))
 ```
 
 
@@ -153,12 +155,16 @@ df <- df %>%
 # remove any entries with medcur1_current value of -88 (happened during hospitalization) or 100 (happened after scope of study)
 df <- df %>% filter(!medcur1_current %in% c(-88, 100))
 
-## add in redcap_repeat_instance (increments with each unique date / time combination
+## add in redcap_repeat_instance 
+# for the lab values, this represented each time a form was filled out
+# however, providers are expected to fill a separate form for each medication (?)
+# date and time do not matter if the medcur1_current value is the same..?
 df2 <- df %>%
   group_by(PATIENT_NUM) %>%
-  arrange(date, time) %>%
-  mutate(redcap_repeat_instance = rank(order(date, time))) %>%
-  unique()
+  select(-START_DATE, -END_DATE, -date, -time, -days_after_admission, -days_after_discharge) %>%
+  unique() %>%
+  arrange(medcur1_current) %>%
+  mutate(redcap_repeat_instance = row_number()) 
 
 
 ```
@@ -179,14 +185,14 @@ Desired columns:
 
 ```{r}
 
-test <- pivot_wider(df,
-                    id_cols = c(PATIENT_NUM, medcur1_current),     # include redcap repeat instance here
+out <- pivot_wider(df2,
+                    id_cols = c(PATIENT_NUM, medcur1_current, redcap_repeat_instance),   
                     names_from = Variable...Field.Name,
                     values_from = expected.value,
-                    values_fill = NA,
-                    values_fn = list) # this suppresses a warning, must fix this
+                    values_fill = NA) 
 
 
+write.csv(out[,-1], '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE)
   
 ```
 
