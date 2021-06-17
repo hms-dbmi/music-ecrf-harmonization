@@ -154,12 +154,11 @@ df <- df %>%
 df <- df %>% filter(!medcur1_current %in% c(-88, 100))
 
 ## add in redcap_repeat_instance (increments with each unique date / time combination
-df2  <- df %>% 
-  group_by(PATIENT_NUM, date, time) %>%
+df2 <- df %>%
+  group_by(PATIENT_NUM) %>%
   arrange(date, time) %>%
-  mutate(redcap_repeat_instance = cur_group_id()) %>%
-  arrange(redcap_repeat_instance) %>%
-  unique() # remove duplicated rows
+  mutate(redcap_repeat_instance = rank(order(date, time))) %>%
+  unique()
 
 
 ```
