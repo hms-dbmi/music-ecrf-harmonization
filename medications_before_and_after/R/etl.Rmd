@@ -33,10 +33,6 @@ The results of the above query have been saved.
 
 agg_music_meds <- read.csv('../local_ref/agg40_music_meds.csv')
 
-# filter dataframe to only include 'HOMEMED' codes as we are only interested in medications taken before and after hospitalization
-# 'ADMINMED' codes are given during hospitalization and 'AG' codes are for allergies
-#agg_music_meds <- agg_music_meds %>% filter(!grepl('AG|ADMINMED', CONCEPT_CD))
-
 ```
 
 We are currently using the concepts which were identified in Sajad's initial eCRF variable to BCH concept cd mapping.
@@ -155,9 +151,7 @@ df <- df %>%
 df <- df %>% filter(!medcur1_current %in% c(-88, 100))
 
 ## add in redcap_repeat_instance 
-# for the lab values, this represented each time a form was filled out
-# however, providers are expected to fill a separate form for each medication (?)
-# date and time do not matter if the medcur1_current value is the same..?
+# "This is a repeating form, with only one medication per form"
 df2 <- df %>%
   group_by(PATIENT_NUM) %>%
   select(-START_DATE, -END_DATE, -date, -time, -days_after_admission, -days_after_discharge) %>%
