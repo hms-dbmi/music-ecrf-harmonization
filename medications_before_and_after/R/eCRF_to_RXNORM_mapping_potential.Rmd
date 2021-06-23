@@ -59,7 +59,7 @@ meds_auto <- meds_auto %>% mutate(key = str_c(Generic.Name, Trade.1, Trade.2, Tr
 ecrf_to_rxnorm <- data.frame('ECRF_CODE' = '', 'ECRF_GENERIC_NAME' = '', 'RXNORM_CODE' = '', 'RXNORM_DESCRIPTION' = '')
 ecrf_to_rxnorm <- ecrf_to_rxnorm[-1,]
 
-count = 0
+non_mapping_keywords = c()
 for( i  in 1:nrow( meds_auto ) ){
   #print( i )
   #keyword <- tolower(paste0( "*", meds_auto[i,] %>%
@@ -81,17 +81,16 @@ for( i  in 1:nrow( meds_auto ) ){
       ecrf_to_rxnorm <- rbind( ecrf_to_rxnorm, rxnorm_output )
   }
   
-  # else, add 1 to the count of non-mapping keywords, and print the keyword for reference
+  # else, add the keyword to the list of non mapping keywords
   else{ 
-    count = count + 1
-    print( keyword )
+    non_mapping_keywords <- c(non_mapping_keywords, keyword)
   }
   
 }
 ```
 
 ```{r}
-print(count)
+print(length(non_mapping_keywords))
 print(length(unique(ecrf_to_rxnorm$ECRF_CODE)))
 print(length(unique(ecrf_to_rxnorm$RXNORM_CODE)))
 ```
