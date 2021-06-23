@@ -55,35 +55,38 @@ meds_auto <- meds_auto %>% mutate(key = str_c(Generic.Name, Trade.1, Trade.2, Tr
                                   key = str_remove(key, '\\|+$'), # this line removes any trailing pipes from the keyword
                                   key = tolower(key)) # this line converts all keywords to lowercase
 
+# create a blank dataframe for ecrf_to_rxnorm
+ecrf_to_rxnorm <- data.frame('ECRF_CODE' = '', 'ECRF_GENERIC_NAME' = '', 'RXNORM_CODE' = '', 'RXNORM_DESCRIPTION' = '')
+ecrf_to_rxnorm <- ecrf_to_rxnorm[-1,]
 
 count = 0
 for( i  in 1:nrow( meds_auto ) ){
   #print( i )
-  keyword <- tolower(paste0( "*", meds_auto[i,] %>%
-    unite( "keywords", Generic.Name, Trade.1:Trade.5, 
-           na.rm = TRUE, sep = ".*|") %>%
-    select( keywords), "*"))
+  #keyword <- tolower(paste0( "*", meds_auto[i,] %>%
+  #  unite( "keywords", Generic.Name, Trade.1:Trade.5, 
+  #         na.rm = TRUE, sep = ".*|") %>%
+  #  select( keywords), "*"))
   
   rxnorm_output <- rxnorm_subset %>% 
-    dplyr::filter( grepl( keyword, tolower(STR))) %>%
-    dplyr::group_by( CODE ) %>%
-    dplyr::summarise( RXNORM_CODE = CODE[1], RXNORM_DESCRIPTION = STR[1]) %>%
-    dplyr::mutate( ECRF_CODE = meds_auto[i,"Code"], 
-                   ECRF_GENERIC_NAME = meds_auto[i, "Generic.Name"], 
-                   RXNORM_CODE = as.character( RXNORM_CODE )) %>%
+    dplyr::filter( grepl( keyword, tolower(STR))) %>%       # search for keyword within rxnorm STR (lowercase)
+    dplyr::group_by( CODE ) %>%     # group by code, as some codes are listed multiple times with different TTY or STR
+    dplyr::summarise(RXNORM_DESCRIPTION = paste(STR, collapse = ' | ')) %>%   # combining all STRs to retain all information 
+    dplyr::mutate( ECRF_CODE = code, 
+                   ECRF_GENERIC_NAME = meds_auto %>% filter(Code == code) %>% pull(Generic.Name), 
+                   RXNORM_CODE = as.character( CODE )) %>%
     dplyr::select( ECRF_CODE, ECRF_GENERIC_NAME, RXNORM_CODE, RXNORM_DESCRIPTION)
 
-  if( i == 1){
-    ecrf_to_rxnorm <- rxnorm_output
-  }else{
-    if( nrow( rxnorm_output ) > 0){
+  # if the keyword matches 1 or more RXNORM entries, add the results to ecrf_to_rxnorm
+  if( nrow(rxnorm_output ) > 0){
       ecrf_to_rxnorm <- rbind( ecrf_to_rxnorm, rxnorm_output )
-    }
-    else{ 
-      count = count + 1
-      print( keyword )
-    }
   }
+  
+  # else, add 1 to the count of non-mapping keywords, and print the keyword for reference
+  else{ 
+    count = count + 1
+    print( keyword )
+  }
+  
 }
 ```
 
