@@ -173,21 +173,8 @@ summary( as.factor( before_after$prefix))
 And we create the summary for each medication in our dataset. 
 
 ```{r}
-bch_med_concept_summary <- misc_meds_info %>%
-  dplyr::group_by(CONCEPT_CD) %>%
-  dplyr::summarise( min_date = min( dmy( med_date ) ), 
-                    max_date = max( dmy( med_date ) ), 
-                    distinct_patients = length(unique(PATIENT_NUM)), 
-                    distinct_observations = length(PATIENT_NUM), 
-                    form_name = "medications_before_and_after_hosp", 
-                    ecrf_code = ECRF_CODE, 
-                    ecrf_generic_name = ECRF_GENERIC_NAME, 
-                    bch_concept_path = BCH_CONCEPT_PATH, 
-                    bch_concept_description = BCH_NAME_CHAR) %>%
-  dplyr::select( form_name, ecrf_code, ecrf_generic_name, CONCEPT_CD,
-                 bch_concept_path, bch_concept_description, min_date, max_date, 
-                 distinct_patients, distinct_observations)
 
+# summarise music patient data for each concept
 bch_med_concept_summary <- misc_meds_info %>%
   group_by(CONCEPT_CD) %>%
   summarise(min_date = min( dmy( med_date ) ), 
@@ -195,7 +182,16 @@ bch_med_concept_summary <- misc_meds_info %>%
             distinct_patients = length(unique(PATIENT_NUM)),
             distinct_observations = length(PATIENT_NUM))
 
-bch_med_concept_summary <- left_join(bch_med_concept_summary, rxnorm_to_bch, by = c('CONCEPT_CD' = 'BCH_CONCEPT_CD'))
+# join the summary with eCRF, RXNORM, and BCH code mapping info
+bch_med_concept_summary <- left_join(bch_med_concept_summary, rxnorm_to_bch, by = c('CONCEPT_CD' = 'BCH_CONCEPT_CD')) 
+
+# reorganize and rename columns
+bch_med_concept_summary <- bch_med_concept_summary %>%
+  mutate(eCRF_form_name = 'medcations_before_and_after') %>%
+  rename('BCH_CONCEPT_DESCRIPTION' = 'BCH_NAME_CHAR') %>%
+  select(eCRF_form_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, 
+         CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, min_date, max_date, distinct_patients, distinct_observations) %>%
+  arrange(ECRF_CODE)
 
 
 ```
