@@ -50,6 +50,7 @@ We are not restricting by TTY in this eCRF.
 # add keywords to meds_auto df
 meds_auto <- meds_auto %>% mutate(key = str_c(Generic.Name, Trade.1, Trade.2, Trade.3, Trade.4, Trade.5, sep = '|'),  # this line combines the generic name with the trade names, separated by |, to form a single keyword
                                   key = str_remove(key, '\\|+$'), # this line removes any trailing pipes from the keyword
+                                  key = str_replace_all(key, '\\|{2,}', '\\|'), # this line removes any multiples of pipes (||), which can happen if trades 1 & 3 are listed but not trade 2, for example
                                   key = tolower(key)) # this line converts all keywords to lowercase
 
 # create a blank dataframe for ecrf_to_rxnorm
@@ -87,13 +88,13 @@ for( i  in 1:nrow( meds_auto ) ){
 print(length(non_mapping_keywords))
 print(length(unique(ecrf_to_rxnorm$ECRF_CODE)))
 print(length(unique(ecrf_to_rxnorm$RXNORM_CODE)))
+
+
 ```
 
-There are only 19 codes for which we cannot find any RXNORM that matches in UMLS.
-We have 276 (93.56%) of medication codes found that mapped to 53,722 RXNORM codes.
 
 There are only 30 codes for which we cannot find any RXNORM that matches in UMLS.
-We have 265 (89.83%) of medication codes found that mapped to 198,037 RXNORM codes.
+We have 265 (89.83%) of medication codes found that mapped to 44,265 RXNORM codes.
 
 # From RXNOMR to BCH
 Check which of the RXNORM are present in the BCH internal mapping. 
