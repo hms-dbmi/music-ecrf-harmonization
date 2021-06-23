@@ -96,11 +96,11 @@ print(length(unique(ecrf_to_rxnorm$RXNORM_CODE)))
 There are only 30 codes for which we cannot find any RXNORM that matches in UMLS.
 We have 265 (89.83%) of medication codes found that mapped to 44,265 RXNORM codes.
 
-# From RXNOMR to BCH
+# From RXNORM to BCH
 Check which of the RXNORM are present in the BCH internal mapping. 
 In the BCH mapping we have 2,196 RXNORM codes that map to 19,141 BCH internal codes.
 ```{r}
-bchmapping <- read.csv("../MedicationsMapBCH.csv")
+bchmapping <- read.csv("../data/MedicationsMapBCH.csv")
 length(unique(bchmapping$ACT_CONCEPT_CD))
 length(unique(bchmapping$BCH_CONCEPT_CD))
 
@@ -112,7 +112,7 @@ length( unique( rxnorm_to_bch$RXNORM_CODE))
 length( unique( rxnorm_to_bch$BCH_CONCEPT_CD))
 ```
 
-In the BCH mapping we find 199 eCRF medication codes that map to 632 RXNORM codes and to 7,538 BCH internal codes.
+In the BCH mapping we find 197 eCRF medication codes that map to 550 RXNORM codes and to 6,456 BCH internal codes.
 
 
 # From BCH mapping to MISC patients
