@@ -46,9 +46,6 @@ We use as keywords the Trades and the Generic Name for our search.
 We are not restricting by TTY in this eCRF.
 
 ```{r}
-# transform empty Trades into NAs
-#meds_auto <- meds_auto %>%
-#  mutate(across(everything(), ~ifelse(.=="", NA, as.character(.))))
 
 # add keywords to meds_auto df
 meds_auto <- meds_auto %>% mutate(key = str_c(Generic.Name, Trade.1, Trade.2, Trade.3, Trade.4, Trade.5, sep = '|'),  # this line combines the generic name with the trade names, separated by |, to form a single keyword
@@ -61,18 +58,13 @@ ecrf_to_rxnorm <- ecrf_to_rxnorm[-1,]
 
 non_mapping_keywords = c()
 for( i  in 1:nrow( meds_auto ) ){
-  #print( i )
-  #keyword <- tolower(paste0( "*", meds_auto[i,] %>%
-  #  unite( "keywords", Generic.Name, Trade.1:Trade.5, 
-  #         na.rm = TRUE, sep = ".*|") %>%
-  #  select( keywords), "*"))
   
   rxnorm_output <- rxnorm_subset %>% 
-    dplyr::filter( grepl( keyword, tolower(STR))) %>%       # search for keyword within rxnorm STR (lowercase)
+    dplyr::filter( grepl(meds_auto[i, 'key'] , tolower(STR))) %>%       # search for keyword within rxnorm STR (lowercase)  
     dplyr::group_by( CODE ) %>%     # group by code, as some codes are listed multiple times with different TTY or STR
     dplyr::summarise(RXNORM_DESCRIPTION = paste(STR, collapse = ' | ')) %>%   # combining all STRs to retain all information 
-    dplyr::mutate( ECRF_CODE = code, 
-                   ECRF_GENERIC_NAME = meds_auto %>% filter(Code == code) %>% pull(Generic.Name), 
+    dplyr::mutate( ECRF_CODE = meds_auto[i, 'Code'], 
+                   ECRF_GENERIC_NAME = meds_auto[i, 'Generic.Name'], 
                    RXNORM_CODE = as.character( CODE )) %>%
     dplyr::select( ECRF_CODE, ECRF_GENERIC_NAME, RXNORM_CODE, RXNORM_DESCRIPTION)
 
@@ -83,7 +75,9 @@ for( i  in 1:nrow( meds_auto ) ){
   
   # else, add the keyword to the list of non mapping keywords
   else{ 
-    non_mapping_keywords <- c(non_mapping_keywords, keyword)
+    non_mapping_keywords <- c(non_mapping_keywords, meds_auto[i, 'key'])
+    print(i)
+    print(meds_auto[i, 'key'])
   }
   
 }
@@ -102,7 +96,7 @@ We have 276 (93.56%) of medication codes found that mapped to 53,722 RXNORM code
 Check which of the RXNORM are present in the BCH internal mapping. 
 In the BCH mapping we have 2,196 RXNORM codes that map to 19,141 BCH internal codes.
 ```{r}
-bchmapping <- read.csv("MedicationsMapBCH.csv")
+bchmapping <- read.csv("../data/MedicationsMapBCH.csv")
 length(unique(bchmapping$ACT_CONCEPT_CD))
 length(unique(bchmapping$BCH_CONCEPT_CD))
 
