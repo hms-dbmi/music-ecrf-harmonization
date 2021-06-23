@@ -171,7 +171,7 @@ summary( as.factor( before_after$prefix))
 ```
 
 And we create the summary for each medication in our dataset. 
-
+- in this summary table, each row is a unique BCH concept. 
 ```{r}
 
 # summarise music patient data for each concept
@@ -187,30 +187,38 @@ bch_med_concept_summary <- left_join(bch_med_concept_summary, rxnorm_to_bch, by 
 
 # reorganize and rename columns
 bch_med_concept_summary <- bch_med_concept_summary %>%
-  mutate(eCRF_form_name = 'medcations_before_and_after') %>%
+  mutate(eCRF_name = 'medcations_before_and_after') %>%
   rename('BCH_CONCEPT_DESCRIPTION' = 'BCH_NAME_CHAR') %>%
-  select(eCRF_form_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, 
+  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, 
          CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, min_date, max_date, distinct_patients, distinct_observations) %>%
   arrange(ECRF_CODE)
 
 
 ```
 
+- in this summary table, each row is a unique eCRF code. 
 ```{r}
-ecrf_med_concept_summary <- misc_meds_info %>%
-  dplyr::group_by( ECRF_CODE ) %>%
-  dplyr::summarise( min_date = min( dmy( med_date ) ), 
-                    max_date = max( dmy( med_date ) ), 
-                    distinct_patients = length(unique(PATIENT_NUM)), 
-                    distinct_observations = length(PATIENT_NUM),
-                    distinct_concepts = length(unique(CONCEPT_CD)),
-                    form_name = "medications", 
-                    ecrf_generic_name = ECRF_GENERIC_NAME) %>%
-  dplyr::select( form_name, ECRF_CODE, ecrf_generic_name,
-                 min_date, max_date, 
-                 distinct_patients, distinct_observations, distinct_concepts)
 
-ecrf_med_concept_summary <- unique( ecrf_med_concept_summary )
+# summarise music patient data for each code
+ecrf_med_concept_summary <- misc_meds_info %>%
+  group_by(ECRF_CODE) %>%
+  summarise(min_date = min( dmy( med_date ) ), 
+            max_date = max( dmy( med_date ) ),
+            distinct_patients = length(unique(PATIENT_NUM)),
+            distinct_observations = length(PATIENT_NUM),
+            distinct_concepts = length(unique(CONCEPT_CD)))
+
+# join the summary with eCRF, RXNORM, and BCH code mapping info
+ecrf_med_concept_summary <- left_join(ecrf_med_concept_summary, 
+                                      rxnorm_to_bch %>% select(ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES) %>% unique(), 
+                                      by = 'ECRF_CODE') 
+
+# reorganize and rename columns
+ecrf_med_concept_summary <- ecrf_med_concept_summary %>%
+  mutate(eCRF_name = 'medications_before_and_after_hosp') %>%
+  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES,
+         min_date, max_date, distinct_patients, distinct_observations, distinct_concepts)
+
 
 ```
 
