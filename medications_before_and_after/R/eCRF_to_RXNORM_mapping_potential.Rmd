@@ -18,13 +18,13 @@ create table ag440_rxnorm as
 select CUI,SAB, TTY, CODE, STR from mrconso where sab = 'RXNORM'and lat = 'ENG';
 
 ```{r}
-rxnorm_subset <- read.delim("./rxnorm.dsv")
+rxnorm_subset <- read.delim("../data/rxnorm.dsv")
 ```
 
 # Load the medication table specifications
 The full list with all the medications including code, generic name, class and trades, is obtained from the MUSIC dropbox. The original file is called "CodeListD(Meds) MUSIC 9-7-20". It is a word document that has been transformed into a csv format. 
 ```{r}
-meds_keywords <- read.csv("./CodeListD(Meds) MUSIC 9-7-20.csv", colClasses = "character" )
+meds_keywords <- read.csv("../data/CodeListD(Meds) MUSIC 9-7-20.csv", colClasses = "character" )
 print(length(unique(meds_keywords$Code)))
 ```
 
