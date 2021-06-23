@@ -96,6 +96,55 @@ print(length(unique(ecrf_to_rxnorm$RXNORM_CODE)))
 There are only 30 codes for which we cannot find any RXNORM that matches in UMLS.
 We have 265 (89.83%) of medication codes found that mapped to 44,265 RXNORM codes.
 
+# Manual review of medications which did not map to any RXNORM codes
+Method:
+- google search given generic and trade names to see if there are any typos
+- search generic and trade names + 'UMLS' to see if a CUI can be found
+- if a CUI is found, search for it in the UMLS database. 
+- if an RXNORM is found for the CUI, build keyword around them.
+- edit meds_for_manual_keyword_review.csv as necessary and save as meds_for_manual_keyword_review_edited.csv when complete
+```{r}
+manual_review <- meds_auto %>% filter(key %in% non_mapping_keywords)
+
+write.csv(manual_review,'../data/meds_for_manual_keyword_review.csv')
+
+# the below code was manually run multiple times with various test keywords to determine how best to extract the missing information
+#key <- tolower('cytosorb')
+#rxnorm_subset %>% 
+#    dplyr::filter( grepl(key , tolower(STR)))
+
+# after manual checks, re-load manual review file
+manual_review <- read.csv('../data/meds_for_manual_keyword_review_edited.csv') %>% filter(manually_generated_keyword != '')
+
+# re-run RXNORM search for these keywords (filter for those where there is actulaly a manually_generated_keyword supplied)
+non_mapping_keywords = c()
+for( i  in 1:nrow( manual_review ) ){  
+  
+  rxnorm_output <- rxnorm_subset %>% 
+    dplyr::filter( grepl(manual_review[i, 'manually_generated_keyword'] , tolower(STR))) %>%       # search for keyword within rxnorm STR (lowercase)  
+    dplyr::group_by( CODE ) %>%     # group by code, as some codes are listed multiple times with different TTY or STR
+    dplyr::summarise(RXNORM_DESCRIPTION = paste(STR, collapse = ' | ')) %>%   # combining all STRs to retain all information 
+    dplyr::mutate( ECRF_CODE = manual_review[i, 'Code'], 
+                   ECRF_GENERIC_NAME = manual_review[i, 'Generic.Name'], 
+                   RXNORM_CODE = as.character( CODE )) %>%
+    dplyr::select( ECRF_CODE, ECRF_GENERIC_NAME, RXNORM_CODE, RXNORM_DESCRIPTION)
+
+  # if the keyword matches 1 or more RXNORM entries, add the results to ecrf_to_rxnorm
+  if( nrow(rxnorm_output ) > 0){
+      ecrf_to_rxnorm <- rbind( ecrf_to_rxnorm, rxnorm_output )
+  }
+  
+  # else, add the keyword to the list of non mapping keywords (there should be none, since all these keywords have been manually reviewed)
+  else{ 
+    non_mapping_keywords <- c(non_mapping_keywords, manual_review[i, 'manually_generated_keyword'])
+    print(i)
+    print(meds_auto[i, 'manually_generated_keyword'])
+  }
+  
+}
+
+```
+
 # From RXNORM to BCH
 Check which of the RXNORM are present in the BCH internal mapping. 
 In the BCH mapping we have 2,196 RXNORM codes that map to 19,141 BCH internal codes.

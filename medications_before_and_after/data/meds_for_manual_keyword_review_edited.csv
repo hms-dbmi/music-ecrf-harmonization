@@ -1,0 +1,31 @@
+,Code,Generic.Name,Class,Trade.1,Trade.2,Trade.3,Trade.4,Trade.5,Notes,key,ECRF_TRADE_NAMES,manually_generated_keyword,manual_notes
+1,2.03,Azimilide,Antiarrhythmic,,,,,,,azimilide,,,CUI = C0252416. found in UMLS but no RXNORM code
+2,2.04,Brethlium,Antiarrhythmic,,,,,,,brethlium,,bretylium,appears to be a typo in the original generic name
+3,8.07,Bobindolol,Beta Blocker,,,,,,,bobindolol,,bopindolol,appears to be a typo in the original generic name
+4,8.11,Dievalol,Beta Blocker,,,,,,,dievalol,,,"CUI = C0012368. found in UMLS but no RXNORM code. Also known as 'R,R-Labetalol'"
+5,9.03,Gamma Globulin,Biologics,,,,,,,gamma globulin,,immune globulin|immunoglobulin,"may need further specification. note that ""while the most significant gamma globulins are immunoglobulins, some immunoglobulins are not gamma globulins and some gamma globulins are not immunoglobulins"""
+6,9.08,Multivitamin,Biologics,,,,,,,multivitamin,,,would probably be best to query local database directly for this; no good RXNORM match
+7,9.09,Convalescent plasma from COVID 19 patients,Biologics,,,,,,,convalescent plasma from covid 19 patients,,,
+8,9.12,Fresh frozen plasma (FFP),Biologics,,,,,,,fresh frozen plasma (ffp),,,
+9,11.02,Diltiazam,Calcium Channel Blockers,Cardiazem,,,,,,diltiazam|cardiazem,Cardiazem,diltiazem|cardizem,appears to be a typo in the original generic name and in the original trade name
+10,13.08,Pentopril,Converting Enzyme Inhibitor,,,,,,,pentopril,,,CUI = C0135946. found in UMLS but no RXNORM code.
+11,14.14,Thiazides,Diuretics,,,,,,,thiazides,,hydrochlorothiazide|chlorthalidone|indapamide|metolazone|bendroflumethiazide|chlorothiazide|methyclothiazide|zaroxolyn|microzide|thalitone|saluron|renese|naturetin|mykrox|lozol|esidrix|enduron|diuril sodium|diuril|aquazide h|aquatensin,may need further specification. source: https://www.drugs.com/drug-class/thiazide-diuretics.html?condition_id=0&generic=0&sort=reviews&order=desc#filterSection 
+12,16.04,Mylanta,Gastrointestinal,,,,,,,mylanta,,^calcium carbonate .* / magnesium hydroxide .* / simethicone .* oral suspension$,
+13,18.14,Infertility Treatments,Hormonal agents,,,,,,,infertility treatments,,,need further specification
+14,19.06,Midoldrine,Inotropic agents,,,,,,,midoldrine,,midodrine,appears to be a typo in the original generic name
+15,20.04,FIuvostatin,Lipid-lowering agents,,,,,,,fiuvostatin,,fluvastatin,appears to be a typo in the original generic name
+16,20.11,AtorvastatinAtorvastatin,Lipid-lowering agents,,,,,,,atorvastatinatorvastatin,,atorvastatin,appears to be a typo in the original generic name
+17,22.21,General Anesthesia,"Sedatives, hypnotics, anesthetics, analgesics",,,,,,,general anesthesia,,,need further specification
+18,26.01,Adalimumab (TNF inhibitor),Immunomodulatory,,,,,,,adalimumab (tnf inhibitor),,adalimumab,query without parentheses
+19,26.02,Anakinra (IL-1 blockade),Immunomodulatory,,,,,,,anakinra (il-1 blockade),,anakinra,query without parentheses
+20,26.03,Etanercept (TNF inhibitor),Immunomodulatory,,,,,,,etanercept (tnf inhibitor),,etanercept,query without parentheses
+21,26.04,Infliximab (TNF inhibitor),Immunomodulatory,,,,,,,infliximab (tnf inhibitor),,infliximab,query without parentheses
+22,26.05,Tocilizumab (IL-6 blockade),Immunomodulatory,,,,,,,tocilizumab (il-6 blockade),,tocilizumab,query without parentheses
+23,26.11,Baricitinib (JAK inhibitor),Immunomodulatory,,,,,,,baricitinib (jak inhibitor),,baricitinib,query without parentheses
+24,26.12,Tofacitinib (JAK inhibitor),Immunomodulatory,,,,,,,tofacitinib (jak inhibitor),,tofacitinib,query without parentheses
+25,26.13,Upadacitinib (JAK inhibitor),Immunomodulatory,,,,,,,upadacitinib (jak inhibitor),,upadacitinib,query without parentheses
+26,26.14,Emapalumab (IFN gamma antibody),Immunomodulatory ,,,,,,,emapalumab (ifn gamma antibody),,emapalumab,query without parentheses
+27,27.04,Favipiravir,Antiviral,Avigan,,,,,,favipiravir|avigan,Avigan,,CUI = C1138226. found in UMLS but no RXNORM code
+28,28.01,Plasma exchange,Non-medical therapy directed at clearing cytokines,,,,,,,plasma exchange,,,CUI = C0015354. found in UMLS but no RXNORM code
+29,28.02,Cytosorb column,Non-medical therapy directed at clearing cytokines,,,,,,,cytosorb column,,,
+30,28.03,Hemofiltration for fluid removal,Non-medical therapy directed at clearing cytokines,,,,,,,hemofiltration for fluid removal,,,
