@@ -143,7 +143,15 @@ for( i  in 1:nrow( manual_review ) ){
   
 }
 
+
+print(manual_review <- read.csv('../data/meds_for_manual_keyword_review_edited.csv') %>% filter(manually_generated_keyword == '') %>% nrow())
+print(length(unique(ecrf_to_rxnorm$ECRF_CODE)))
+print(length(unique(ecrf_to_rxnorm$RXNORM_CODE)))
+
 ```
+
+Now, there are only 12 codes for which we cannot find any RXNORM that matches in UMLS.
+We have 283 (95.83%) of medication codes found that mapped to 45,663 RXNORM codes.
 
 # From RXNORM to BCH
 Check which of the RXNORM are present in the BCH internal mapping. 
@@ -161,7 +169,7 @@ length( unique( rxnorm_to_bch$RXNORM_CODE))
 length( unique( rxnorm_to_bch$BCH_CONCEPT_CD))
 ```
 
-In the BCH mapping we find 197 eCRF medication codes that map to 550 RXNORM codes and to 6,456 BCH internal codes.
+In the BCH mapping we find 210 eCRF medication codes that map to 574 RXNORM codes and to 6,730 BCH internal codes.
 
 
 # From BCH mapping to MISC patients
@@ -194,7 +202,7 @@ misc_meds_info <- misc_meds %>%
 length(unique(misc_meds_info$ECRF_CODE))
 length(unique(misc_meds_info$CONCEPT_CD))
 ```
-We find 115 eCRF medication codes present in the BCH MISC patients. 
+We find 122 eCRF medication codes present in the BCH MISC patients. 
 We make a summary to see how many MISC patients present each one, and in which date ranges. 
 
 First we add a column based on when the medication was prescribed, during the hospitalization, or before or after. 
@@ -266,7 +274,8 @@ ecrf_med_concept_summary <- left_join(ecrf_med_concept_summary,
 ecrf_med_concept_summary <- ecrf_med_concept_summary %>%
   mutate(eCRF_name = 'medications_before_and_after_hosp') %>%
   select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES,
-         min_date, max_date, distinct_patients, distinct_observations, distinct_concepts)
+         min_date, max_date, distinct_patients, distinct_observations, distinct_concepts) %>%
+  arrange(ECRF_CODE)
 
 
 ```
