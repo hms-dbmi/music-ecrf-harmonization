@@ -47,8 +47,14 @@ We are not restricting by TTY in this eCRF.
 
 ```{r}
 # transform empty Trades into NAs
-meds_auto <- meds_auto %>%
-  mutate(across(everything(), ~ifelse(.=="", NA, as.character(.))))
+#meds_auto <- meds_auto %>%
+#  mutate(across(everything(), ~ifelse(.=="", NA, as.character(.))))
+
+# add keywords to meds_auto df
+meds_auto <- meds_auto %>% mutate(key = str_c(Generic.Name, Trade.1, Trade.2, Trade.3, Trade.4, Trade.5, sep = '|'),  # this line combines the generic name with the trade names, separated by |, to form a single keyword
+                                  key = str_remove(key, '\\|+$'), # this line removes any trailing pipes from the keyword
+                                  key = tolower(key)) # this line converts all keywords to lowercase
+
 
 count = 0
 for( i  in 1:nrow( meds_auto ) ){
