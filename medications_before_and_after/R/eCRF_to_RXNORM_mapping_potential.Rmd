@@ -127,7 +127,7 @@ meds_auto <- meds_auto %>%
 
 ecrf_to_rxnorm <- left_join(ecrf_to_rxnorm, meds_auto %>% select(Code, ECRF_TRADE_NAMES), by = c('ECRF_CODE' = 'Code'))
 
-misc_meds <- read.delim("./music_patients_meds.dsv")
+misc_meds <- read.delim("../local_ref/music_patients_meds.dsv", sep = ',')
 
 misc_meds <- misc_meds %>% 
   dplyr::filter( CONCEPT_CD %in%  rxnorm_to_bch$BCH_CONCEPT_CD )
@@ -138,7 +138,7 @@ misc_meds_info <- misc_meds %>%
 length(unique(misc_meds_info$ECRF_CODE))
 length(unique(misc_meds_info$CONCEPT_CD))
 ```
-We find 120 eCRF medication codes present in the BCH MISC patients. 
+We find 115 eCRF medication codes present in the BCH MISC patients. 
 We make a summary to see how many MISC patients present each one, and in which date ranges. 
 
 First we add a column based on when the medication was prescribed, during the hospitalization, or before or after. 
