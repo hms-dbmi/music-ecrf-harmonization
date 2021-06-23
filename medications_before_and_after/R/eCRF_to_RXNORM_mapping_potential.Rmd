@@ -126,14 +126,21 @@ meds_auto <- meds_auto %>%
                                   ECRF_TRADE_NAMES = str_replace_all(ECRF_TRADE_NAMES, '(, ){2,}', '\\|')) # this line removes any multiples of commas, which can happen if trades 1 & 3 are listed but not trade 2, for example
 
 ecrf_to_rxnorm <- left_join(ecrf_to_rxnorm, meds_auto %>% select(Code, ECRF_TRADE_NAMES), by = c('ECRF_CODE' = 'Code'))
+rxnorm_to_bch <- inner_join( ecrf_to_rxnorm, bchmapping, by="RXNORM_CODE")
 
+# load MISC patient medication data
 misc_meds <- read.delim("../local_ref/music_patients_meds.dsv", sep = ',')
 
+# filter MISC patient medication data to concepts that we have identified as potential matches for the eCRF variables
+# filter out duplicated rows
 misc_meds <- misc_meds %>% 
-  dplyr::filter( CONCEPT_CD %in%  rxnorm_to_bch$BCH_CONCEPT_CD )
+  dplyr::filter( CONCEPT_CD %in%  rxnorm_to_bch$BCH_CONCEPT_CD ) %>%
+  unique()
 
+# create misc_meds_info, which combines the MISC patient medication data with identified BCH and RXNORM codes for each eCRF variable
 misc_meds_info <- misc_meds %>% 
-  dplyr::inner_join( rxnorm_to_bch, by=c("CONCEPT_CD"="BCH_CONCEPT_CD"))
+  dplyr::left_join( rxnorm_to_bch, by=c("CONCEPT_CD"="BCH_CONCEPT_CD"))
+
 
 length(unique(misc_meds_info$ECRF_CODE))
 length(unique(misc_meds_info$CONCEPT_CD))
@@ -172,7 +179,7 @@ bch_med_concept_summary <- misc_meds_info %>%
                     max_date = max( dmy( med_date ) ), 
                     distinct_patients = length(unique(PATIENT_NUM)), 
                     distinct_observations = length(PATIENT_NUM), 
-                    form_name = "medications", 
+                    form_name = "medications_before_and_after_hosp", 
                     ecrf_code = ECRF_CODE, 
                     ecrf_generic_name = ECRF_GENERIC_NAME, 
                     bch_concept_path = BCH_CONCEPT_PATH, 
@@ -181,7 +188,16 @@ bch_med_concept_summary <- misc_meds_info %>%
                  bch_concept_path, bch_concept_description, min_date, max_date, 
                  distinct_patients, distinct_observations)
 
-bch_med_concept_summary <- unique( bch_med_concept_summary )
+bch_med_concept_summary <- misc_meds_info %>%
+  group_by(CONCEPT_CD) %>%
+  summarise(min_date = min( dmy( med_date ) ), 
+            max_date = max( dmy( med_date ) ),
+            distinct_patients = length(unique(PATIENT_NUM)),
+            distinct_observations = length(PATIENT_NUM))
+
+bch_med_concept_summary <- left_join(bch_med_concept_summary, rxnorm_to_bch, by = c('CONCEPT_CD' = 'BCH_CONCEPT_CD'))
+
+
 ```
 
 ```{r}
