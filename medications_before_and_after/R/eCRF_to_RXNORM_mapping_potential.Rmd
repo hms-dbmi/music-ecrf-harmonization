@@ -18,13 +18,13 @@ create table ag440_rxnorm as
 select CUI,SAB, TTY, CODE, STR from mrconso where sab = 'RXNORM'and lat = 'ENG';
 
 ```{r}
-rxnorm_subset <- read.delim("./rxnorm.dsv")
+rxnorm_subset <- read.delim("../data/rxnorm.dsv")
 ```
 
 # Load the medication table specifications
 The full list with all the medications including code, generic name, class and trades, is obtained from the MUSIC dropbox. The original file is called "CodeListD(Meds) MUSIC 9-7-20". It is a word document that has been transformed into a csv format. 
 ```{r}
-meds_keywords <- read.csv("./CodeListD(Meds) MUSIC 9-7-20.csv", colClasses = "character" )
+meds_keywords <- read.csv("../data/CodeListD(Meds) MUSIC 9-7-20.csv", colClasses = "character" )
 print(length(unique(meds_keywords$Code)))
 ```
 
@@ -46,55 +46,118 @@ We use as keywords the Trades and the Generic Name for our search.
 We are not restricting by TTY in this eCRF.
 
 ```{r}
-# transform empty Trades into NAs
-meds_auto <- meds_auto %>%
-  mutate(across(everything(), ~ifelse(.=="", NA, as.character(.))))
 
-count = 0
+# add keywords to meds_auto df
+meds_auto <- meds_auto %>% mutate(key = str_c(Generic.Name, Trade.1, Trade.2, Trade.3, Trade.4, Trade.5, sep = '|'),  # this line combines the generic name with the trade names, separated by |, to form a single keyword
+                                  key = str_remove(key, '\\|+$'), # this line removes any trailing pipes from the keyword
+                                  key = str_replace_all(key, '\\|{2,}', '\\|'), # this line removes any multiples of pipes (||), which can happen if trades 1 & 3 are listed but not trade 2, for example
+                                  key = tolower(key)) # this line converts all keywords to lowercase
+
+# create a blank dataframe for ecrf_to_rxnorm
+ecrf_to_rxnorm <- data.frame('ECRF_CODE' = '', 'ECRF_GENERIC_NAME' = '', 'RXNORM_CODE' = '', 'RXNORM_DESCRIPTION' = '')
+ecrf_to_rxnorm <- ecrf_to_rxnorm[-1,]
+
+non_mapping_keywords = c()
 for( i  in 1:nrow( meds_auto ) ){
-  #print( i )
-  keyword <- tolower(paste0( "*", meds_auto[i,] %>%
-    unite( "keywords", Generic.Name, Trade.1:Trade.5, 
-           na.rm = TRUE, sep = ".*|") %>%
-    select( keywords), "*"))
   
   rxnorm_output <- rxnorm_subset %>% 
-    dplyr::filter( grepl( keyword, tolower(STR))) %>%
-    dplyr::group_by( CODE ) %>%
-    dplyr::summarise( RXNORM_CODE = CODE[1], RXNORM_DESCRIPTION = STR[1]) %>%
-    dplyr::mutate( ECRF_CODE = meds_auto[i,"Code"], 
-                   ECRF_GENERIC_NAME = meds_auto[i, "Generic.Name"], 
-                   RXNORM_CODE = as.character( RXNORM_CODE )) %>%
+    dplyr::filter( grepl(meds_auto[i, 'key'] , tolower(STR))) %>%       # search for keyword within rxnorm STR (lowercase)  
+    dplyr::group_by( CODE ) %>%     # group by code, as some codes are listed multiple times with different TTY or STR
+    dplyr::summarise(RXNORM_DESCRIPTION = paste(STR, collapse = ' | ')) %>%   # combining all STRs to retain all information 
+    dplyr::mutate( ECRF_CODE = meds_auto[i, 'Code'], 
+                   ECRF_GENERIC_NAME = meds_auto[i, 'Generic.Name'], 
+                   RXNORM_CODE = as.character( CODE )) %>%
     dplyr::select( ECRF_CODE, ECRF_GENERIC_NAME, RXNORM_CODE, RXNORM_DESCRIPTION)
 
-  if( i == 1){
-    ecrf_to_rxnorm <- rxnorm_output
-  }else{
-    if( nrow( rxnorm_output ) > 0){
+  # if the keyword matches 1 or more RXNORM entries, add the results to ecrf_to_rxnorm
+  if( nrow(rxnorm_output ) > 0){
       ecrf_to_rxnorm <- rbind( ecrf_to_rxnorm, rxnorm_output )
-    }
-    else{ 
-      count = count + 1
-      print( keyword )
-    }
   }
+  
+  # else, add the keyword to the list of non mapping keywords
+  else{ 
+    non_mapping_keywords <- c(non_mapping_keywords, meds_auto[i, 'key'])
+    print(i)
+    print(meds_auto[i, 'key'])
+  }
+  
 }
 ```
 
 ```{r}
-print(count)
+print(length(non_mapping_keywords))
 print(length(unique(ecrf_to_rxnorm$ECRF_CODE)))
 print(length(unique(ecrf_to_rxnorm$RXNORM_CODE)))
+
+
 ```
 
-There are only 19 codes for which we cannot find any RXNORM that matches in UMLS.
-We have 276 (93.56%) of medication codes found that mapped to 53,722 RXNORM codes.
 
-# From RXNOMR to BCH
+There are only 30 codes for which we cannot find any RXNORM that matches in UMLS.
+We have 265 (89.83%) of medication codes found that mapped to 44,265 RXNORM codes.
+
+# Manual review of medications which did not map to any RXNORM codes
+Method:
+- google search given generic and trade names to see if there are any typos
+- search generic and trade names + 'UMLS' to see if a CUI can be found
+- if a CUI is found, search for it in the UMLS database. 
+- if an RXNORM is found for the CUI, build keyword around them.
+- edit meds_for_manual_keyword_review.csv as necessary and save as meds_for_manual_keyword_review_edited.csv when complete
+```{r}
+manual_review <- meds_auto %>% filter(key %in% non_mapping_keywords)
+
+write.csv(manual_review,'../data/meds_for_manual_keyword_review.csv')
+
+# the below code was manually run multiple times with various test keywords to determine how best to extract the missing information
+#key <- tolower('cytosorb')
+#rxnorm_subset %>% 
+#    dplyr::filter( grepl(key , tolower(STR)))
+
+# after manual checks, re-load manual review file
+manual_review <- read.csv('../data/meds_for_manual_keyword_review_edited.csv') %>% filter(manually_generated_keyword != '')
+
+# re-run RXNORM search for these keywords (filter for those where there is actulaly a manually_generated_keyword supplied)
+non_mapping_keywords = c()
+for( i  in 1:nrow( manual_review ) ){  
+  
+  rxnorm_output <- rxnorm_subset %>% 
+    dplyr::filter( grepl(manual_review[i, 'manually_generated_keyword'] , tolower(STR))) %>%       # search for keyword within rxnorm STR (lowercase)  
+    dplyr::group_by( CODE ) %>%     # group by code, as some codes are listed multiple times with different TTY or STR
+    dplyr::summarise(RXNORM_DESCRIPTION = paste(STR, collapse = ' | ')) %>%   # combining all STRs to retain all information 
+    dplyr::mutate( ECRF_CODE = manual_review[i, 'Code'], 
+                   ECRF_GENERIC_NAME = manual_review[i, 'Generic.Name'], 
+                   RXNORM_CODE = as.character( CODE )) %>%
+    dplyr::select( ECRF_CODE, ECRF_GENERIC_NAME, RXNORM_CODE, RXNORM_DESCRIPTION)
+
+  # if the keyword matches 1 or more RXNORM entries, add the results to ecrf_to_rxnorm
+  if( nrow(rxnorm_output ) > 0){
+      ecrf_to_rxnorm <- rbind( ecrf_to_rxnorm, rxnorm_output )
+  }
+  
+  # else, add the keyword to the list of non mapping keywords (there should be none, since all these keywords have been manually reviewed)
+  else{ 
+    non_mapping_keywords <- c(non_mapping_keywords, manual_review[i, 'manually_generated_keyword'])
+    print(i)
+    print(meds_auto[i, 'manually_generated_keyword'])
+  }
+  
+}
+
+
+print(manual_review <- read.csv('../data/meds_for_manual_keyword_review_edited.csv') %>% filter(manually_generated_keyword == '') %>% nrow())
+print(length(unique(ecrf_to_rxnorm$ECRF_CODE)))
+print(length(unique(ecrf_to_rxnorm$RXNORM_CODE)))
+
+```
+
+Now, there are only 12 codes for which we cannot find any RXNORM that matches in UMLS.
+We have 283 (95.83%) of medication codes found that mapped to 45,663 RXNORM codes.
+
+# From RXNORM to BCH
 Check which of the RXNORM are present in the BCH internal mapping. 
 In the BCH mapping we have 2,196 RXNORM codes that map to 19,141 BCH internal codes.
 ```{r}
-bchmapping <- read.csv("MedicationsMapBCH.csv")
+bchmapping <- read.csv("../data/MedicationsMapBCH.csv")
 length(unique(bchmapping$ACT_CONCEPT_CD))
 length(unique(bchmapping$BCH_CONCEPT_CD))
 
@@ -106,24 +169,40 @@ length( unique( rxnorm_to_bch$RXNORM_CODE))
 length( unique( rxnorm_to_bch$BCH_CONCEPT_CD))
 ```
 
-In the BCH mapping we find 199 eCRF medication codes that map to 632 RXNORM codes and to 7,538 BCH internal codes.
+In the BCH mapping we find 210 eCRF medication codes that map to 574 RXNORM codes and to 6,730 BCH internal codes.
 
 
 # From BCH mapping to MISC patients
 We summarise the information of the codes that are present in the MISC patients. 
 ```{r}
-misc_meds <- read.delim("./music_patients_meds.dsv")
 
+# add original generic and trade names as a column
+meds_auto <- meds_auto %>%
+  mutate(ECRF_TRADE_NAMES = str_c(Trade.1, Trade.2, Trade.3, Trade.4, Trade.5, sep = ', '),  # this line combines the trade names, separated by ' ,' so it is more human readable
+                                  ECRF_TRADE_NAMES = str_remove(ECRF_TRADE_NAMES, '(, )+$'), # this line removes any trailing commas from the keyword
+                                  ECRF_TRADE_NAMES = str_replace_all(ECRF_TRADE_NAMES, '(, ){2,}', '\\|')) # this line removes any multiples of commas, which can happen if trades 1 & 3 are listed but not trade 2, for example
+
+ecrf_to_rxnorm <- left_join(ecrf_to_rxnorm, meds_auto %>% select(Code, ECRF_TRADE_NAMES), by = c('ECRF_CODE' = 'Code'))
+rxnorm_to_bch <- inner_join( ecrf_to_rxnorm, bchmapping, by="RXNORM_CODE")
+
+# load MISC patient medication data
+misc_meds <- read.delim("../local_ref/music_patients_meds.dsv", sep = ',')
+
+# filter MISC patient medication data to concepts that we have identified as potential matches for the eCRF variables
+# filter out duplicated rows
 misc_meds <- misc_meds %>% 
-  dplyr::filter( CONCEPT_CD %in%  rxnorm_to_bch$BCH_CONCEPT_CD )
+  dplyr::filter( CONCEPT_CD %in%  rxnorm_to_bch$BCH_CONCEPT_CD ) %>%
+  unique()
 
+# create misc_meds_info, which combines the MISC patient medication data with identified BCH and RXNORM codes for each eCRF variable
 misc_meds_info <- misc_meds %>% 
-  dplyr::inner_join( rxnorm_to_bch, by=c("CONCEPT_CD"="BCH_CONCEPT_CD"))
+  dplyr::left_join( rxnorm_to_bch, by=c("CONCEPT_CD"="BCH_CONCEPT_CD"))
+
 
 length(unique(misc_meds_info$ECRF_CODE))
 length(unique(misc_meds_info$CONCEPT_CD))
 ```
-We find 120 eCRF medication codes present in the BCH MISC patients. 
+We find 122 eCRF medication codes present in the BCH MISC patients. 
 We make a summary to see how many MISC patients present each one, and in which date ranges. 
 
 First we add a column based on when the medication was prescribed, during the hospitalization, or before or after. 
@@ -149,48 +228,117 @@ summary( as.factor( before_after$prefix))
 ```
 
 And we create the summary for each medication in our dataset. 
-
+- in this summary table, each row is a unique BCH concept. 
 ```{r}
-bch_med_concept_summary <- misc_meds_info %>%
-  dplyr::group_by(CONCEPT_CD) %>%
-  dplyr::summarise( min_date = min( dmy( med_date ) ), 
-                    max_date = max( dmy( med_date ) ), 
-                    distinct_patients = length(unique(PATIENT_NUM)), 
-                    distinct_observations = length(PATIENT_NUM), 
-                    form_name = "medications", 
-                    ecrf_code = ECRF_CODE, 
-                    ecrf_generic_name = ECRF_GENERIC_NAME, 
-                    bch_concept_path = BCH_CONCEPT_PATH, 
-                    bch_concept_description = BCH_NAME_CHAR) %>%
-  dplyr::select( form_name, ecrf_code, ecrf_generic_name, CONCEPT_CD,
-                 bch_concept_path, bch_concept_description, min_date, max_date, 
-                 distinct_patients, distinct_observations)
 
-bch_med_concept_summary <- unique( bch_med_concept_summary )
+# summarise music patient data for each concept
+bch_med_concept_summary <- misc_meds_info %>% 
+  group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_NAME_CHAR) %>%
+  summarise(min_date = min( dmy( med_date ) ), 
+            max_date = max( dmy( med_date ) ),
+            distinct_patients = length(unique(PATIENT_NUM)),
+            distinct_observations = length(PATIENT_NUM))
+
+# join the summary with eCRF, RXNORM, and BCH code mapping info
+bch_med_concept_summary <- left_join(bch_med_concept_summary, rxnorm_to_bch, by = c('CONCEPT_CD' = 'BCH_CONCEPT_CD',
+                                                                                    'BCH_CONCEPT_PATH' = 'BCH_CONCEPT_PATH',
+                                                                                    'BCH_NAME_CHAR' = 'BCH_NAME_CHAR')) 
+
+# reorganize and rename columns
+bch_med_concept_summary <- bch_med_concept_summary %>%
+  mutate(eCRF_name = 'medcations_before_and_after') %>%
+  rename('BCH_CONCEPT_DESCRIPTION' = 'BCH_NAME_CHAR') %>%
+  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, 
+         CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, min_date, max_date, distinct_patients, distinct_observations) %>%
+  arrange(ECRF_CODE) %>%
+  unique() # there are still some duplicated rows from the join....
+
+
 ```
 
+- in this summary table, each row is a unique eCRF code. 
 ```{r}
-ecrf_med_concept_summary <- misc_meds_info %>%
-  dplyr::group_by( ECRF_CODE ) %>%
-  dplyr::summarise( min_date = min( dmy( med_date ) ), 
-                    max_date = max( dmy( med_date ) ), 
-                    distinct_patients = length(unique(PATIENT_NUM)), 
-                    distinct_observations = length(PATIENT_NUM),
-                    distinct_concepts = length(unique(CONCEPT_CD)),
-                    form_name = "medications", 
-                    ecrf_generic_name = ECRF_GENERIC_NAME) %>%
-  dplyr::select( form_name, ECRF_CODE, ecrf_generic_name,
-                 min_date, max_date, 
-                 distinct_patients, distinct_observations, distinct_concepts)
 
-ecrf_med_concept_summary <- unique( ecrf_med_concept_summary )
+# summarise music patient data for each code
+ecrf_med_concept_summary <- misc_meds_info %>%
+  group_by(ECRF_CODE) %>%
+  summarise(min_date = min( dmy( med_date ) ), 
+            max_date = max( dmy( med_date ) ),
+            distinct_patients = length(unique(PATIENT_NUM)),
+            distinct_observations = length(PATIENT_NUM),
+            distinct_concepts = length(unique(CONCEPT_CD)))
+
+# join the summary with eCRF, RXNORM, and BCH code mapping info
+ecrf_med_concept_summary <- left_join(ecrf_med_concept_summary, 
+                                      rxnorm_to_bch %>% select(ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES) %>% unique(), 
+                                      by = 'ECRF_CODE') 
+
+# reorganize and rename columns
+ecrf_med_concept_summary <- ecrf_med_concept_summary %>%
+  mutate(eCRF_name = 'medications_before_and_after_hosp') %>%
+  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES,
+         min_date, max_date, distinct_patients, distinct_observations, distinct_concepts) %>%
+  arrange(ECRF_CODE)
+
 
 ```
 
 # Save the output summary
 
 ```{r}
-write.csv(bch_med_concept_summary, './bch_med_concept_summary_toReview.csv', row.names = FALSE)
-write.csv(ecrf_med_concept_summary, './ecrf_med_concept_summary_toReview.csv', row.names = FALSE)
+write.csv(ecrf_med_concept_summary, '../data/ecrf_med_concept_summary_toReview.csv', row.names = FALSE)
 ```
 
+# Check the output summary
+We know the BCH to RXNORM mapping is not perfect. 
+Are there any BCH internal database codes which appear to map to an abnormally high number of eCRF codes?
+```{r}
+bch_med_concept_summary %>%
+  group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION) %>%
+  summarise(n_eCRF_mappings = n_distinct(ECRF_CODE)) %>%
+  arrange(desc(n_eCRF_mappings))
+
+```
+We can see that 100 eCRF codes (almost 1/3 of them!) have been assigned the general BCH internal concept code of 'ADMINMED:2799024'. This appears to represent non-categorized administered medicines, in this case Sodium Chloride 0.9%. This general concept code is not an accurate mapping and should be removed. As a sanity check, let's look at the eCRF descriptions of the codes which map to this 'Sodium Chloride 0.9%' code. 
+
+```{r}
+bch_med_concept_summary %>% filter(CONCEPT_CD == 'ADMINMED:2799024')
+
+```
+Medications such as Adenosine, Lidocaine, Ampicilin, etc. should not map to Sodium Chloridee 0.9%... we will remove this BCH concept code from our mapping and summary table.
+
+```{r}
+bch_med_concept_summary <- bch_med_concept_summary %>% filter(CONCEPT_CD != 'ADMINMED:2799024')
+
+```
+
+The next most prevalent BCH code is 'ADMINMED:2798992', which maps to 64 eCRF codes and is described in the BCH mapping as "Dextrose 5% in Water". The BCH concept path also reveals that it is categorized as a  non categorized administered medication. 
+
+Looking at which eCRF variables map to this code also suggests that this is not a useful mapping. We will remove this code from the mapping and summary table. 
+```{r}
+bch_med_concept_summary %>% filter(CONCEPT_CD == 'ADMINMED:2798992')
+bch_med_concept_summary <- bch_med_concept_summary %>% filter(CONCEPT_CD != 'ADMINMED:2798992')
+
+```
+
+The next most prevalent BCH code is 'ADMINMED:2797919', which maps to 16 eCRF codes and is described in the BCH mapping as 'heparin'. 
+```{r}
+bch_med_concept_summary %>% filter(CONCEPT_CD == 'ADMINMED:2797919')
+
+
+```
+There is a specific eCRF code that corresponds to Heparin (07.08). We will keep this mapping, and remove the mapping from the BCH heparin code to all other eCRF codes.
+```{r}
+bch_med_concept_summary <- bch_med_concept_summary %>% filter(CONCEPT_CD != 'ADMINMED:2797919' | ECRF_CODE == '07.08')
+
+
+```
+
+The rest of the BCH codes map to 8 or fewer eCRF codes. They will be left in the mapping and summary table for manual review.
+
+Save the updated bch_med_concept_summary.
+```{r}
+write.csv(bch_med_concept_summary, '../data/bch_med_concept_summary_toReview.csv', row.names = FALSE)
+
+
+```
