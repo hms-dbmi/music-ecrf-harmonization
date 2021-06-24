@@ -286,7 +286,6 @@ ecrf_med_concept_summary <- ecrf_med_concept_summary %>%
 # Save the output summary
 
 ```{r}
-write.csv(bch_med_concept_summary, '../data/bch_med_concept_summary_toReview.csv', row.names = FALSE)
 write.csv(ecrf_med_concept_summary, '../data/ecrf_med_concept_summary_toReview.csv', row.names = FALSE)
 ```
 
@@ -337,4 +336,9 @@ bch_med_concept_summary <- bch_med_concept_summary %>% filter(CONCEPT_CD != 'ADM
 
 The rest of the BCH codes map to 8 or fewer eCRF codes. They will be left in the mapping and summary table for manual review.
 
+Save the updated bch_med_concept_summary.
+```{r}
+write.csv(bch_med_concept_summary, '../data/bch_med_concept_summary_toReview.csv', row.names = FALSE)
 
+
+```
