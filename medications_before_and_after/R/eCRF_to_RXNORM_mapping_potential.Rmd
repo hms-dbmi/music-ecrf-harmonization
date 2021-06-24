@@ -232,15 +232,17 @@ And we create the summary for each medication in our dataset.
 ```{r}
 
 # summarise music patient data for each concept
-bch_med_concept_summary <- misc_meds_info %>%
-  group_by(CONCEPT_CD) %>%
+bch_med_concept_summary <- misc_meds_info %>% 
+  group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_NAME_CHAR) %>%
   summarise(min_date = min( dmy( med_date ) ), 
             max_date = max( dmy( med_date ) ),
             distinct_patients = length(unique(PATIENT_NUM)),
             distinct_observations = length(PATIENT_NUM))
 
 # join the summary with eCRF, RXNORM, and BCH code mapping info
-bch_med_concept_summary <- left_join(bch_med_concept_summary, rxnorm_to_bch, by = c('CONCEPT_CD' = 'BCH_CONCEPT_CD')) 
+bch_med_concept_summary <- left_join(bch_med_concept_summary, rxnorm_to_bch, by = c('CONCEPT_CD' = 'BCH_CONCEPT_CD',
+                                                                                    'BCH_CONCEPT_PATH' = 'BCH_CONCEPT_PATH',
+                                                                                    'BCH_NAME_CHAR' = 'BCH_NAME_CHAR')) 
 
 # reorganize and rename columns
 bch_med_concept_summary <- bch_med_concept_summary %>%
@@ -248,7 +250,8 @@ bch_med_concept_summary <- bch_med_concept_summary %>%
   rename('BCH_CONCEPT_DESCRIPTION' = 'BCH_NAME_CHAR') %>%
   select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, 
          CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, min_date, max_date, distinct_patients, distinct_observations) %>%
-  arrange(ECRF_CODE)
+  arrange(ECRF_CODE) %>%
+  unique() # there are still some duplicated rows from the join....
 
 
 ```
@@ -286,4 +289,52 @@ ecrf_med_concept_summary <- ecrf_med_concept_summary %>%
 write.csv(bch_med_concept_summary, '../data/bch_med_concept_summary_toReview.csv', row.names = FALSE)
 write.csv(ecrf_med_concept_summary, '../data/ecrf_med_concept_summary_toReview.csv', row.names = FALSE)
 ```
+
+# Check the output summary
+We know the BCH to RXNORM mapping is not perfect. 
+Are there any BCH internal database codes which appear to map to an abnormally high number of eCRF codes?
+```{r}
+bch_med_concept_summary %>%
+  group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION) %>%
+  summarise(n_eCRF_mappings = n_distinct(ECRF_CODE)) %>%
+  arrange(desc(n_eCRF_mappings))
+
+```
+We can see that 100 eCRF codes (almost 1/3 of them!) have been assigned the general BCH internal concept code of 'ADMINMED:2799024'. This appears to represent non-categorized administered medicines, in this case Sodium Chloride 0.9%. This general concept code is not an accurate mapping and should be removed. As a sanity check, let's look at the eCRF descriptions of the codes which map to this 'Sodium Chloride 0.9%' code. 
+
+```{r}
+bch_med_concept_summary %>% filter(CONCEPT_CD == 'ADMINMED:2799024')
+
+```
+Medications such as Adenosine, Lidocaine, Ampicilin, etc. should not map to Sodium Chloridee 0.9%... we will remove this BCH concept code from our mapping and summary table.
+
+```{r}
+bch_med_concept_summary <- bch_med_concept_summary %>% filter(CONCEPT_CD != 'ADMINMED:2799024')
+
+```
+
+The next most prevalent BCH code is 'ADMINMED:2798992', which maps to 64 eCRF codes and is described in the BCH mapping as "Dextrose 5% in Water". The BCH concept path also reveals that it is categorized as a  non categorized administered medication. 
+
+Looking at which eCRF variables map to this code also suggests that this is not a useful mapping. We will remove this code from the mapping and summary table. 
+```{r}
+bch_med_concept_summary %>% filter(CONCEPT_CD == 'ADMINMED:2798992')
+bch_med_concept_summary <- bch_med_concept_summary %>% filter(CONCEPT_CD != 'ADMINMED:2798992')
+
+```
+
+The next most prevalent BCH code is 'ADMINMED:2797919', which maps to 16 eCRF codes and is described in the BCH mapping as 'heparin'. 
+```{r}
+bch_med_concept_summary %>% filter(CONCEPT_CD == 'ADMINMED:2797919')
+
+
+```
+There is a specific eCRF code that corresponds to Heparin (07.08). We will keep this mapping, and remove the mapping from the BCH heparin code to all other eCRF codes.
+```{r}
+bch_med_concept_summary <- bch_med_concept_summary %>% filter(CONCEPT_CD != 'ADMINMED:2797919' | ECRF_CODE == '07.08')
+
+
+```
+
+The rest of the BCH codes map to 8 or fewer eCRF codes. They will be left in the mapping and summary table for manual review.
+
 
