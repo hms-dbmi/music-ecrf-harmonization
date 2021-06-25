@@ -294,8 +294,11 @@ We know the BCH to RXNORM mapping is not perfect.
 Are there any BCH internal database codes which appear to map to an abnormally high number of eCRF codes?
 ```{r}
 bch_med_concept_summary %>%
-  group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION) %>%
-  summarise(n_eCRF_mappings = n_distinct(ECRF_CODE)) %>%
+  ungroup %>%
+  group_by(CONCEPT_CD) %>%
+  summarise(BCH_CONCEPT_PATH = first(BCH_CONCEPT_PATH),
+            BCH_CONCEPT_DESCRIPTION = first(BCH_CONCEPT_DESCRIPTION),
+            n_eCRF_mappings = n_distinct(ECRF_CODE),) %>%
   arrange(desc(n_eCRF_mappings))
 
 ```
@@ -334,7 +337,7 @@ bch_med_concept_summary <- bch_med_concept_summary %>% filter(CONCEPT_CD != 'ADM
 
 ```
 
-The rest of the BCH codes map to 8 or fewer eCRF codes. They will be left in the mapping and summary table for manual review.
+We can repeat this process for other repetitive, general codes.
 
 Save the updated bch_med_concept_summary.
 ```{r}
