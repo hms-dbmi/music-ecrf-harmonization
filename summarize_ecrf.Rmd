@@ -1,0 +1,67 @@
+---
+title: "Generate Summary Table for eCRF Variables"
+author: "Simran Makwana"
+date: "6/30/2021"
+output: html_document
+---
+
+# Packages and files
+```{r}
+library(tidyverse)
+
+datadict_labs <- datadict %>%
+  filter(Form.Name == 'laboratory_values')
+datadict_meds <- datadict %>%
+  filter(Form.Name == 'medications_before_and_after_hosp')
+
+loinc_mapping <- read.csv('laboratory_values/data/eCRF_to_LOINC_forReview.csv')
+```
+
+# Summarize number of variables in data dictionary for laboratory_values and medications_before and after
+
+## Lab values summary
+
+### Total number of variables
+Of the rows in the data dictionary, there are several which will not be reported in the final output CSV and therefore should be excluded.
+- lab_values_na
+- *_date
+- anything where Filed Type == 'calc'
+```{r}
+datadict_labs %>%
+  filter(Variable...Field.Name != 'lab_values_na',
+         !grepl('.*_date', Variable...Field.Name),
+         Field.Type != 'calc', 
+         !grepl('.*other.*', Variable...Field.Name)) %>%
+  nrow()
+
+```
+
+### Number of variables available for auto extraction
+We define variables available for auto extraction as those with identifiable eCRF to LOINC mappings. 
+```{r}
+
+
+```
+
+
+
+## Medications summary 
+
+### Total number of variables
+We do not report the 'current_meds_fu_na' variable.
+```{r}
+datadict_meds %>%
+  filter(Variable...Field.Name != 'current_meds_fu_na') %>%
+  nrow()
+
+```
+
+
+
+
+
+
+
+
+
+
