@@ -9,12 +9,17 @@ output: html_document
 ```{r}
 library(tidyverse)
 
+datadict <- read.csv('common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+
 datadict_labs <- datadict %>%
   filter(Form.Name == 'laboratory_values')
 datadict_meds <- datadict %>%
   filter(Form.Name == 'medications_before_and_after_hosp')
 
 loinc_mapping <- read.csv('laboratory_values/data/eCRF_to_LOINC_forReview.csv')
+
+meds_codeslist <- read.csv('medications_before_and_after/data/CodeListD(Meds) MUSIC 9-7-20.csv')
+med_mapping <- read.csv('medications_before_and_after/data/')
 ```
 
 # Summarize number of variables in data dictionary for laboratory_values and medications_before and after
@@ -22,40 +27,69 @@ loinc_mapping <- read.csv('laboratory_values/data/eCRF_to_LOINC_forReview.csv')
 ## Lab values summary
 
 ### Total number of variables
-Of the rows in the data dictionary, there are several which will not be reported in the final output CSV and therefore should be excluded.
+Distinct laboratory variable defined as a distinct *prefix*
+Aoart from this, of the rows in the data dictionary, there are several which will not be reported in the final output CSV and therefore should be excluded.
 - lab_values_na
 - *_date
 - anything where Filed Type == 'calc'
 ```{r}
-datadict_labs %>%
+datadict_labs <- datadict_labs %>%
   filter(Variable...Field.Name != 'lab_values_na',
          !grepl('.*_date', Variable...Field.Name),
          Field.Type != 'calc', 
          !grepl('.*other.*', Variable...Field.Name)) %>%
-  nrow()
+  mutate(prefix = gsub(Variable...Field.Name, pattern = '_obtained|_date|_value|_man|_other|_unit', replacement = '')) 
+
+datadict_labs %>% pull(prefix) %>% n_distinct()
+  
 
 ```
 
 ### Number of variables available for auto extraction
-We define variables available for auto extraction as those with identifiable eCRF to LOINC mappings. 
+We define variables available for auto extraction as those with identifiable eCRF to *LOINC* mappings. 
 ```{r}
-
+loinc_mapping %>% pull(eCRF.TERM.DESCRIPTION) %>% n_distinct()
 
 ```
 
+### Number of variables available for auto extraction at BCH
+We define BCH specific auto extraction variables as those with identifiable eCRF to LOINC to BCH concept mappings.
+```{r}
+# 64 - based on MUSIC Laboratory Values Form: mapping from eCRF numeric variables and BCH variables
 
+```
+
+### Number of variables which we can extract information automatically for MIS-C patients
+We define these variables as variables which we are able to extract data from at least one MIS-C patient from BCH. 
+```{r}
+# 61 - based on MUSIC Laboratory Values Form: mapping from eCRF numeric variables and BCH variables
+
+```
 
 ## Medications summary 
 
 ### Total number of variables
-We do not report the 'current_meds_fu_na' variable.
+Derived directly from meds_codeslist
 ```{r}
-datadict_meds %>%
-  filter(Variable...Field.Name != 'current_meds_fu_na') %>%
-  nrow()
+meds_codeslist %>% nrow()
 
 ```
+### Number of variables available for auto extraction
+We define variables available for auto extraction as those with **potentially** identifiable eCRF to *RXNORM* mappings. 
+Note that we might not have found an RXNORM code for all of these medications yet but that they could be expected to be automatically extracted to some extent. 
+Remove the following as they require further manual review:
+- Code ending in .99 (other)
+- Code ending in .00 (not specified)
 
+*This number does not reflect those which map to RXNORM yet*
+Refer to eCRF_to_RXNORM_mapping_potential.Rmd
+```{r}
+meds_codeslist <- meds_codeslist %>%
+  filter(!grepl('.99$|.00$', Code))
+
+meds_codeslist %>% nrow()
+
+```
 
 
 
