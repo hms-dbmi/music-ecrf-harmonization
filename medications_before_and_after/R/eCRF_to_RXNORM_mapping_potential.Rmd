@@ -1,7 +1,7 @@
 ---
 title: "Generate Potential eCRF to RXNORM Mapping"
 author: "Alba Gutierrez"
-date: "6/15/2021"
+date: "07/01/2021"
 output: html_document
 ---
 
@@ -280,7 +280,16 @@ ecrf_med_concept_summary <- ecrf_med_concept_summary %>%
          min_date, max_date, distinct_patients, distinct_observations, distinct_concepts) %>%
   arrange(ECRF_CODE)
 
+# add the ecrf codes for which we have no information 
+meds_missing <- meds_auto %>%
+  dplyr::filter( ! Code %in% ecrf_med_concept_summary$ECRF_CODE) %>%
+  dplyr::mutate( eCRF_name = "medications_before_and_after_hosp", 
+                 ECRF_CODE = Code, 
+                 ECRF_GENERIC_NAME = Generic.Name) %>%
+  dplyr::select( eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES)
 
+# add the missing codes at the end of ecrf_med_concept_summary
+ecrf_med_concept_summary <- rbindlist( list( ecrf_med_concept_summary, meds_missing), fill = TRUE )
 ```
 
 # Save the output summary
