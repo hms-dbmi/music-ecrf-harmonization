@@ -53,6 +53,10 @@ meds_auto <- meds_auto %>% mutate(key = str_c(Generic.Name, Trade.1, Trade.2, Tr
                                   key = str_replace_all(key, '\\|{2,}', '\\|'), # this line removes any multiples of pipes (||), which can happen if trades 1 & 3 are listed but not trade 2, for example
                                   key = tolower(key)) # this line converts all keywords to lowercase
 
+# add some other keywords
+meds_auto[ meds_auto$key == "amoxicillin-clavulanic acid|augmentin", "key"] <- "amoxicillin-clavulanic acid|augmentin|amoxicillin / clavulanate"
+meds_auto[ meds_auto$key == "amipicillin/sulbactam|unasyn", "key"] <- "amipicillin/sulbactam|unasyn|ampicillin / sulbactam"
+
 # create a blank dataframe for ecrf_to_rxnorm
 ecrf_to_rxnorm <- data.frame('ECRF_CODE' = '', 'ECRF_GENERIC_NAME' = '', 'RXNORM_CODE' = '', 'RXNORM_DESCRIPTION' = '')
 ecrf_to_rxnorm <- ecrf_to_rxnorm[-1,]
