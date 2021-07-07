@@ -1,0 +1,117 @@
+---
+title: "Exploring the demographic eCRF"
+date: "`r Sys.Date()`"
+author: MUSIC team
+output:
+  rmdformats::readthedown:
+    self_contained: true
+    code_folding: show
+---
+
+```{r, eval=FALSE}
+#for the Rmd format there are some templates that we can use, for example, readthedown, to use this or other predefined templates run the next lines of code
+install.packages("rmdformats")
+install.packages(remotes)  # if necessary
+remotes::install_github("juba/rmdformats")
+```
+
+
+# Demographics eCRF
+
+## MUSIC data dictionary
+To start exploring the demographics eCRF variables and develop the automatic pipeline to fill the eCRFs first we look at the MUSIC data dictionary, and extract the variables for this eCRF.
+
+We read the excel file, and select only the variables for the demographics eCRFm and we select the columns of interest. 
+
+```{r, message=FALSE}
+music_dictionary <- read.csv('../MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+
+library( dplyr )
+demographic_dictionary <- music_dictionary %>%
+  dplyr::filter( Form.Name == "demographics") %>%
+  dplyr::select( Variable...Field.Name, Section.Header, Field.Label,
+                 Choices..Calculations..OR.Slider.Labels,
+                 Text.Validation.Min, Text.Validation.Max)
+```
+
+We take a look and get familiarized with the variables in this file. 
+We can use some libraries to make this visualization nicer. 
+```{r, message=FALSE}
+library("DT")
+datatable( demographic_dictionary)
+```
+
+## How many variables are in the demographic eCRF?
+We can do some basic counts to start with, like the total number of variables present in the eCRF. 
+
+```{r, message=FALSE}
+print( paste0( "The total number of variables in the demographic eCRF is: ",length( unique( demographic_dictionary$Variable...Field.Name ))))
+```
+
+## Where can we find these variables in the EHR?
+In our database, that has the i2b2 Clinical Datawarehouse model,and the information is located in different tables: patient_dimension table, observation_fact and visit_dimension table.  
+
+### Patient dimension table
+Most of the demographic information is present in the "patient_dimension" table. A example of the content of this table has been reproduce for testing purposes in the file.  
+
+```{r}
+patient_dimension <- read.delim("../example_patient_dimension.txt")
+datatable( patient_dimension )
+```
+
+#### Summary of these patients
+We can do a first quality control by checking:
+- the number of patients that we have
+- the age range
+- the birth date range
+- sex variables: how is defined in BCH? 
+
+There are many ways to get these summaries in R. Here as an example we will illustrate couple of different ways to extract the same information. We do it with one of the variables, sex. 
+```{r, message=FALSE, warning=FALSE}
+# we can use the summary function pre-defining sex as a factor variable
+summary(as.factor( patient_dimension$SEX_CD ))
+
+# we can use dplyr, and create a table with the counts, percentages, etc.
+sex_summary <- patient_dimension %>% 
+  group_by( SEX_CD ) %>% 
+  summarise(num = n_distinct(PATIENT_NUM)) %>%
+  mutate( total = sum( num )) %>%
+  mutate(Percentage=round(num/total*100, 2))
+
+datatable( sex_summary )
+```
+
+### Concept dimension table 
+Other variables like premature, will be found at the observation fact, in the format of an ICD or a CPT code. To be able to determine which is the specific ICD or CPT code that codifies for example for premature, we can use the concept_dimension table. This is like a dictionary that contains the different concepts present in the observation fact table with their corresponding descriptions. This file is a dictionary and does not contain any patient level data. A subset of the whole concept_dimension table has been generated extracting only "ICD" and "CPT" codes. See below the SQL query to get this data extracted.  
+
+```{sql, eval=FALSE}
+select * from concept_dimension where concept_cd like 'CPT%' or concept_cd like 'ICD%';
+```
+
+We have exported this data as a tabulated separated file (.tsv). Let's read the file and see how it looks like. This file contains more than 300,000 rows, and it can take a little bit to load. The information that we need is in the first three columns: concept_path, concept_cd and name_char. 
+```{r}
+concept_dimension <- read.delim("../concept_dimension_icd_cpt.dsv")
+
+concept_dimension_selection <- concept_dimension %>%
+  dplyr::select( CONCEPT_PATH, CONCEPT_CD, NAME_CHAR )
+
+datatable( head( concept_dimension_selection ) )
+```
+
+As an example we will show here how we can find the concepts referring to "premature". 
+
+```{r, message=FALSE}
+prematureTerms <- concept_dimension_selection[grep('premature', tolower( concept_dimension_selection$NAME_CHAR ), ignore.case = TRUE),]
+
+datatable( prematureTerms )
+```
+
+For reproducing purposes, at the end of our code we do a summary of the session info, that will allow us to see the R version and libraries used to run this code. 
+```{r}
+sessionInfo()
+```
+
+
+
+
+
