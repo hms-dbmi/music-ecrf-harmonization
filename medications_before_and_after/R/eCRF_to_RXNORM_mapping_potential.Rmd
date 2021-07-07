@@ -276,7 +276,8 @@ After running the code below, Manual review of this file results in the followin
 - remove correct magnesium to magnesium sulfate mapping
 - remove correct potassium to potassium chloride mapping
 - remove correct sodium bicarbonate mapping
-
+Additionally, mappings that have been marked as incorrect by Simran, Alba, and Pierre, are added to incorrect_mappings_eCRF_to_BCH.csv.
+Finally, mappings with Pierre comments were added as incorrect.
 ```{r}
 #write.csv(bch_med_concept_summary %>% 
 #            filter(RXNORM_CODES == 'greater than 5 RXNORM codes mapped to BCH code') %>%
@@ -304,7 +305,7 @@ bch_med_concept_summary <- bch_med_concept_summary %>% ungroup() %>% select(-BCH
 
 bch_med_concept_summary <- bch_med_concept_summary %>% distinct()
 
-write.csv(bch_med_concept_summary, '../data/bch_med_concept_summary_toReview.csv')
+write.csv(bch_med_concept_summary, '../data/bch_med_concept_summary_toReview.csv', row.names = FALSE)
 
 ```
 
