@@ -269,6 +269,23 @@ write.csv(ecrf_med_concept_summary, '../data/ecrf_med_concept_summary_toReview.c
 
 # Check the output summary
 We know the BCH to RXNORM mapping is not perfect. 
+We suspect that the BCH codes which have many RXNORM mappings associated with them are incorrect.
+The following code helps us to create the incorrect_mappings_eCRF_to_BCH.csv file.
+After running the code below, Manual review of this file results in the following:
+- remove correct heparin mapping
+- remove correct magnesium to magnesium sulfate mapping
+- remove correct potassium to potassium chloride mapping
+- remove correct sodium bicarbonate mapping
+
+```{r}
+write.csv(bch_med_concept_summary %>% 
+            filter(RXNORM_CODES == 'greater than 5 RXNORM codes mapped to BCH code') %>%
+            select(ECRF_CODE, ECRF_GENERIC_NAME, CONCEPT_CD, BCH_CONCEPT_DESCRIPTION), 
+          '../data/test.csv')
+
+```
+
+
 Are there any BCH internal database codes which appear to map to an abnormally high number of eCRF codes?
 ```{r}
 bch_med_concept_summary %>%
