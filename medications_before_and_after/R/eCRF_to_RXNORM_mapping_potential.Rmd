@@ -292,4 +292,22 @@ bch_med_concept_summary <- bch_med_concept_summary %>%
   filter(!paste0(ECRF_CODE, '-', CONCEPT_CD) %in% paste0(incorrect_mappings$ECRF_CODE, '-', incorrect_mappings$CONCEPT_CD))
 ```
 
+Save a version of this file with the distinct concept paths (one row per concept path)
+```{r}
+write.csv(bch_med_concept_summary, '../data/bch_med_concept_summary_with_concept_paths.csv')
+
+```
+
+Remove repetitive concept paths and save for review
+```{r}
+bch_med_concept_summary <- bch_med_concept_summary %>% ungroup() %>% select(-BCH_CONCEPT_PATH)
+
+bch_med_concept_summary <- bch_med_concept_summary %>% distinct()
+
+write.csv(bch_med_concept_summary, '../data/bch_med_concept_summary_toReview.csv')
+
+```
+
+
+
 
