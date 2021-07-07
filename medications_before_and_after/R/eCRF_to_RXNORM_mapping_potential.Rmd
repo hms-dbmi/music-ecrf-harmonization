@@ -284,4 +284,12 @@ After running the code below, Manual review of this file results in the followin
 #          '../data/test.csv')
 
 ```
+Now we have the file incorrect_mappings_eCRF_to_BCH.csv which contains the BCH mappings that we know are incorrectly mapped to eCRF codes. 
+We will remove these from the BCH summary file.
+```{r}
+incorrect_mappings <- read_csv('../data/incorrect_mappings_eCRF_to_BCH.csv')
+bch_med_concept_summary <- bch_med_concept_summary %>% 
+  filter(!paste0(ECRF_CODE, '-', CONCEPT_CD) %in% paste0(incorrect_mappings$ECRF_CODE, '-', incorrect_mappings$CONCEPT_CD))
+```
+
 
