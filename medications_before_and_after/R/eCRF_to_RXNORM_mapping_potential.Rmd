@@ -278,65 +278,10 @@ After running the code below, Manual review of this file results in the followin
 - remove correct sodium bicarbonate mapping
 
 ```{r}
-write.csv(bch_med_concept_summary %>% 
-            filter(RXNORM_CODES == 'greater than 5 RXNORM codes mapped to BCH code') %>%
-            select(ECRF_CODE, ECRF_GENERIC_NAME, CONCEPT_CD, BCH_CONCEPT_DESCRIPTION), 
-          '../data/test.csv')
+#write.csv(bch_med_concept_summary %>% 
+#            filter(RXNORM_CODES == 'greater than 5 RXNORM codes mapped to BCH code') %>%
+#            select(ECRF_CODE, ECRF_GENERIC_NAME, CONCEPT_CD, BCH_CONCEPT_DESCRIPTION), 
+#          '../data/test.csv')
 
 ```
 
-
-Are there any BCH internal database codes which appear to map to an abnormally high number of eCRF codes?
-```{r}
-bch_med_concept_summary %>%
-  ungroup %>%
-  group_by(CONCEPT_CD) %>%
-  summarise(BCH_CONCEPT_PATH = first(BCH_CONCEPT_PATH),
-            BCH_CONCEPT_DESCRIPTION = first(BCH_CONCEPT_DESCRIPTION),
-            n_eCRF_mappings = n_distinct(ECRF_CODE),) %>%
-  arrange(desc(n_eCRF_mappings))
-
-```
-We can see that 100 eCRF codes (almost 1/3 of them!) have been assigned the general BCH internal concept code of 'ADMINMED:2799024'. This appears to represent non-categorized administered medicines, in this case Sodium Chloride 0.9%. This general concept code is not an accurate mapping and should be removed. As a sanity check, let's look at the eCRF descriptions of the codes which map to this 'Sodium Chloride 0.9%' code. 
-
-```{r}
-bch_med_concept_summary %>% filter(CONCEPT_CD == 'ADMINMED:2799024')
-
-```
-Medications such as Adenosine, Lidocaine, Ampicilin, etc. should not map to Sodium Chloridee 0.9%... we will remove this BCH concept code from our mapping and summary table.
-
-```{r}
-bch_med_concept_summary <- bch_med_concept_summary %>% filter(CONCEPT_CD != 'ADMINMED:2799024')
-
-```
-
-The next most prevalent BCH code is 'ADMINMED:2798992', which maps to 64 eCRF codes and is described in the BCH mapping as "Dextrose 5% in Water". The BCH concept path also reveals that it is categorized as a  non categorized administered medication. 
-
-Looking at which eCRF variables map to this code also suggests that this is not a useful mapping. We will remove this code from the mapping and summary table. 
-```{r}
-bch_med_concept_summary %>% filter(CONCEPT_CD == 'ADMINMED:2798992')
-bch_med_concept_summary <- bch_med_concept_summary %>% filter(CONCEPT_CD != 'ADMINMED:2798992')
-
-```
-
-The next most prevalent BCH code is 'ADMINMED:2797919', which maps to 16 eCRF codes and is described in the BCH mapping as 'heparin'. 
-```{r}
-bch_med_concept_summary %>% filter(CONCEPT_CD == 'ADMINMED:2797919')
-
-
-```
-There is a specific eCRF code that corresponds to Heparin (07.08). We will keep this mapping, and remove the mapping from the BCH heparin code to all other eCRF codes.
-```{r}
-bch_med_concept_summary <- bch_med_concept_summary %>% filter(CONCEPT_CD != 'ADMINMED:2797919' | ECRF_CODE == '07.08')
-
-
-```
-
-We can repeat this process for other repetitive, general codes.
-
-Save the updated bch_med_concept_summary.
-```{r}
-write.csv(bch_med_concept_summary, '../data/bch_med_concept_summary_toReview.csv', row.names = FALSE)
-
-
-```
