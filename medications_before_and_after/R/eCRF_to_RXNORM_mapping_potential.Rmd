@@ -201,26 +201,26 @@ return_rxnorm_desc <- function(RXNORM_DESCRIPTIONS) {
 # summarize music patient data for each concept
 bch_med_concept_summary <- misc_meds_info %>% 
   group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_NAME_CHAR) %>%
-  summarise(RXNORM_CODES = return_rxnorm_code(RXNORM_CODE),
+  summarise(ECRF_CODE = ECRF_CODE,
+            ECRF_GENERIC_NAME = ECRF_GENERIC_NAME,
+            ECRF_TRADE_NAMES = ECRF_TRADE_NAMES,
+            RXNORM_CODES = return_rxnorm_code(RXNORM_CODE),
             RXNORM_DESCS = return_rxnorm_desc(RXNORM_DESCRIPTION),
             min_date = min( dmy( med_date ) ), 
             max_date = max( dmy( med_date ) ),
             distinct_patients = length(unique(PATIENT_NUM)),
             distinct_observations = length(PATIENT_NUM))
 
-# join the summary with eCRF, RXNORM, and BCH code mapping info
-bch_med_concept_summary <- left_join(bch_med_concept_summary, rxnorm_to_bch, by = c('CONCEPT_CD' = 'BCH_CONCEPT_CD',
-                                                                                    'BCH_CONCEPT_PATH' = 'BCH_CONCEPT_PATH',
-                                                                                    'BCH_NAME_CHAR' = 'BCH_NAME_CHAR')) 
 
 # reorganize and rename columns
 bch_med_concept_summary <- bch_med_concept_summary %>%
   mutate(eCRF_name = 'medcations_before_and_after') %>%
   rename('BCH_CONCEPT_DESCRIPTION' = 'BCH_NAME_CHAR') %>%
   select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, 
+         RXNORM_CODES, RXNORM_DESCS,
          CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, min_date, max_date, distinct_patients, distinct_observations) %>%
   arrange(ECRF_CODE) %>%
-  unique() # there are still some duplicated rows from the join....
+  unique() # there are still some duplicated rows ....
 
 
 ```
