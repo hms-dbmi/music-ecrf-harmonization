@@ -57,7 +57,10 @@ meds_auto <- meds_auto %>% mutate(key = str_c(Generic.Name, Trade.1, Trade.2, Tr
 # these have been refined through the eCRF_to_RXNORM_mapping_potential_exploration.Rmd notebook
 # view meds_for_manual_keyword_review_edited.csv for more details
 manual_keywords <- read_csv('../data/manual_keywords_eCRF_to_RXNORM.csv')
-meds_auto[meds_auto$Code %in% manual_keywords$Code,c('Code', 'key')] <- manual_keywords[,c('Code', 'key')]
+
+for (code in manual_keywords$Code) {
+  meds_auto[ meds_auto$Code == code, "key"] <- manual_keywords %>% filter(Code == code) %>% pull(key)
+}
 
 # create a blank dataframe for ecrf_to_rxnorm
 ecrf_to_rxnorm <- data.frame('ECRF_CODE' = '', 'ECRF_GENERIC_NAME' = '', 'RXNORM_CODE' = '', 'RXNORM_DESCRIPTION' = '')
