@@ -258,7 +258,7 @@ meds_missing <- meds_auto %>%
   dplyr::select( eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES)
 
 # add the missing codes at the end of ecrf_med_concept_summary
-ecrf_med_concept_summary <- rbindlist( list( ecrf_med_concept_summary, meds_missing), fill = TRUE )
+#ecrf_med_concept_summary <- rbindlist( list( ecrf_med_concept_summary, meds_missing), fill = TRUE )
 ```
 
 # Save the output summary
