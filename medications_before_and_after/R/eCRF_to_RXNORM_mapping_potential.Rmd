@@ -118,7 +118,7 @@ length( unique( rxnorm_to_bch$RXNORM_CODE))
 length( unique( rxnorm_to_bch$BCH_CONCEPT_CD))
 ```
 
-In the BCH mapping we find 210 eCRF medication codes that map to 574 RXNORM codes and to 6,730 BCH internal codes.
+In the BCH mapping we find 210 eCRF medication codes that map to 560 RXNORM codes and to 6,564 BCH internal codes.
 
 
 # From BCH mapping to MISC patients
@@ -180,10 +180,30 @@ And we create the summary for each medication in our dataset.
 - in this summary table, each row is a unique BCH concept. 
 ```{r}
 
-# summarise music patient data for each concept
+# function for returning RXNORM codes list
+# return the list of relevant RXNORM codes; if the list is greater than 5, return 'greater than 5 RXNORM codes mapped'
+return_rxnorm_code <- function(RXNORM_CODES) {
+  if (length(unique(RXNORM_CODES)) > 5) {
+    return('greater than 5 RXNORM codes mapped to BCH code') 
+  } else {
+    return(paste(unique(RXNORM_CODES), collapse = ', '))
+  }
+}
+
+return_rxnorm_desc <- function(RXNORM_DESCRIPTIONS) {
+  if (length(unique(RXNORM_DESCRIPTIONS)) > 5) {
+    return('greater than 5 RXNORM codes mapped to BCH code') 
+  } else {
+    return(paste(unique(RXNORM_DESCRIPTIONS), collapse = ', '))
+  }
+}
+
+# summarize music patient data for each concept
 bch_med_concept_summary <- misc_meds_info %>% 
   group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_NAME_CHAR) %>%
-  summarise(min_date = min( dmy( med_date ) ), 
+  summarise(RXNORM_CODES = return_rxnorm_code(RXNORM_CODE),
+            RXNORM_DESCS = return_rxnorm_desc(RXNORM_DESCRIPTION),
+            min_date = min( dmy( med_date ) ), 
             max_date = max( dmy( med_date ) ),
             distinct_patients = length(unique(PATIENT_NUM)),
             distinct_observations = length(PATIENT_NUM))
