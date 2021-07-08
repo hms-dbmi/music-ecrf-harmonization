@@ -3,7 +3,7 @@
 08.07,bopindolol,typo
 11.02,diltiazem|cardizem,typo
 14.14,chlorothiazide|hydroflumethiazide|polythiazide|hydrochlorothiazide|chlorthalidone|indapamide|metolazone|bendroflumethiazide|chlorothiazide|methyclothiazide|zaroxolyn|microzide|thalitone|saluron|renese|naturetin|mykrox|lozol|esidrix|enduron|diuril sodium|diuril|aquazide h|aquatensin,needs further specification
-16.04,^calcium carbonate .* / magnesium hydroxide .* / simethicone .* oral suspension$,needs further specification
+16.04,(^calcium carbonate .* / magnesium hydroxide .* / simethicone .* oral suspension$)|(aluminum hydroxide / magnesium hydroxide / simethicone),needs further specification
 19.06,midodrine,typo
 20.04,fluvastatin,typo
 20.11,atorvastatin,typo
@@ -20,5 +20,5 @@
 03.03,amipicillin/sulbactam|unasyn|ampicillin / sulbactam,include additional phrasing
 08.11,dilevalol,typo
 16.09,[^es]omeprazole|prilosec,needs further specification
-13.04,enalapril[^at],needs further specification
+13.04,enalapril[^at]|enalapril$,needs further specification
 13.05,enalaprilat,needs further specification
