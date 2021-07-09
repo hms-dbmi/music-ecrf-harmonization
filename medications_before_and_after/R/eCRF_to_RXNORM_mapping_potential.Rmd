@@ -145,7 +145,7 @@ misc_meds <- read.delim("../local_ref/music_patients_meds.dsv", sep = ',')
 # filter out duplicated rows
 misc_meds <- misc_meds %>% 
   dplyr::filter( CONCEPT_CD %in%  rxnorm_to_bch$BCH_CONCEPT_CD ) %>%
-  unique()
+  distinct()
 
 # create misc_meds_info, which combines the MISC patient medication data with identified BCH and RXNORM codes for each eCRF variable
 misc_meds_info <- misc_meds %>% 
