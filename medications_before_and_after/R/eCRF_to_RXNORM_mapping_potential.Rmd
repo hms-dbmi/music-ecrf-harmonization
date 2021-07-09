@@ -213,7 +213,8 @@ bch_med_concept_summary <- misc_meds_info %>%
             min_date = min( dmy( med_date ) ), 
             max_date = max( dmy( med_date ) ),
             distinct_patients = length(unique(PATIENT_NUM)),
-            distinct_observations = length(PATIENT_NUM))
+            distinct_observations = length(PATIENT_NUM),
+            pat_ids = paste0(unique(PATIENT_NUM), collapse = ','))
 
 
 # reorganize and rename columns
@@ -223,7 +224,7 @@ bch_med_concept_summary <- bch_med_concept_summary %>%
   rename('BCH_CONCEPT_DESCRIPTION' = 'BCH_NAME_CHAR') %>%
   select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, 
          RXNORM_CODES, RXNORM_DESCS,
-         CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, min_date, max_date, distinct_patients, distinct_observations) %>%
+         CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, min_date, max_date, distinct_patients, distinct_observations, pat_ids) %>%
   arrange(ECRF_CODE) %>%
   unique() # there are still some duplicated rows ....
 
@@ -257,7 +258,7 @@ bch_med_concept_summary <- bch_med_concept_summary %>%
 
 Save a version of this file with the distinct concept paths (one row per concept path)
 ```{r}
-write.csv(bch_med_concept_summary, '../data/bch_med_concept_summary_with_concept_paths.csv')
+write.csv(bch_med_concept_summary %>% select(-pat_ids), '../data/bch_med_concept_summary_with_concept_paths.csv')
 
 ```
 
@@ -267,21 +268,29 @@ bch_med_concept_summary <- bch_med_concept_summary %>% ungroup() %>% select(-BCH
 
 bch_med_concept_summary <- bch_med_concept_summary %>% distinct()
 
-write.csv(bch_med_concept_summary, '../data/bch_med_concept_summary_toReview.csv', row.names = FALSE)
+write.csv(bch_med_concept_summary %>% select(-pat_ids), '../data/bch_med_concept_summary_toReview.csv', row.names = FALSE)
 
 ```
 
 - in this summary table, each row is a unique eCRF code. 
 ```{r}
 
-# summarise music patient data for each code
-ecrf_med_concept_summary <- misc_meds_info %>%
+# function to calculate number of unique patient ids across multiple concepts
+calc_n_unique_pids <- function(pids) {
+  combined <- paste0(pids, collapse = ',')
+  combined_unique <- unique(str_split(combined, ',')[[1]])
+  return(length(combined_unique))
+}
+
+# generate eCRF summary based on filtered mapping
+ecrf_med_concept_summary <- bch_med_concept_summary %>%
+  ungroup() %>%
   group_by(ECRF_CODE) %>%
-  summarise(min_date = min( dmy( med_date ) ), 
-            max_date = max( dmy( med_date ) ),
-            distinct_patients = length(unique(PATIENT_NUM)),
-            distinct_observations = length(PATIENT_NUM),
-            distinct_concepts = length(unique(CONCEPT_CD)))
+  summarise(min_date = min(min_date),
+            max_date = max(max_date),
+            distinct_patients = calc_n_unique_pids(pat_ids),
+            distinct_observations = sum(distinct_observations),
+            distinct_concepts = n_distinct(CONCEPT_CD))
 
 # join the summary with eCRF, RXNORM, and BCH code mapping info
 ecrf_med_concept_summary <- left_join(ecrf_med_concept_summary, 
