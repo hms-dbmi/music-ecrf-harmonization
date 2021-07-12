@@ -98,8 +98,6 @@ for( i  in 1:nrow( meds_auto ) ){
 print(length(non_mapping_keywords))
 print(length(unique(ecrf_to_rxnorm$ECRF_CODE)))
 print(length(unique(ecrf_to_rxnorm$RXNORM_CODE)))
-
-
 ```
 
 
@@ -203,6 +201,13 @@ return_rxnorm_desc <- function(RXNORM_DESCRIPTIONS) {
 }
 
 # summarize music patient data for each concept
+patient_observation_summary <- misc_meds %>% 
+  group_by(CONCEPT_CD ) %>%
+  summarise(distinct_patients = length(unique(PATIENT_NUM)),
+            distinct_observations = n())
+
+misc_meds_info <- left_join( misc_meds_info, patient_observation_summary ) 
+
 bch_med_concept_summary <- misc_meds_info %>% 
   group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_NAME_CHAR) %>%
   summarise(ECRF_CODE = ECRF_CODE,
@@ -212,11 +217,9 @@ bch_med_concept_summary <- misc_meds_info %>%
             RXNORM_DESCS = return_rxnorm_desc(RXNORM_DESCRIPTION),
             min_date = min( dmy( med_date ) ), 
             max_date = max( dmy( med_date ) ),
-            distinct_patients = length(unique(PATIENT_NUM)),
-            distinct_observations = length(PATIENT_NUM),
+            distinct_patients = distinct_patients,
+            distinct_observations = distinct_observations,
             pat_ids = paste0(unique(PATIENT_NUM), collapse = ','))
-
-
 # reorganize and rename columns
 bch_med_concept_summary <- bch_med_concept_summary %>%
   mutate(eCRF_name = 'medcations_before_and_after',
@@ -227,8 +230,6 @@ bch_med_concept_summary <- bch_med_concept_summary %>%
          CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, min_date, max_date, distinct_patients, distinct_observations, pat_ids) %>%
   arrange(ECRF_CODE) %>%
   unique() # there are still some duplicated rows ....
-
-
 ```
 # Check the BCH output summary
 We know the BCH to RXNORM mapping is not perfect. 
