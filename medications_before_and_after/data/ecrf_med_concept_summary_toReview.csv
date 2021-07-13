@@ -4,7 +4,9 @@
 "medications_before_and_after_hosp","02.09","Lidocaine","Xylocaine",2007-05-22,2021-04-15,42,5390,11
 "medications_before_and_after_hosp","02.12","Phenytoin","Dilantin",2007-05-22,2021-04-15,40,517,1
 "medications_before_and_after_hosp","02.13","Procainamide","Pronestyl, Procan",2007-05-22,2021-04-15,40,659,2
+"medications_before_and_after_hosp","03.03","Amipicillin/Sulbactam","Unasyn",2007-05-22,2021-04-15,41,2015,4
 "medications_before_and_after_hosp","03.04","Amoxicillin","Amoxil",2009-06-12,2021-03-21,19,1121,11
+"medications_before_and_after_hosp","03.05","Amoxicillin-Clavulanic Acid","Augmentin",2014-03-14,2020-07-23,3,9,6
 "medications_before_and_after_hosp","03.06","Amphotericin","Fungizone",2020-04-22,2021-03-13,15,1087,2
 "medications_before_and_after_hosp","03.07","Ampicillin","Omnipen",2007-05-22,2021-04-15,41,4013,5
 "medications_before_and_after_hosp","03.08","Azithromycin","Zithromax",2007-05-22,2021-04-15,41,1619,5
@@ -83,7 +85,6 @@
 "medications_before_and_after_hosp","16.06","Ranitidine","Zantac",2007-05-22,2021-04-15,41,1634,7
 "medications_before_and_after_hosp","16.07","Simethicone","Mylicon",2016-03-16,2021-02-05,3,6,3
 "medications_before_and_after_hosp","16.08","Sucralfate","Carafate",2007-05-22,2021-04-15,40,518,2
-"medications_before_and_after_hosp","16.09","Omeprazole","Prilosec",2007-05-22,2021-04-15,42,1672,9
 "medications_before_and_after_hosp","16.10","Lansoprazole","Prevacid",2013-10-22,2021-03-13,17,1088,4
 "medications_before_and_after_hosp","16.11","Famotidine","Pepcid",2007-05-22,2021-04-15,43,1904,8
 "medications_before_and_after_hosp","18.03","Cortisone","",2007-05-22,2021-04-15,42,2141,10
@@ -110,8 +111,8 @@
 "medications_before_and_after_hosp","22.16","Morphine","",2007-05-22,2021-04-15,41,1630,3
 "medications_before_and_after_hosp","22.22","Oxycodone","OxyContin",2007-05-22,2021-04-15,40,531,4
 "medications_before_and_after_hosp","23.01","Alteplase","Activase",2007-05-22,2021-04-15,42,1636,4
-"medications_before_and_after_hosp","25.03","Loratadine","Antihistamines|Claritin",2020-07-02,2020-11-01,2,2,2
-"medications_before_and_after_hosp","25.05","Cetirizine","Antihistamines|Zyrtec",2020-06-04,2021-01-29,5,29,4
+"medications_before_and_after_hosp","25.03","Loratadine","Claritin",2020-07-02,2020-11-01,2,2,2
+"medications_before_and_after_hosp","25.05","Cetirizine","Zyrtec",2020-06-04,2021-01-29,5,29,4
 "medications_before_and_after_hosp","26.02","Anakinra (IL-1 blockade)","",2007-05-22,2021-04-15,41,973,3
 "medications_before_and_after_hosp","26.04","Infliximab (TNF inhibitor)","",2007-05-22,2021-04-15,40,517,1
 "medications_before_and_after_hosp","26.05","Tocilizumab (IL-6 blockade)","",2007-05-22,2021-04-15,40,517,1
@@ -120,4 +121,3 @@
 "medications_before_and_after_hosp","26.09","Canakinumab","",2020-05-28,2020-11-26,2,2,1
 "medications_before_and_after_hosp","26.14","Emapalumab (IFN gamma antibody)","",2007-05-22,2021-04-15,40,517,1
 "medications_before_and_after_hosp","27.02","Oseltamivir","Tamiflu",2009-06-09,2020-03-06,4,18,3
-"medications_before_and_after_hosp","9.03","Gamma Globulin",NA,2007-05-22,2021-04-15,44,4806,3

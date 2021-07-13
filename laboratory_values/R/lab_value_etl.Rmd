@@ -253,9 +253,7 @@ for (patient in readmission_table$PATIENT_NUM){
 
 
 lab_values_visit
-23, 'Worst Values During Hosp' **Note**: waiting to hear back about 'worst' values. For now, taking **max** of all labs.
-define 'worst' values
-currently do not know which is worst; use high as default
+23, 'Worst Values During Hosp'
 ```{r}
 # create dummy df for mapping variable name to whether high or low is worst, in this case all are 'high'
 # this can be changed to reference variable prefix in the future if that is more convenient
