@@ -1,5 +1,4 @@
-*/local_ref/*
+**/local_ref/**
 *testoutput.csv*
-*/input_data_extract/*
-*/output_redcap/*
-medications_before_and_after/BCH/input_data_extract/test.txt
+**/input_data_extract/**
+**/output_redcap/**
