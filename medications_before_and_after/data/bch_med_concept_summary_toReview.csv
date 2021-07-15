@@ -6,17 +6,17 @@
 "medcations_before_and_after","02.09","Lidocaine","Xylocaine","6387","lidocaine","ADMINMED:4103284","lidocaine",2020-05-26,2021-02-24,12,68
 "medcations_before_and_after","02.09","Lidocaine","Xylocaine","166283","lidocaine / prilocaine","HOMEMED:3681307","lidocaine-prilocaine topical",2020-08-23,2020-08-24,1,2
 "medcations_before_and_after","02.13","Procainamide","Pronestyl, Procan","8700","procainamide","ADMINMED:2798546","procainamide",2021-03-08,2021-03-13,1,142
-"medcations_before_and_after","03.03","Amipicillin/Sulbactam","Unasyn","1009148","ampicillin / sulbactam","ADMINMED:2796908","ampicillin-sulbactam",2017-11-03,2020-07-22,2,48
+"medcations_before_and_after","03.03","Amipicillin/Sulbactam","Unasyn","1009148","ampicillin / sulbactam","ADMINMED:2796908","ampicillin-sulbactam",2017-11-03,2020-07-22,2,24
 "medcations_before_and_after","03.04","Amoxicillin","Amoxil","723","amoxicillin","ADMINMED:2796897","amoxicillin",2009-06-12,2020-05-29,3,15
 "medcations_before_and_after","03.04","Amoxicillin","Amoxil","723","amoxicillin","HOMEMED:3653741","amoxicillin",2021-03-21,2021-03-21,1,1
 "medcations_before_and_after","03.04","Amoxicillin","Amoxil","723","amoxicillin","HOMEMED:3653753","amoxicillin",2020-05-29,2020-05-29,1,2
 "medcations_before_and_after","03.04","Amoxicillin","Amoxil","723","amoxicillin","HOMEMED:3653758","amoxicillin",2009-06-15,2021-01-08,3,9
-"medcations_before_and_after","03.05","Amoxicillin-Clavulanic Acid","Augmentin","19711","amoxicillin / clavulanate","ADMINMED:2796899","amoxicillin-clavulanate",2017-11-04,2020-07-23,2,6
-"medcations_before_and_after","03.05","Amoxicillin-Clavulanic Acid","Augmentin","19711","amoxicillin / clavulanate","HOMEMED:3653800","amoxicillin-clavulanate",2016-12-23,2016-12-23,1,4
-"medcations_before_and_after","03.05","Amoxicillin-Clavulanic Acid","Augmentin","19711","amoxicillin / clavulanate","HOMEMED:3653807","amoxicillin-clavulanate",2020-07-16,2020-07-16,1,2
-"medcations_before_and_after","03.05","Amoxicillin-Clavulanic Acid","Augmentin","19711","amoxicillin / clavulanate","HOMEMED:3653817","amoxicillin-clavulanate",2014-03-14,2014-03-14,1,2
-"medcations_before_and_after","03.05","Amoxicillin-Clavulanic Acid","Augmentin","19711","amoxicillin / clavulanate","HOMEMED:3653821","amoxicillin-clavulanate",2020-07-23,2020-07-23,1,2
-"medcations_before_and_after","03.05","Amoxicillin-Clavulanic Acid","Augmentin","19711","amoxicillin / clavulanate","HOMEMED:3653822","amoxicillin-clavulanate",2017-11-04,2017-11-04,1,2
+"medcations_before_and_after","03.05","Amoxicillin-Clavulanic Acid","Augmentin","19711","amoxicillin / clavulanate","ADMINMED:2796899","amoxicillin-clavulanate",2017-11-04,2020-07-23,2,3
+"medcations_before_and_after","03.05","Amoxicillin-Clavulanic Acid","Augmentin","19711","amoxicillin / clavulanate","HOMEMED:3653800","amoxicillin-clavulanate",2016-12-23,2016-12-23,1,2
+"medcations_before_and_after","03.05","Amoxicillin-Clavulanic Acid","Augmentin","19711","amoxicillin / clavulanate","HOMEMED:3653807","amoxicillin-clavulanate",2020-07-16,2020-07-16,1,1
+"medcations_before_and_after","03.05","Amoxicillin-Clavulanic Acid","Augmentin","19711","amoxicillin / clavulanate","HOMEMED:3653817","amoxicillin-clavulanate",2014-03-14,2014-03-14,1,1
+"medcations_before_and_after","03.05","Amoxicillin-Clavulanic Acid","Augmentin","19711","amoxicillin / clavulanate","HOMEMED:3653821","amoxicillin-clavulanate",2020-07-23,2020-07-23,1,1
+"medcations_before_and_after","03.05","Amoxicillin-Clavulanic Acid","Augmentin","19711","amoxicillin / clavulanate","HOMEMED:3653822","amoxicillin-clavulanate",2017-11-04,2017-11-04,1,1
 "medcations_before_and_after","03.07","Ampicillin","Omnipen","733","ampicillin","ADMINMED:2796907","ampicillin",2020-05-26,2020-05-28,1,7
 "medcations_before_and_after","03.08","Azithromycin","Zithromax","18631","azithromycin","ADMINMED:2797013","azithromycin",2009-06-09,2020-05-18,3,15
 "medcations_before_and_after","03.08","Azithromycin","Zithromax","18631","azithromycin","HOMEMED:3655108","azithromycin",2017-11-27,2017-11-27,1,1
@@ -27,29 +27,29 @@
 "medcations_before_and_after","03.15","Ceftriaxone","Rocephin","2193","ceftriaxone | ceftriaxone","HOMEMED:3671944","ceftriaxone",2020-12-27,2020-12-27,1,1
 "medcations_before_and_after","03.19","Clindamycin","Cleocin","2582","clindamycin","ADMINMED:2797437","clindamycin",2014-12-13,2021-03-08,3,16
 "medcations_before_and_after","03.19","Clindamycin","Cleocin","2582","clindamycin","HOMEMED:3673089","clindamycin",2014-12-13,2014-12-13,1,2
-"medcations_before_and_after","03.20","Erythromycin","","4053","erythromycin","ADMINMED:2797711","erythromycin ophthalmic",2017-08-14,2020-05-19,2,3
-"medcations_before_and_after","03.20","Erythromycin","","4053","erythromycin","HOMEMED:3676506","erythromycin ophthalmic",2016-08-11,2016-08-11,1,1
-"medcations_before_and_after","03.28","Mycostatin","Nystatin","7597","nystatin","HOMEMED:3684528","nystatin topical",2019-07-26,2019-07-26,1,2
-"medcations_before_and_after","03.28","Mycostatin","Nystatin","7597","nystatin","HOMEMED:3684529","nystatin topical",2014-09-06,2014-09-06,1,2
-"medcations_before_and_after","03.30","Nystatin","Mycostatin","7597","nystatin","HOMEMED:3684528","nystatin topical",2019-07-26,2019-07-26,1,2
-"medcations_before_and_after","03.30","Nystatin","Mycostatin","7597","nystatin","HOMEMED:3684529","nystatin topical",2014-09-06,2014-09-06,1,2
-"medcations_before_and_after","03.32","Penicillin","","7984","penicillin v | phenoxymethylpenicillin","ADMINMED:288807609","penicillin v potassium",2013-04-29,2013-04-29,1,1
-"medcations_before_and_after","03.32","Penicillin","","7984","penicillin v | phenoxymethylpenicillin","HOMEMED:288807616","penicillin v potassium",2012-02-17,2014-12-30,1,5
-"medcations_before_and_after","03.37","Vancomycin","","20481, 2191, 1596450, 11124, 5224","cefepime, ceftazidime | ceftazidime, gentamicin, vancomycin, heparin","ADMINMED:2798880","vancomycin",2007-07-02,2021-03-08,6,155
-"medcations_before_and_after","03.37","Vancomycin","","11124","vancomycin","HOMEMED:3671214","vancomycin",2021-02-20,2021-02-20,1,1
+"medcations_before_and_after","03.20","Erythromycin",NA,"4053","erythromycin","ADMINMED:2797711","erythromycin ophthalmic",2017-08-14,2020-05-19,2,3
+"medcations_before_and_after","03.20","Erythromycin",NA,"4053","erythromycin","HOMEMED:3676506","erythromycin ophthalmic",2016-08-11,2016-08-11,1,1
+"medcations_before_and_after","03.28","Mycostatin","Nystatin","7597","nystatin","HOMEMED:3684528","nystatin topical",2019-07-26,2019-07-26,1,1
+"medcations_before_and_after","03.28","Mycostatin","Nystatin","7597","nystatin","HOMEMED:3684529","nystatin topical",2014-09-06,2014-09-06,1,1
+"medcations_before_and_after","03.30","Nystatin","Mycostatin","7597","nystatin","HOMEMED:3684528","nystatin topical",2019-07-26,2019-07-26,1,1
+"medcations_before_and_after","03.30","Nystatin","Mycostatin","7597","nystatin","HOMEMED:3684529","nystatin topical",2014-09-06,2014-09-06,1,1
+"medcations_before_and_after","03.32","Penicillin",NA,"7984","penicillin v | phenoxymethylpenicillin","ADMINMED:288807609","penicillin v potassium",2013-04-29,2013-04-29,1,1
+"medcations_before_and_after","03.32","Penicillin",NA,"7984","penicillin v | phenoxymethylpenicillin","HOMEMED:288807616","penicillin v potassium",2012-02-17,2014-12-30,1,5
+"medcations_before_and_after","03.37","Vancomycin",NA,"20481, 2191, 1596450, 11124, 5224","cefepime, ceftazidime | ceftazidime, gentamicin, vancomycin, heparin","ADMINMED:2798880","vancomycin",2007-07-02,2021-03-08,6,31
+"medcations_before_and_after","03.37","Vancomycin",NA,"11124","vancomycin","HOMEMED:3671214","vancomycin",2021-02-20,2021-02-20,1,1
 "medcations_before_and_after","06.01","Clonidine","Catapres, Duraclon","2599","clonidine | clonidine","ADMINMED:2797449","clonidine",2020-02-02,2021-02-04,2,8
 "medcations_before_and_after","06.01","Clonidine","Catapres, Duraclon","2599","clonidine | clonidine","HOMEMED:3670577","clonidine",2020-02-05,2020-02-05,1,1
 "medcations_before_and_after","06.08","Hydralazine","Apresoline","5470","hydralazine | hydralazine","ADMINMED:2797935","hydralazine",2020-05-08,2020-05-12,1,4
-"medcations_before_and_after","07.02","Aspirin","","1191","aspirin","ADMINMED:2796980","aspirin",2019-07-19,2021-03-18,38,289
-"medcations_before_and_after","07.02","Aspirin","","1191","aspirin","HOMEMED:3654772","aspirin",2020-12-21,2020-12-21,1,1
-"medcations_before_and_after","07.02","Aspirin","","1191","aspirin","HOMEMED:3654774","aspirin",2019-07-20,2021-04-15,38,54
+"medcations_before_and_after","07.02","Aspirin",NA,"1191","aspirin","ADMINMED:2796980","aspirin",2019-07-19,2021-03-18,38,289
+"medcations_before_and_after","07.02","Aspirin",NA,"1191","aspirin","HOMEMED:3654772","aspirin",2020-12-21,2020-12-21,1,1
+"medcations_before_and_after","07.02","Aspirin",NA,"1191","aspirin","HOMEMED:3654774","aspirin",2019-07-20,2021-04-15,38,54
 "medcations_before_and_after","07.06","Enoxaparin","Lovenox","67108","enoxaparin","ADMINMED:2797686","enoxaparin",2020-05-05,2021-03-18,29,326
 "medcations_before_and_after","07.06","Enoxaparin","Lovenox","67108","enoxaparin","HOMEMED:10697071","enoxaparin",2020-05-24,2020-05-27,2,3
 "medcations_before_and_after","07.06","Enoxaparin","Lovenox","67108","enoxaparin","HOMEMED:3676235","enoxaparin",2021-01-21,2021-01-21,1,1
 "medcations_before_and_after","07.06","Enoxaparin","Lovenox","67108","enoxaparin","HOMEMED:3676238","enoxaparin",2020-08-21,2020-08-21,1,2
-"medcations_before_and_after","07.08","Heparin","","5224","heparin","ADMINMED:212159319","heparin flush",2020-04-22,2021-03-13,13,148
-"medcations_before_and_after","07.08","Heparin","","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2797919","heparin",2020-04-23,2021-01-29,5,8558
-"medcations_before_and_after","07.08","Heparin","","5224","heparin","HOMEMED:130873250","heparin flush",2020-12-27,2020-12-27,1,1
+"medcations_before_and_after","07.08","Heparin",NA,"5224","heparin","ADMINMED:212159319","heparin flush",2020-04-22,2021-03-13,13,148
+"medcations_before_and_after","07.08","Heparin",NA,"greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2797919","heparin",2020-04-23,2021-01-29,5,389
+"medcations_before_and_after","07.08","Heparin",NA,"5224","heparin","HOMEMED:130873250","heparin flush",2020-12-27,2020-12-27,1,1
 "medcations_before_and_after","07.13","Apixaban","Eliquis","1364430","apixaban","ADMINMED:467428629","apixaban",2020-04-28,2021-02-09,9,60
 "medcations_before_and_after","07.13","Apixaban","Eliquis","1364430","apixaban","HOMEMED:467428636","apixaban",2020-11-25,2021-01-21,1,3
 "medcations_before_and_after","07.13","Apixaban","Eliquis","1364430","apixaban","HOMEMED:467428637","apixaban",2020-05-09,2021-02-24,8,13
@@ -76,26 +76,25 @@
 "medcations_before_and_after","11.02","Diltiazam","Cardiazem","3443","diltiazem | diltiazem","ADMINMED:2797607","diltiazem",2021-03-08,2021-03-12,1,124
 "medcations_before_and_after","11.05","Nicardipine","Cardene","7396","nicardipine | nicardipine","ADMINMED:2798334","nicardipine",2021-03-10,2021-03-11,1,27
 "medcations_before_and_after","13.02","Captopril","Capoten","1998","captopril","HOMEMED:3671376","captopril",2016-04-12,2016-04-12,1,1
-"medcations_before_and_after","13.04","Enalapril","Vasotec","3827, 3829","enalapril, enalaprilat","ADMINMED:2797681","enalapril",2020-05-04,2021-01-12,2,36
-"medcations_before_and_after","13.04","Enalapril","Vasotec","3827, 3829","enalapril, enalaprilat","HOMEMED:3676203","enalapril",2020-05-09,2020-08-03,1,8
+"medcations_before_and_after","13.04","Enalapril","Vasotec","3827, 3829","enalapril, enalaprilat","ADMINMED:2797681","enalapril",2020-05-04,2021-01-12,2,18
+"medcations_before_and_after","13.04","Enalapril","Vasotec","3827, 3829","enalapril, enalaprilat","HOMEMED:3676203","enalapril",2020-05-09,2020-08-03,1,4
 "medcations_before_and_after","13.07","Lisinopril","Prinivil, Zestril","29046","lisinopril","HOMEMED:3681358","lisinopril",2021-01-25,2021-03-09,2,2
-"medcations_before_and_after","14.05","Chlorothiazide","Diuril","2396","chlorothiazide","ADMINMED:2797261","chlorothiazide",2021-01-27,2021-01-27,1,2
+"medcations_before_and_after","14.05","Chlorothiazide","Diuril","2396","chlorothiazide","ADMINMED:2797261","chlorothiazide",2021-01-27,2021-01-27,1,1
 "medcations_before_and_after","14.08","Furosemide","Lasix","4603","furosemide","ADMINMED:2797841","furosemide",2020-04-23,2021-03-12,12,90
 "medcations_before_and_after","14.08","Furosemide","Lasix","4603","furosemide","HOMEMED:3677944","furosemide",2020-05-09,2020-05-09,1,1
 "medcations_before_and_after","14.08","Furosemide","Lasix","4603","furosemide","HOMEMED:3677945","furosemide",2016-04-12,2016-04-12,1,1
 "medcations_before_and_after","14.08","Furosemide","Lasix","4603","furosemide","HOMEMED:3677950","furosemide",2021-01-29,2021-01-29,1,2
 "medcations_before_and_after","14.13","Spironolactone","Aldactone","9997","spironolactone","ADMINMED:2798711","spironolactone",2020-04-24,2020-05-05,2,17
 "medcations_before_and_after","14.13","Spironolactone","Aldactone","9997","spironolactone","HOMEMED:3688386","spironolactone",2020-05-02,2020-05-02,1,1
-"medcations_before_and_after","15.03","Magnesium","","466588","aluminum hydroxide / magnesium hydroxide / simethicone","ADMINMED:2797319","al hydroxide/mg hydroxide/simethicone",2020-07-15,2020-07-15,1,3
-"medcations_before_and_after","15.03","Magnesium","","6581","magnesium hydroxide","ADMINMED:2798161","magnesium hydroxide",2017-05-23,2021-01-22,3,4
-"medcations_before_and_after","15.03","Magnesium","","6582","magnesium oxide","ADMINMED:2798164","magnesium oxide",2021-02-08,2021-02-11,1,12
-"medcations_before_and_after","15.03","Magnesium","","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2798167","magnesium sulfate",2020-05-20,2021-01-24,4,90
-"medcations_before_and_after","15.04","Potassium","","847627, 847630, 8591, 54987, 36676","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2798508","potassium acetate",2020-08-09,2021-01-18,2,28
-"medcations_before_and_after","15.04","Potassium","","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2798516","potassium chloride",2009-06-12,2021-03-12,19,1276
-"medcations_before_and_after","15.04","Potassium","","847627, 34322","calcium chloride 0.001 meq/ml / glucose 50 mg/ml / potassium chloride 0.004 meq/ml / sodium chloride 0.103 meq/ml / sodium lactate 0.028 meq/ml injectable solution | calcium chloride 0.001 meq/ml / glucose 50 mg/ml / k+ chloride 0.004 meq/ml / nacl 0.103 meq/ml / sodium lactate 0.028 meq/ml injectable solution | calcium chloride 0.001 meq/ml / glucose 50 mg/ml / pot chloride 0.004 meq/ml / nacl 0.103 meq/ml / sodium lactate 0.028 meq/ml injectable solution, potassium phosphate, calcium chloride 0.001 meq/ml / glucose 50 mg/ml / potassium chloride 0.004 meq/ml / sodium chloride 0.103 meq/ml / sodium lactate 0.028 meq/ml injectable solution","ADMINMED:2798525","potassium phosphate",2020-04-24,2021-03-10,10,129
-"medcations_before_and_after","15.05","Sodium Bicarbonate","","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2798673","sodium bicarbonate",2020-04-23,2021-03-07,5,70
-"medcations_before_and_after","16.04","Mylanta","","466588","aluminum hydroxide / magnesium hydroxide / simethicone","ADMINMED:2797319","al hydroxide/mg hydroxide/simethicone",2020-07-15,2020-07-15,1,3
-"medcations_before_and_after","16.04","Mylanta","","466588","aluminum hydroxide / magnesium hydroxide / simethicone","HOMEMED:395571686","al hydroxide/mg hydroxide/simethicone",2016-03-16,2021-02-05,2,6
+"medcations_before_and_after","15.03","Magnesium",NA,"6581","magnesium hydroxide","ADMINMED:2798161","magnesium hydroxide",2017-05-23,2021-01-22,3,4
+"medcations_before_and_after","15.03","Magnesium",NA,"6582","magnesium oxide","ADMINMED:2798164","magnesium oxide",2021-02-08,2021-02-11,1,12
+"medcations_before_and_after","15.03","Magnesium",NA,"greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2798167","magnesium sulfate",2020-05-20,2021-01-24,4,10
+"medcations_before_and_after","15.04","Potassium",NA,"847627, 847630, 8591, 54987, 36676","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2798508","potassium acetate",2020-08-09,2021-01-18,2,4
+"medcations_before_and_after","15.04","Potassium",NA,"greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2798516","potassium chloride",2009-06-12,2021-03-12,19,116
+"medcations_before_and_after","15.04","Potassium",NA,"847627, 34322","calcium chloride 0.001 meq/ml / glucose 50 mg/ml / potassium chloride 0.004 meq/ml / sodium chloride 0.103 meq/ml / sodium lactate 0.028 meq/ml injectable solution | calcium chloride 0.001 meq/ml / glucose 50 mg/ml / k+ chloride 0.004 meq/ml / nacl 0.103 meq/ml / sodium lactate 0.028 meq/ml injectable solution | calcium chloride 0.001 meq/ml / glucose 50 mg/ml / pot chloride 0.004 meq/ml / nacl 0.103 meq/ml / sodium lactate 0.028 meq/ml injectable solution, potassium phosphate, calcium chloride 0.001 meq/ml / glucose 50 mg/ml / potassium chloride 0.004 meq/ml / sodium chloride 0.103 meq/ml / sodium lactate 0.028 meq/ml injectable solution","ADMINMED:2798525","potassium phosphate",2020-04-24,2021-03-10,10,43
+"medcations_before_and_after","15.05","Sodium Bicarbonate",NA,"greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2798673","sodium bicarbonate",2020-04-23,2021-03-07,5,10
+"medcations_before_and_after","16.04","Mylanta",NA,"466588","aluminum hydroxide / magnesium hydroxide / simethicone","ADMINMED:2797319","al hydroxide/mg hydroxide/simethicone",2020-07-15,2020-07-15,1,1
+"medcations_before_and_after","16.04","Mylanta",NA,"466588","aluminum hydroxide / magnesium hydroxide / simethicone","HOMEMED:395571686","al hydroxide/mg hydroxide/simethicone",2016-03-16,2021-02-05,2,2
 "medcations_before_and_after","16.06","Ranitidine","Zantac","9143","ranitidine | ranitidine","ADMINMED:2798594","ranitidine",2009-06-10,2016-03-16,2,8
 "medcations_before_and_after","16.06","Ranitidine","Zantac","9143","ranitidine | ranitidine","HOMEMED:3687183","ranitidine",2016-03-16,2016-03-16,1,1
 "medcations_before_and_after","16.07","Simethicone","Mylicon","9796","simethicone","ADMINMED:2798662","simethicone",2020-05-18,2020-05-25,1,3
@@ -103,27 +102,27 @@
 "medcations_before_and_after","16.10","Lansoprazole","Prevacid","17128","lansoprazole","HOMEMED:3680918","lansoprazole",2016-10-03,2016-10-03,1,1
 "medcations_before_and_after","16.10","Lansoprazole","Prevacid","17128","lansoprazole","HOMEMED:3680919","lansoprazole",2020-05-25,2020-05-25,1,1
 "medcations_before_and_after","16.10","Lansoprazole","Prevacid","17128","lansoprazole","HOMEMED:395571702","lansoprazole",2013-10-22,2013-10-22,1,1
-"medcations_before_and_after","16.11","Famotidine","Pepcid","8591, 4278","potassium chloride, famotidine","ADMINMED:2797762","famotidine",2020-05-07,2021-03-18,23,482
+"medcations_before_and_after","16.11","Famotidine","Pepcid","8591, 4278","potassium chloride, famotidine","ADMINMED:2797762","famotidine",2020-05-07,2021-03-18,23,241
 "medcations_before_and_after","16.11","Famotidine","Pepcid","4278","famotidine","HOMEMED:3677099","famotidine",2020-07-09,2020-11-12,2,2
 "medcations_before_and_after","16.11","Famotidine","Pepcid","4278","famotidine","HOMEMED:3677102","famotidine",2020-06-08,2021-03-17,9,14
 "medcations_before_and_after","16.11","Famotidine","Pepcid","4278","famotidine","HOMEMED:3677103","famotidine",2020-12-27,2020-12-27,1,1
 "medcations_before_and_after","16.11","Famotidine","Pepcid","4278","famotidine","HOMEMED:3677106","famotidine",2020-06-02,2021-02-18,12,18
 "medcations_before_and_after","18.04","Dexamethasone","Decadron","3264","dexamethasone","ADMINMED:2797549","dexamethasone",2020-07-20,2020-07-21,1,3
-"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","ADMINMED:2797960","hydrocortisone",2021-02-26,2021-02-26,1,2
-"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","ADMINMED:2797963","hydrocortisone topical",2019-07-19,2020-10-17,1,10
-"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","HOMEMED:307878531","hydrocortisone",2020-07-03,2020-07-03,1,2
-"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","HOMEMED:3679251","hydrocortisone",2021-03-10,2021-03-10,1,2
-"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","HOMEMED:3679254","hydrocortisone",2020-07-03,2020-07-04,1,4
-"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","HOMEMED:3679348","hydrocortisone topical",2019-11-05,2019-11-05,1,2
-"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","HOMEMED:3679355","hydrocortisone topical",2019-06-25,2020-05-08,2,6
-"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","HOMEMED:3679361","hydrocortisone topical",2015-08-16,2021-03-02,3,16
-"medcations_before_and_after","18.07","Insulin","","274783","insulin glargine","ADMINMED:2798012","insulin glargine",2020-07-02,2021-01-13,2,4
-"medcations_before_and_after","18.07","Insulin","","86009","insulin lispro","ADMINMED:2798015","insulin lispro",2020-07-02,2021-01-14,2,23
-"medcations_before_and_after","18.07","Insulin","","274783","insulin glargine","HOMEMED:130873270","insulin glargine",2021-01-14,2021-01-14,1,1
-"medcations_before_and_after","18.07","Insulin","","86009","insulin lispro","HOMEMED:130873400","insulin lispro",2020-07-03,2020-07-03,1,1
-"medcations_before_and_after","18.07","Insulin","","86009","insulin lispro","HOMEMED:130873401","insulin lispro",2021-01-14,2021-01-14,1,1
-"medcations_before_and_after","18.07","Insulin","","274783","insulin glargine","HOMEMED:3680123","insulin glargine",2020-07-02,2021-01-13,2,4
-"medcations_before_and_after","18.07","Insulin","","86009","insulin lispro","HOMEMED:3680164","insulin lispro",2020-07-02,2021-01-13,2,5
+"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","ADMINMED:2797960","hydrocortisone",2021-02-26,2021-02-26,1,1
+"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","ADMINMED:2797963","hydrocortisone topical",2019-07-19,2020-10-17,1,5
+"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","HOMEMED:307878531","hydrocortisone",2020-07-03,2020-07-03,1,1
+"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","HOMEMED:3679251","hydrocortisone",2021-03-10,2021-03-10,1,1
+"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","HOMEMED:3679254","hydrocortisone",2020-07-03,2020-07-04,1,2
+"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","HOMEMED:3679348","hydrocortisone topical",2019-11-05,2019-11-05,1,1
+"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","HOMEMED:3679355","hydrocortisone topical",2019-06-25,2020-05-08,2,3
+"medcations_before_and_after","18.06","Hydrocortisone","Solu-cortef","5492","hydrocortisone","HOMEMED:3679361","hydrocortisone topical",2015-08-16,2021-03-02,3,8
+"medcations_before_and_after","18.07","Insulin",NA,"274783","insulin glargine","ADMINMED:2798012","insulin glargine",2020-07-02,2021-01-13,2,4
+"medcations_before_and_after","18.07","Insulin",NA,"86009","insulin lispro","ADMINMED:2798015","insulin lispro",2020-07-02,2021-01-14,2,23
+"medcations_before_and_after","18.07","Insulin",NA,"274783","insulin glargine","HOMEMED:130873270","insulin glargine",2021-01-14,2021-01-14,1,1
+"medcations_before_and_after","18.07","Insulin",NA,"86009","insulin lispro","HOMEMED:130873400","insulin lispro",2020-07-03,2020-07-03,1,1
+"medcations_before_and_after","18.07","Insulin",NA,"86009","insulin lispro","HOMEMED:130873401","insulin lispro",2021-01-14,2021-01-14,1,1
+"medcations_before_and_after","18.07","Insulin",NA,"274783","insulin glargine","HOMEMED:3680123","insulin glargine",2020-07-02,2021-01-13,2,4
+"medcations_before_and_after","18.07","Insulin",NA,"86009","insulin lispro","HOMEMED:3680164","insulin lispro",2020-07-02,2021-01-13,2,5
 "medcations_before_and_after","18.08","Levothyroxine","Synthroid","10582","levothyroxine","ADMINMED:2798119","levothyroxine",2021-01-26,2021-01-29,1,4
 "medcations_before_and_after","18.08","Levothyroxine","Synthroid","10582","levothyroxine","HOMEMED:219219211","levothyroxine",2021-01-26,2021-01-26,1,1
 "medcations_before_and_after","18.08","Levothyroxine","Synthroid","10582","levothyroxine","HOMEMED:3681121","levothyroxine",2021-01-29,2021-01-29,1,3
@@ -135,7 +134,7 @@
 "medcations_before_and_after","18.10","Prednisone","Bronkosol","8640","prednisone | prednisone","HOMEMED:3686584","prednisone",2020-11-02,2021-03-10,5,7
 "medcations_before_and_after","19.03","Dopamine","Inotropin","3628","dopamine | dopamine","ADMINMED:2797644","dopamine",2020-04-22,2020-12-27,3,65
 "medcations_before_and_after","19.04","Epinephrine","Adrenalin, Vaponefrin","107606","bupivacaine / epinephrine | bupivacaine / epinephrine","ADMINMED:2797127","bupivacaine-epinephrine",2017-08-14,2017-08-14,1,1
-"medcations_before_and_after","19.04","Epinephrine","Adrenalin, Vaponefrin","6387, 3992","lidocaine, epinephrine | epinephrine","ADMINMED:2797692","epinephrine",2020-04-22,2021-03-12,9,1326
+"medcations_before_and_after","19.04","Epinephrine","Adrenalin, Vaponefrin","6387, 3992","lidocaine, epinephrine | epinephrine","ADMINMED:2797692","epinephrine",2020-04-22,2021-03-12,9,663
 "medcations_before_and_after","19.04","Epinephrine","Adrenalin, Vaponefrin","3992","epinephrine | epinephrine","HOMEMED:3676287","epinephrine",2020-10-08,2021-02-12,2,3
 "medcations_before_and_after","19.04","Epinephrine","Adrenalin, Vaponefrin","3992","epinephrine | epinephrine","HOMEMED:3676288","epinephrine",2021-02-19,2021-02-19,1,1
 "medcations_before_and_after","19.04","Epinephrine","Adrenalin, Vaponefrin","3992","epinephrine | epinephrine","HOMEMED:3676295","epinephrine",2021-04-12,2021-04-12,1,1
@@ -176,7 +175,7 @@
 "medcations_before_and_after","22.13","Lorazepam","Ativan","6470","lorazepam | lorazepam","HOMEMED:3681487","lorazepam",2018-02-08,2018-02-08,1,1
 "medcations_before_and_after","22.13","Lorazepam","Ativan","6470","lorazepam | lorazepam","HOMEMED:3681496","lorazepam",2020-02-12,2020-02-12,1,1
 "medcations_before_and_after","22.15","Midazolam","Versed","6960","midazolam","ADMINMED:2798254","midazolam",2021-01-08,2021-03-09,5,136
-"medcations_before_and_after","22.16","Morphine","","7052","morphine","ADMINMED:2798281","morphine",2013-04-28,2020-06-11,3,28
+"medcations_before_and_after","22.16","Morphine",NA,"7052","morphine","ADMINMED:2798281","morphine",2013-04-28,2020-06-11,3,28
 "medcations_before_and_after","22.22","Oxycodone","OxyContin","7804","oxycodone | oxycodone","ADMINMED:2798392","oxycodone",2016-05-13,2017-05-23,2,2
 "medcations_before_and_after","22.22","Oxycodone","OxyContin","7804","oxycodone | oxycodone","HOMEMED:3684971","oxycodone",2013-04-29,2020-06-11,2,7
 "medcations_before_and_after","22.22","Oxycodone","OxyContin","7804","oxycodone | oxycodone","HOMEMED:3684972","oxycodone",2013-04-29,2016-07-28,2,5
@@ -187,9 +186,9 @@
 "medcations_before_and_after","25.05","Cetirizine","Zyrtec","20610","cetirizine","HOMEMED:3672038","cetirizine",2020-10-08,2020-10-09,1,2
 "medcations_before_and_after","25.05","Cetirizine","Zyrtec","20610","cetirizine","HOMEMED:3672039","cetirizine",2020-06-08,2020-06-08,1,1
 "medcations_before_and_after","25.05","Cetirizine","Zyrtec","20610","cetirizine","HOMEMED:3672044","cetirizine",2021-01-26,2021-01-26,1,1
-"medcations_before_and_after","26.02","Anakinra (IL-1 blockade)","","72435","anakinra","ADMINMED:2796914","anakinra",2020-04-23,2021-03-16,10,223
-"medcations_before_and_after","26.02","Anakinra (IL-1 blockade)","","72435","anakinra","HOMEMED:3653949","anakinra",2020-10-22,2021-02-09,2,5
-"medcations_before_and_after","26.09","Canakinumab","","853491","canakinumab","ADMINMED:177596825","canakinumab",2020-05-28,2020-11-26,2,2
+"medcations_before_and_after","26.02","Anakinra (IL-1 blockade)",NA,"72435","anakinra","ADMINMED:2796914","anakinra",2020-04-23,2021-03-16,10,223
+"medcations_before_and_after","26.02","Anakinra (IL-1 blockade)",NA,"72435","anakinra","HOMEMED:3653949","anakinra",2020-10-22,2021-02-09,2,5
+"medcations_before_and_after","26.09","Canakinumab",NA,"853491","canakinumab","ADMINMED:177596825","canakinumab",2020-05-28,2020-11-26,2,2
 "medcations_before_and_after","27.02","Oseltamivir","Tamiflu","260101","oseltamivir","ADMINMED:2798381","oseltamivir",2009-06-09,2019-12-20,3,12
 "medcations_before_and_after","27.02","Oseltamivir","Tamiflu","260101","oseltamivir","HOMEMED:130953836","oseltamivir",2018-03-06,2018-03-06,1,2
 "medcations_before_and_after","27.02","Oseltamivir","Tamiflu","260101","oseltamivir","HOMEMED:323172560","oseltamivir",2018-01-12,2020-03-06,3,4

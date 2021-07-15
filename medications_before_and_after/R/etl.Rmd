@@ -19,63 +19,52 @@ library(tidyverse)
 library(lubridate)
 ```
 
-# 1. Load data extract for the concept of interest
+# 1. Load data extract for the codes of interest
 
-Example: In BCH, we run the following query to obtain the data extract for all medication data for our MISC patietns.
-create table ag440_music_meds as 
-select obs.patient_num, obs.concept_cd, obs.start_date, misc.admissiondate, misc.end_date, misc.length_of_stay 
-from observation_fact obs, ag440_misc_patients_may misc 
-where (concept_cd like 'HOMEMED:%' or concept_cd like 'ADMINMED:%' or concept_cd like 'AG:%') and obs.patient_num = misc.patient_num;
+Example, in BCH, we create the following query to obtain the data extract for the codes identified in previous steps for MISC patients.
+```{r}
+bch_med_concept_summary <- read_csv('../data/bch_med_concept_summary_toReview.csv')
+
+query_a <- "select obs.patient_num, obs.concept_cd, obs.start_date, misc.admissiondate, misc.end_date, misc.length_of_stay from observation_fact obs, ag440_misc_patients_may misc where (concept_cd in ('"
+
+query_b <- "')) and obs.patient_num = misc.patient_num;"
+
+bch_codes <- paste0(bch_med_concept_summary$CONCEPT_CD, collapse = "', '")
+
+query <- paste0(query_a, bch_codes, query_b)
+
+query
+
+```
 
 The results of the above query have been saved.
-
+Load data dictionary to acquire variable names and merge with mapping file.
+Load data extract and merge with mapping file to assign eCRF codes to each event.
 ```{r}
 
-agg_music_meds <- read.csv('../local_ref/agg40_music_meds.csv')
+df <- read.csv('../local_ref/agg40_music_meds_filtered.csv')
 
-```
+datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
+  filter(Form.Name == 'medications_before_and_after_hosp') %>%
+  select(Variable...Field.Name, Choices..Calculations..OR.Slider.Labels) 
 
-We are currently using the concepts which were identified in Sajad's initial eCRF variable to BCH concept cd mapping.
+# if the code is formatted like so: '2.00', convert to '02.00'
+fix_code_formatting <- function(x) {
+  ifelse(test = !grepl("[[:digit:]]{2}.", x), yes = (paste0('0', x)), no = (x))
+}
 
-```{r}
-# This code is used to convert the list of medication mapping found in eCRF to BCH mapping_ medications - medications_before_and_after_hosp.csv into a list of concepts to test query
+datadict <- datadict %>% 
+  filter(!Variable...Field.Name %in% c('current_meds_fu_na', 'medcur1_type', 'medcur1_name', 'medcur1_current', 'medcur1_readmit', 'medcur1_ae', 'medcur1_ae_num', 'medcalc')) %>%
+  separate_rows(Choices..Calculations..OR.Slider.Labels, sep = '\\|') %>%
+  mutate(ECRF_CODE = str_replace(Choices..Calculations..OR.Slider.Labels, ',.*$', ''),
+         ECRF_CODE = str_trim(ECRF_CODE),
+         ECRF_CODE = fix_code_formatting(ECRF_CODE)) %>%
+  select(-Choices..Calculations..OR.Slider.Labels)
 
-mapping <- read.csv('../data/eCRF to BCH mapping_ medications - medications_before_and_after_hosp.csv')
+bch_med_concept_summary <- left_join(bch_med_concept_summary, datadict, by = 'ECRF_CODE')
 
-submapping <- mapping %>% 
-  filter(Notes == '') %>%
-  select(Variable...Field.Name,concept_cd,expected.value,expected.value.description)
+df <- left_join(df, bch_med_concept_summary %>% select(ECRF_CODE, CONCEPT_CD, Variable...Field.Name), by = 'CONCEPT_CD')
 
-# uncomment the code below if you would like to test using a smaller subset of Sajad's concepts
-
-# sample_subdf <- sample_n(subdf, 50, replace = FALSE)
-
-# sample_concepts <- sample_subdf %>% pull(concept_cd) %>% paste0(collapse = "', '")
-
-#sample_query <- paste0("select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, obs.nval_num, obs.units_cd, pat.admission_date, pat.discharge_date 
-#  from observation_fact obs, sa_diag_mis_c_patients pat 
-#  where obs.patient_num = pat.patient_num 
-#  and obs.concept_cd in ('", 
-#                       sample_concepts, 
-#                       "');")
-#                       
-
-#write.table(sample_query, '../local_ref/initial_extraction.sql.txt', row.names = FALSE, quote = FALSE, col.names = FALSE)
-
-```
-
-# 2. Determine expected values for REDCap 
-
-Right now, we are using Sajad's mapping. 
-
-In the future, we will use the CSV generated from the meds code list. 
-
-```{r}
-
-df <- left_join(agg_music_meds, submapping %>% select(concept_cd, expected.value, Variable...Field.Name), by = c("CONCEPT_CD" = "concept_cd"))
-
-# remove data that we have for the MISC patients which do not map to eCRF variables
-df <- df %>% filter(!is.na(Variable...Field.Name))
 ```
 
 
@@ -175,22 +164,17 @@ Desired columns:
 - current_meds_fu_na (acknowledgement of participant eligibility - ignore / mark as 1 (acknowledged for all))
 - medcur1_current (detailed in healthcore question document, but not in eCRF or in example redcap output)
 - eCRF variables (with expected value)
+- *need to add in medcur1_type*
 
 ```{r}
 
 out <- pivot_wider(df2,
                     id_cols = c(PATIENT_NUM, medcur1_current, redcap_repeat_instance),   
                     names_from = Variable...Field.Name,
-                    values_from = expected.value,
+                    values_from = ECRF_CODE,
                     values_fill = NA) 
 
 
 write.csv(out[,-1], '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE)
   
 ```
-
-
-
-
-
-  

@@ -1,0 +1,257 @@
+---
+title: "Generate Potential eCRF to BCH Mapping"
+author: "Alba Gutierrez"
+date: "07/01/2021"
+output: html_document
+---
+
+A version of this notebook must be run for all sites.
+
+Goal: Create a mapping from eCRF codes to site-specific codes (in this case, BCH)
+
+Requirements: 
+- CSV mapping file from medications_before_and_after eCRF codes to RXNORM codes (ecrf_to_rxnorm_mapping.csv)
+- RXNORM to site-specific RXNORM to internal code mapping (in this case, BCH MedicationsMapBCH.csv)
+- CSV mapping file of medications which can be automatically extracted (meds_auto.csv)
+- CSV file of incorrect mappings to be removed (incorrect_mappings_eCRF_to_BCH.csv)
+
+Output: 
+- BCH code summary file
+- eCRF code summary file
+
+# Load Packages
+```{r}
+library(dplyr)
+library(lubridate)
+library(tidyverse)
+library(data.table)
+```
+
+# From RXNORM to BCH
+Check which of the RXNORM are present in the BCH internal mapping. 
+In the BCH mapping we have 2,196 RXNORM codes that map to 19,141 BCH internal codes.
+```{r}
+ecrf_to_rxnorm <- read_csv('../data/ecrf_to_rxnorm_mapping.csv', col_types = cols(
+  ECRF_CODE = col_character(),
+  ECRF_GENERIC_NAME = col_character(),
+  RXNORM_CODE = col_character(),
+  RXNORM_DESCRIPTION = col_character()
+))
+
+bchmapping <- read.csv("../data/MedicationsMapBCH.csv")
+length(unique(bchmapping$ACT_CONCEPT_CD))
+length(unique(bchmapping$BCH_CONCEPT_CD))
+
+bchmapping$RXNORM_CODE <- sapply(strsplit( as.character(bchmapping$ACT_CONCEPT_CD), "RXNORM:"), '[', 2)
+
+rxnorm_to_bch <- inner_join( ecrf_to_rxnorm, bchmapping, by="RXNORM_CODE")
+length( unique( rxnorm_to_bch$ECRF_CODE))
+length( unique( rxnorm_to_bch$RXNORM_CODE))
+length( unique( rxnorm_to_bch$BCH_CONCEPT_CD))
+```
+
+In the BCH mapping we find 210 eCRF medication codes that map to 559 RXNORM codes and to 6,564 BCH internal codes.
+
+# Read meds_auto table
+```{r}
+meds_auto <- read_csv('../data/meds_auto.csv')
+```
+
+# From BCH mapping to MISC patients
+We summarise the information of the codes that are present in the MISC patients. 
+```{r}
+
+rxnorm_to_bch <- inner_join( ecrf_to_rxnorm, bchmapping, by="RXNORM_CODE")
+
+# load MISC patient medication data
+misc_meds <- read.delim("../local_ref/music_patients_meds.dsv", sep = ',')
+
+# filter MISC patient medication data to concepts that we have identified as potential matches for the eCRF variables
+# filter out duplicated rows
+misc_meds <- misc_meds %>% 
+  dplyr::filter( CONCEPT_CD %in%  rxnorm_to_bch$BCH_CONCEPT_CD ) %>%
+  distinct()
+
+# create misc_meds_info, which combines the MISC patient medication data with identified BCH and RXNORM codes for each eCRF variable
+misc_meds_info <- misc_meds %>% 
+  dplyr::left_join( rxnorm_to_bch, by=c("CONCEPT_CD"="BCH_CONCEPT_CD"))
+
+
+length(unique(misc_meds_info$ECRF_CODE))
+length(unique(misc_meds_info$CONCEPT_CD))
+```
+We find 122 eCRF medication codes present in the BCH MISC patients. 
+We make a summary to see how many MISC patients present each one, and in which date ranges. 
+
+First we add a column based on when the medication was prescribed, during the hospitalization, or before or after. 
+```{r}
+misc_meds_info$med_date <- sapply(strsplit( as.character(misc_meds_info$START_DATE), "[ ]"), '[', 1)
+misc_meds_info$misc_start_date <- sapply(strsplit( as.character(misc_meds_info$ADMISSIONDATE), "[ ]"), '[', 1)
+misc_meds_info$misc_end_date <- sapply(strsplit( as.character(misc_meds_info$END_DATE), "[ ]"), '[', 1)
+misc_meds_info$when <- ifelse( dmy( misc_meds_info$med_date ) < dmy( misc_meds_info$misc_start_date), "before", ifelse( dmy( misc_meds_info$med_date) > dmy( misc_meds_info$misc_end_date), "after", "during"))
+```
+
+As a sanity check, and to better understand the data, we will create two subsets, one with the "during" hospitalization, and one with the "before or after", and we check if for the "during hospitalization all the medications prescribed are "ADMINMED". 
+
+```{r}
+misc_meds_info$prefix <- sapply(strsplit( as.character(misc_meds_info$CONCEPT_CD), "[:]"), '[', 1)
+during <- misc_meds_info %>%
+  dplyr::filter( when == "during")
+
+summary( as.factor( during$prefix))
+
+before_after <- misc_meds_info %>%
+  dplyr::filter( when != "during")
+summary( as.factor( before_after$prefix))
+```
+
+And we create the summary for each medication in our dataset. 
+- in this summary table, each row is a unique BCH concept. 
+```{r}
+
+# function for returning RXNORM codes list
+# return the list of relevant RXNORM codes; if the list is greater than 5, return 'greater than 5 RXNORM codes mapped'
+return_rxnorm_code <- function(RXNORM_CODES) {
+  if (length(unique(RXNORM_CODES)) > 5) {
+    return('greater than 5 RXNORM codes mapped to BCH code') 
+  } else {
+    return(paste(unique(RXNORM_CODES), collapse = ', '))
+  }
+}
+
+return_rxnorm_desc <- function(RXNORM_DESCRIPTIONS) {
+  if (length(unique(RXNORM_DESCRIPTIONS)) > 5) {
+    return('greater than 5 RXNORM codes mapped to BCH code') 
+  } else {
+    return(tolower(paste(unique(RXNORM_DESCRIPTIONS), collapse = ', ')))
+  }
+}
+
+# summarize music patient data for each concept
+patient_observation_summary <- misc_meds %>% 
+  group_by(CONCEPT_CD ) %>%
+  summarise(distinct_patients = length(unique(PATIENT_NUM)),
+            distinct_observations = n())
+
+misc_meds_info <- left_join( misc_meds_info, patient_observation_summary ) 
+
+bch_med_concept_summary <- misc_meds_info %>% 
+  group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_NAME_CHAR) %>%
+  summarise(ECRF_CODE = ECRF_CODE,
+            ECRF_GENERIC_NAME = ECRF_GENERIC_NAME,
+            ECRF_TRADE_NAMES = ECRF_TRADE_NAMES,
+            RXNORM_CODES = return_rxnorm_code(RXNORM_CODE),
+            RXNORM_DESCS = return_rxnorm_desc(RXNORM_DESCRIPTION),
+            min_date = min( dmy( med_date ) ), 
+            max_date = max( dmy( med_date ) ),
+            distinct_patients = distinct_patients,
+            distinct_observations = distinct_observations,
+            pat_ids = paste0(unique(PATIENT_NUM), collapse = ','))
+# reorganize and rename columns
+bch_med_concept_summary <- bch_med_concept_summary %>%
+  mutate(eCRF_name = 'medcations_before_and_after',
+         BCH_NAME_CHAR = tolower(BCH_NAME_CHAR)) %>%
+  rename('BCH_CONCEPT_DESCRIPTION' = 'BCH_NAME_CHAR') %>%
+  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, 
+         RXNORM_CODES, RXNORM_DESCS,
+         CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, min_date, max_date, distinct_patients, distinct_observations, pat_ids) %>%
+  arrange(ECRF_CODE) %>%
+  unique() # there are still some duplicated rows ....
+```
+# Check the BCH output summary
+We know the BCH to RXNORM mapping is not perfect. 
+We suspect that the BCH codes which have many RXNORM mappings associated with them are incorrect.
+The following code helps us to create the incorrect_mappings_eCRF_to_BCH.csv file.
+After running the code below, Manual review of this file results in the following:
+- remove correct heparin mapping
+- remove correct magnesium to magnesium sulfate mapping
+- remove correct potassium to potassium chloride mapping
+- remove correct sodium bicarbonate mapping
+Additionally, mappings that have been marked as incorrect by Simran, Alba, and Pierre, are added to incorrect_mappings_eCRF_to_BCH.csv.
+Finally, mappings with Pierre comments were added as incorrect.
+```{r}
+#write.csv(bch_med_concept_summary %>% 
+#            filter(RXNORM_CODES == 'greater than 5 RXNORM codes mapped to BCH code') %>%
+#            select(ECRF_CODE, ECRF_GENERIC_NAME, CONCEPT_CD, BCH_CONCEPT_DESCRIPTION), 
+#          '../data/test.csv')
+
+```
+Now we have the file incorrect_mappings_eCRF_to_BCH.csv which contains the BCH mappings that we know are incorrectly mapped to eCRF codes. 
+We will remove these from the BCH summary file.
+```{r}
+incorrect_mappings <- read_csv('../data/incorrect_mappings_eCRF_to_BCH.csv')
+bch_med_concept_summary <- bch_med_concept_summary %>% 
+  filter(!paste0(ECRF_CODE, '-', CONCEPT_CD) %in% paste0(incorrect_mappings$ECRF_CODE, '-', incorrect_mappings$CONCEPT_CD))
+```
+
+Save a version of this file with the distinct concept paths (one row per concept path)
+```{r}
+write.csv(bch_med_concept_summary %>% select(-pat_ids), '../data/bch_med_concept_summary_with_concept_paths.csv')
+
+```
+
+Remove repetitive concept paths and save for review
+```{r}
+bch_med_concept_summary <- bch_med_concept_summary %>% ungroup() %>% select(-BCH_CONCEPT_PATH)
+
+bch_med_concept_summary <- bch_med_concept_summary %>% distinct()
+
+write.csv(bch_med_concept_summary %>% select(-pat_ids), '../data/bch_med_concept_summary_toReview.csv', row.names = FALSE)
+
+```
+
+- in this summary table, each row is a unique eCRF code. 
+```{r}
+
+# function to calculate number of unique patient ids across multiple concepts
+calc_n_unique_pids <- function(pids) {
+  combined <- paste0(pids, collapse = ',')
+  combined_unique <- unique(str_split(combined, ',')[[1]])
+  return(length(combined_unique))
+}
+
+# generate eCRF summary based on filtered mapping
+ecrf_med_concept_summary <- bch_med_concept_summary %>%
+  ungroup() %>%
+  group_by(ECRF_CODE) %>%
+  summarise(min_date = min(min_date),
+            max_date = max(max_date),
+            distinct_patients = calc_n_unique_pids(pat_ids),
+            distinct_observations = sum(distinct_observations),
+            distinct_concepts = n_distinct(CONCEPT_CD))
+
+# join the summary with eCRF, RXNORM, and BCH code mapping info
+ecrf_med_concept_summary <- left_join(ecrf_med_concept_summary, 
+                                      rxnorm_to_bch %>% select(ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES) %>% unique(), 
+                                      by = 'ECRF_CODE') 
+
+# reorganize and rename columns
+ecrf_med_concept_summary <- ecrf_med_concept_summary %>%
+  mutate(eCRF_name = 'medications_before_and_after_hosp') %>%
+  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES,
+         min_date, max_date, distinct_patients, distinct_observations, distinct_concepts) %>%
+  arrange(ECRF_CODE)
+
+# add the ecrf codes for which we have no information 
+meds_missing <- meds_auto %>%
+  dplyr::filter( ! Code %in% ecrf_med_concept_summary$ECRF_CODE) %>%
+  dplyr::mutate( eCRF_name = "medications_before_and_after_hosp", 
+                 ECRF_CODE = Code, 
+                 ECRF_GENERIC_NAME = Generic.Name) %>%
+  dplyr::select( eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES)
+
+# add the missing codes at the end of ecrf_med_concept_summary
+ecrf_med_concept_summary <- rbindlist( list( ecrf_med_concept_summary, meds_missing), fill = TRUE )
+```
+
+# Save the output summary
+
+```{r}
+write.csv(ecrf_med_concept_summary, '../data/ecrf_med_concept_summary_toReview.csv', row.names = FALSE)
+```
+
+
+
+
+
+
