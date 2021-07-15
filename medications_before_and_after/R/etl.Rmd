@@ -178,9 +178,3 @@ out <- pivot_wider(df2,
 write.csv(out[,-1], '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE)
   
 ```
-
-
-
-
-
-  
