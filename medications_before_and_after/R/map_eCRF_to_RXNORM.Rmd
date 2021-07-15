@@ -1,0 +1,144 @@
+---
+title: "Generate potential eCRF to RXNORM Mapping"
+author: "Simran Makwana"
+date: "7/13/2021"
+output: html_document
+---
+
+This notebook only needs to be run one time for all sites.
+
+Goal: Create a mapping from eCRF codes to RXNORM codes
+
+Requirements: 
+- UMLS Database Subset (all RXNORM codes)
+- Medication Code List D (from MUSIC study)
+- Manually curated keywords for eCRF variables (manual_keywords_eCRF_to_RXNORM.csv)
+
+Output: CSV mapping file from medications_before_and_after eCRF codes to RXNORM codes
+
+# Load Packages
+```{r}
+library(dplyr)
+library(lubridate)
+library(tidyverse)
+library(data.table)
+```
+
+# Load UMLS database subset (all RXNORM codes)
+The following SQL was used to generate the subset:
+create table ag440_rxnorm as
+select CUI,SAB, TTY, CODE, STR from mrconso where sab = 'RXNORM'and lat = 'ENG';
+
+```{r}
+rxnorm_subset <- read.delim("../data/rxnorm.dsv")
+```
+
+# Load the medication table specifications
+The full list with all the medications including code, generic name, class and trades, is obtained from the MUSIC dropbox. The original file is called "CodeListD(Meds) MUSIC 9-7-20". It is a word document that has been transformed into a csv format. 
+```{r}
+meds_keywords <- read.csv("../data/CodeListD(Meds) MUSIC 9-7-20.csv", colClasses = "character" )
+print(length(unique(meds_keywords$Code)))
+```
+
+There are 32 medication classes, divided into 349 codes for 325 generic medication names. For each code, for some we have the specific trades (from 1 to 5 distinct trades), and for others we only have the generic name and class. 
+
+We will focus on those medications that we can extract in an automatic way, based on the information we have. We will use as keyword for each medication code, the generic names that are distinct than "Not specified" and distinct than "Other...", and we will use as keywords the generic names and the trades. 
+```{r}
+meds_auto <- meds_keywords %>%
+  dplyr::filter( tolower(Generic.Name) != "not specified" & 
+                 ! grepl( "^other",tolower(Generic.Name)))
+
+print(length(unique(meds_auto$Code)))
+```
+We have 295 medications that we can query in an automatic way. 
+
+# From eCRF to RXNORM
+Search through the UMLS subset for the keywords associated with the eCRF terms.
+We use as keywords the Trades and the Generic Name for our search.
+We are not restricting by TTY in this eCRF.
+
+```{r}
+
+# add keywords to meds_auto df
+meds_auto <- meds_auto %>% mutate(key = str_c(Generic.Name, Trade.1, Trade.2, Trade.3, Trade.4, Trade.5, sep = '|'),  # this line combines the generic name with the trade names, separated by |, to form a single keyword
+                                  key = str_remove(key, '\\|+$'), # this line removes any trailing pipes from the keyword
+                                  key = str_replace_all(key, '\\|{2,}', '\\|'), # this line removes any multiples of pipes (||), which can happen if trades 1 & 3 are listed but not trade 2, for example
+                                  key = tolower(key)) # this line converts all keywords to lowercase
+
+# add manually generated keywords
+# these have been refined through the eCRF_to_RXNORM_mapping_potential_exploration.Rmd notebook
+# view meds_for_manual_keyword_review_edited.csv for more details
+manual_keywords <- read_csv('../data/manual_keywords_eCRF_to_RXNORM.csv')
+
+for (code in manual_keywords$Code) {
+  meds_auto[ meds_auto$Code == code, "key"] <- manual_keywords %>% filter(Code == code) %>% pull(key)
+}
+
+# create a blank dataframe for ecrf_to_rxnorm
+ecrf_to_rxnorm <- data.frame('ECRF_CODE' = '', 'ECRF_GENERIC_NAME' = '', 'RXNORM_CODE' = '', 'RXNORM_DESCRIPTION' = '')
+ecrf_to_rxnorm <- ecrf_to_rxnorm[-1,]
+
+non_mapping_keywords = c()
+for( i  in 1:nrow( meds_auto ) ){
+  
+  rxnorm_output <- rxnorm_subset %>% 
+    dplyr::filter( grepl(meds_auto[i, 'key'] , tolower(STR))) %>%       # search for keyword within rxnorm STR (lowercase)  
+    dplyr::group_by( CODE ) %>%     # group by code, as some codes are listed multiple times with different TTY or STR
+    dplyr::summarise(RXNORM_DESCRIPTION = paste(STR, collapse = ' | ')) %>%   # combining all STRs to retain all information 
+    dplyr::mutate( ECRF_CODE = meds_auto[i, 'Code'], 
+                   ECRF_GENERIC_NAME = meds_auto[i, 'Generic.Name'], 
+                   RXNORM_CODE = as.character( CODE )) %>%
+    dplyr::select( ECRF_CODE, ECRF_GENERIC_NAME, RXNORM_CODE, RXNORM_DESCRIPTION)
+
+  # if the keyword matches 1 or more RXNORM entries, add the results to ecrf_to_rxnorm
+  if( nrow(rxnorm_output ) > 0){
+      ecrf_to_rxnorm <- rbind( ecrf_to_rxnorm, rxnorm_output )
+  }
+  
+  # else, add the keyword to the list of non mapping keywords
+  else{ 
+    non_mapping_keywords <- c(non_mapping_keywords, meds_auto[i, 'key'])
+    print(i)
+    print(meds_auto[i, 'key'])
+  }
+  
+}
+```
+
+```{r}
+print(length(non_mapping_keywords))
+print(length(unique(ecrf_to_rxnorm$ECRF_CODE)))
+print(length(unique(ecrf_to_rxnorm$RXNORM_CODE)))
+```
+
+There are only 13 codes for which we cannot find any RXNORM that matches in UMLS.
+We have 282 (95/59%) of medication codes found that mapped to 45,027 RXNORM codes.
+
+```{r}
+
+# add original generic and trade names as a column
+meds_auto <- meds_auto %>%
+  mutate(ECRF_TRADE_NAMES = str_c(Trade.1, Trade.2, Trade.3, Trade.4, Trade.5, sep = ', '),  # this line combines the trade names, separated by ' ,' so it is more human readable
+                                  ECRF_TRADE_NAMES = str_remove(ECRF_TRADE_NAMES, '(, )+$'), # this line removes any trailing commas from the keyword
+                                  ECRF_TRADE_NAMES = str_replace_all(ECRF_TRADE_NAMES, '(, ){2,}', '\\|')) # this line removes any multiples of commas, which can happen if trades 1 & 3 are listed but not trade 2, for example
+
+ecrf_to_rxnorm <- left_join(ecrf_to_rxnorm, meds_auto %>% select(Code, ECRF_TRADE_NAMES), by = c('ECRF_CODE' = 'Code'))
+
+```
+
+
+# Save mapping
+```{r}
+write.csv(ecrf_to_rxnorm, '../data/ecrf_to_rxnorm_mapping.csv', row.names = FALSE)
+
+```
+
+# Save meds_auto table
+```{r}
+write.csv(meds_auto, '../data/meds_auto.csv', row.names = FALSE)
+
+```
+
+
+
+
