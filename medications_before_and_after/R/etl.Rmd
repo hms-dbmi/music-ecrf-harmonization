@@ -23,13 +23,13 @@ library(lubridate)
 
 Example, in BCH, we create the following query to obtain the data extract for the codes identified in previous steps for MISC patients.
 ```{r}
-bch_mapping <- read_csv('../data/bch_med_concept_summary_toReview.csv')
+bch_med_concept_summary <- read_csv('../data/bch_med_concept_summary_toReview.csv')
 
 query_a <- "select obs.patient_num, obs.concept_cd, obs.start_date, misc.admissiondate, misc.end_date, misc.length_of_stay from observation_fact obs, ag440_misc_patients_may misc where (concept_cd in ('"
 
 query_b <- "')) and obs.patient_num = misc.patient_num;"
 
-bch_codes <- paste0(bch_mapping$CONCEPT_CD, collapse = "', '")
+bch_codes <- paste0(bch_med_concept_summary$CONCEPT_CD, collapse = "', '")
 
 query <- paste0(query_a, bch_codes, query_b)
 
@@ -38,10 +38,32 @@ query
 ```
 
 The results of the above query have been saved.
-
+Load data dictionary to acquire variable names and merge with mapping file.
+Load data extract and merge with mapping file to assign eCRF codes to each event.
 ```{r}
 
 df <- read.csv('../local_ref/agg40_music_meds_filtered.csv')
+
+datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
+  filter(Form.Name == 'medications_before_and_after_hosp') %>%
+  select(Variable...Field.Name, Choices..Calculations..OR.Slider.Labels) 
+
+# if the code is formatted like so: '2.00', convert to '02.00'
+fix_code_formatting <- function(x) {
+  ifelse(test = !grepl("[[:digit:]]{2}.", x), yes = (paste0('0', x)), no = (x))
+}
+
+datadict <- datadict %>% 
+  filter(!Variable...Field.Name %in% c('current_meds_fu_na', 'medcur1_type', 'medcur1_name', 'medcur1_current', 'medcur1_readmit', 'medcur1_ae', 'medcur1_ae_num', 'medcalc')) %>%
+  separate_rows(Choices..Calculations..OR.Slider.Labels, sep = '\\|') %>%
+  mutate(ECRF_CODE = str_replace(Choices..Calculations..OR.Slider.Labels, ',.*$', ''),
+         ECRF_CODE = str_trim(ECRF_CODE),
+         ECRF_CODE = fix_code_formatting(ECRF_CODE)) %>%
+  select(-Choices..Calculations..OR.Slider.Labels)
+
+bch_med_concept_summary <- left_join(bch_med_concept_summary, datadict, by = 'ECRF_CODE')
+
+df <- left_join(df, bch_med_concept_summary %>% select(ECRF_CODE, CONCEPT_CD, Variable...Field.Name), by = 'CONCEPT_CD')
 
 ```
 
@@ -142,13 +164,14 @@ Desired columns:
 - current_meds_fu_na (acknowledgement of participant eligibility - ignore / mark as 1 (acknowledged for all))
 - medcur1_current (detailed in healthcore question document, but not in eCRF or in example redcap output)
 - eCRF variables (with expected value)
+- *need to add in medcur1_type*
 
 ```{r}
 
 out <- pivot_wider(df2,
                     id_cols = c(PATIENT_NUM, medcur1_current, redcap_repeat_instance),   
                     names_from = Variable...Field.Name,
-                    values_from = expected.value,
+                    values_from = ECRF_CODE,
                     values_fill = NA) 
 
 
