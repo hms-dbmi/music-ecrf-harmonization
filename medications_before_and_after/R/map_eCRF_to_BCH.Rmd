@@ -188,6 +188,15 @@ incorrect_mappings <- read_csv('../data/incorrect_mappings_eCRF_to_BCH.csv')
 bch_med_concept_summary <- bch_med_concept_summary %>% 
   filter(!paste0(ECRF_CODE, '-', CONCEPT_CD) %in% paste0(incorrect_mappings$ECRF_CODE, '-', incorrect_mappings$CONCEPT_CD))
 ```
+MED_ROUTE
+The MED_ROUTE codes in BCH can be difficult to understand; convert them to longer descriptions for easier review.
+```{r}
+med_route <- read.csv('../data/MED_ROUTE.csv')
+bch_med_concept_summary <- left_join(bch_med_concept_summary, med_route, by = c('MEDICATION_ROUTE' = 'MED.ROUTE.values')) %>%
+  rename('MEDICATION_ROUTE_DESC' = 'Meaning') %>% 
+  select(c(1:11), MEDICATION_ROUTE_DESC, c(12:16))
+```
+
 
 Save a version of this file with the distinct concept paths (one row per concept path)
 ```{r}

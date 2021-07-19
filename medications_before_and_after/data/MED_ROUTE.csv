@@ -1,0 +1,24 @@
+﻿MED:ROUTE values,Meaning
+(null),/
+zzz Other,other
+PR,per rectum
+NG,nasogastric
+TOP,topical
+OPTH,ophthalmic
+NEB,nebulizer
+IM,intramuscular
+penile block,penile block
+IV,intravenous
+PO,oral
+Swish or Swab,swish or swab
+MDI,metered-dose inhaler
+OTIC,auricular
+IA,intra-arterial
+ICU-IV,Intensive care unit intravenous
+PCA,patient-controlled analgesia
+Subcutaneous,subcutaneous
+ID,intradermal
+VALUE NOT POPULATED,/
+IV Loading Dose,intravenous loading dose
+INH,inhalation
+Nasal,nasal
