@@ -129,7 +129,7 @@ return_rxnorm_desc <- function(RXNORM_DESCRIPTIONS) {
 
 # summarize music patient data for each concept
 patient_observation_summary <- misc_meds %>% 
-  group_by(CONCEPT_CD ) %>%
+  group_by(CONCEPT_CD, TVAL_CHAR ) %>%
   summarise(distinct_patients = length(unique(PATIENT_NUM)),
             distinct_observations = n())
 
