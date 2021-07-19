@@ -137,7 +137,8 @@ ecrf_to_rxnorm <- left_join(ecrf_to_rxnorm, meds_auto %>% select(Code, ECRF_TRAD
 rxnorm_to_bch <- inner_join( ecrf_to_rxnorm, bchmapping, by="RXNORM_CODE")
 
 # load MISC patient medication data
-misc_meds <- read.delim("../local_ref/music_patients_meds.dsv", sep = ',')
+#misc_meds <- read.delim("../local_ref/music_patients_meds.dsv", sep = ',')
+misc_meds <- read.delim("../local_ref/music_patients_meds_updated.dsv", sep = ',')
 
 # filter MISC patient medication data to concepts that we have identified as potential matches for the eCRF variables
 # filter out duplicated rows
@@ -208,11 +209,16 @@ patient_observation_summary <- misc_meds %>%
 
 misc_meds_info <- left_join( misc_meds_info, patient_observation_summary ) 
 
+medClass <- meds_keywords[, c("Code", "Class")]
+
+misc_meds_info <- left_join(misc_meds_info, medClass, by = c('ECRF_CODE' = 'Code'))
+
 bch_med_concept_summary <- misc_meds_info %>% 
-  group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_NAME_CHAR) %>%
+  group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_NAME_CHAR, TVAL_CHAR) %>%
   summarise(ECRF_CODE = ECRF_CODE,
             ECRF_GENERIC_NAME = ECRF_GENERIC_NAME,
             ECRF_TRADE_NAMES = ECRF_TRADE_NAMES,
+            ECRF_CLASS = Class,
             RXNORM_CODES = return_rxnorm_code(RXNORM_CODE),
             RXNORM_DESCS = return_rxnorm_desc(RXNORM_DESCRIPTION),
             min_date = min( dmy( med_date ) ), 
@@ -224,10 +230,11 @@ bch_med_concept_summary <- misc_meds_info %>%
 bch_med_concept_summary <- bch_med_concept_summary %>%
   mutate(eCRF_name = 'medcations_before_and_after',
          BCH_NAME_CHAR = tolower(BCH_NAME_CHAR)) %>%
-  rename('BCH_CONCEPT_DESCRIPTION' = 'BCH_NAME_CHAR') %>%
-  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, 
+  rename('BCH_CONCEPT_DESCRIPTION' = 'BCH_NAME_CHAR', 
+         'MEDICATION_ROUTE'= 'TVAL_CHAR') %>%
+  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES,ECRF_CLASS, 
          RXNORM_CODES, RXNORM_DESCS,
-         CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, min_date, max_date, distinct_patients, distinct_observations, pat_ids) %>%
+         CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, MEDICATION_ROUTE,min_date, max_date, distinct_patients, distinct_observations, pat_ids) %>%
   arrange(ECRF_CODE) %>%
   unique() # there are still some duplicated rows ....
 ```
@@ -259,7 +266,7 @@ bch_med_concept_summary <- bch_med_concept_summary %>%
 
 Save a version of this file with the distinct concept paths (one row per concept path)
 ```{r}
-write.csv(bch_med_concept_summary %>% select(-pat_ids), '../data/bch_med_concept_summary_with_concept_paths.csv')
+write.csv(bch_med_concept_summary %>% select(-pat_ids), '../data/bch_med_concept_summary_with_concept_paths_updated.csv')
 
 ```
 
@@ -269,7 +276,7 @@ bch_med_concept_summary <- bch_med_concept_summary %>% ungroup() %>% select(-BCH
 
 bch_med_concept_summary <- bch_med_concept_summary %>% distinct()
 
-write.csv(bch_med_concept_summary %>% select(-pat_ids), '../data/bch_med_concept_summary_toReview.csv', row.names = FALSE)
+write.csv(bch_med_concept_summary %>% select(-pat_ids), '../data/bch_med_concept_summary_toReview_updated.csv', row.names = FALSE)
 
 ```
 
