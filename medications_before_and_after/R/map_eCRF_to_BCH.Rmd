@@ -135,11 +135,15 @@ patient_observation_summary <- misc_meds %>%
 
 misc_meds_info <- left_join( misc_meds_info, patient_observation_summary ) 
 
+medClass <- meds_auto[, c("Code", "Class")]
+misc_meds_info <- left_join(misc_meds_info, medClass, by = c('ECRF_CODE' = 'Code'))
+
 bch_med_concept_summary <- misc_meds_info %>% 
-  group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_NAME_CHAR) %>%
+  group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_NAME_CHAR, TVAL_CHAR) %>%
   summarise(ECRF_CODE = ECRF_CODE,
             ECRF_GENERIC_NAME = ECRF_GENERIC_NAME,
             ECRF_TRADE_NAMES = ECRF_TRADE_NAMES,
+            ECRF_CLASS = Class, 
             RXNORM_CODES = return_rxnorm_code(RXNORM_CODE),
             RXNORM_DESCS = return_rxnorm_desc(RXNORM_DESCRIPTION),
             min_date = min( dmy( med_date ) ), 
@@ -151,10 +155,11 @@ bch_med_concept_summary <- misc_meds_info %>%
 bch_med_concept_summary <- bch_med_concept_summary %>%
   mutate(eCRF_name = 'medcations_before_and_after',
          BCH_NAME_CHAR = tolower(BCH_NAME_CHAR)) %>%
-  rename('BCH_CONCEPT_DESCRIPTION' = 'BCH_NAME_CHAR') %>%
-  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, 
+  rename('BCH_CONCEPT_DESCRIPTION' = 'BCH_NAME_CHAR',
+         'MEDICATION_ROUTE' = 'TVAL_CHAR') %>%
+  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, ECRF_CLASS,
          RXNORM_CODES, RXNORM_DESCS,
-         CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, min_date, max_date, distinct_patients, distinct_observations, pat_ids) %>%
+         CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, MEDICATION_ROUTE,  min_date, max_date, distinct_patients, distinct_observations, pat_ids) %>%
   arrange(ECRF_CODE) %>%
   unique() # there are still some duplicated rows ....
 ```
