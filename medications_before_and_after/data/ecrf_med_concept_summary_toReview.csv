@@ -1,65 +1,74 @@
 "eCRF_name","ECRF_CODE","ECRF_GENERIC_NAME","ECRF_TRADE_NAMES","min_date","max_date","distinct_patients","distinct_observations","distinct_concepts"
-"medications_before_and_after_hosp","02.09","Lidocaine","Xylocaine",2020-05-26,2021-04-07,17,76,5
+"medications_before_and_after_hosp","02.09","Lidocaine","Xylocaine",2020-05-26,2021-04-07,18,78,6
 "medications_before_and_after_hosp","02.13","Procainamide","Pronestyl, Procan",2021-03-08,2021-03-13,1,142,1
 "medications_before_and_after_hosp","03.03","Amipicillin/Sulbactam","Unasyn",2017-11-03,2020-07-22,2,24,1
-"medications_before_and_after_hosp","03.04","Amoxicillin","Amoxil",2009-06-12,2020-05-29,3,15,1
-"medications_before_and_after_hosp","03.05","Amoxicillin-Clavulanic Acid","Augmentin",2017-11-04,2020-07-23,2,3,1
+"medications_before_and_after_hosp","03.04","Amoxicillin","Amoxil",2009-06-12,2021-03-21,5,27,4
+"medications_before_and_after_hosp","03.05","Amoxicillin-Clavulanic Acid","Augmentin",2014-03-14,2020-07-23,3,9,6
 "medications_before_and_after_hosp","03.07","Ampicillin","Omnipen",2020-05-26,2020-05-28,1,7,1
-"medications_before_and_after_hosp","03.08","Azithromycin","Zithromax",2009-06-09,2020-05-18,3,15,1
+"medications_before_and_after_hosp","03.08","Azithromycin","Zithromax",2009-06-09,2020-05-18,4,17,3
 "medications_before_and_after_hosp","03.11","Cefazolin","Ancef, Kefzol",2016-05-13,2019-07-19,2,3,1
-"medications_before_and_after_hosp","03.15","Ceftriaxone","Rocephin",2007-05-23,2021-03-14,25,72,1
-"medications_before_and_after_hosp","03.19","Clindamycin","Cleocin",2014-12-13,2021-03-08,3,16,1
-"medications_before_and_after_hosp","03.20","Erythromycin",NA,2017-08-14,2020-05-19,2,3,1
-"medications_before_and_after_hosp","03.32","Penicillin",NA,2013-04-29,2013-04-29,1,1,1
-"medications_before_and_after_hosp","03.37","Vancomycin",NA,2007-07-02,2021-03-08,6,31,1
-"medications_before_and_after_hosp","06.01","Clonidine","Catapres, Duraclon",2020-02-02,2021-02-04,2,8,1
+"medications_before_and_after_hosp","03.15","Ceftriaxone","Rocephin",2007-05-23,2021-03-14,25,74,3
+"medications_before_and_after_hosp","03.19","Clindamycin","Cleocin",2014-12-13,2021-03-08,3,18,2
+"medications_before_and_after_hosp","03.20","Erythromycin",NA,2016-08-11,2020-05-19,3,4,2
+"medications_before_and_after_hosp","03.28","Mycostatin","Nystatin",2014-09-06,2019-07-26,2,2,2
+"medications_before_and_after_hosp","03.30","Nystatin","Mycostatin",2014-09-06,2019-07-26,2,2,2
+"medications_before_and_after_hosp","03.32","Penicillin",NA,2012-02-17,2014-12-30,1,6,2
+"medications_before_and_after_hosp","03.37","Vancomycin",NA,2007-07-02,2021-03-08,6,32,2
+"medications_before_and_after_hosp","06.01","Clonidine","Catapres, Duraclon",2020-02-02,2021-02-04,2,9,2
 "medications_before_and_after_hosp","06.08","Hydralazine","Apresoline",2020-05-08,2020-05-12,1,4,1
-"medications_before_and_after_hosp","07.02","Aspirin",NA,2019-07-19,2021-03-18,38,289,1
-"medications_before_and_after_hosp","07.06","Enoxaparin","Lovenox",2020-05-05,2021-03-18,29,326,1
-"medications_before_and_after_hosp","07.08","Heparin",NA,2020-04-22,2021-03-13,15,540,2
-"medications_before_and_after_hosp","07.13","Apixaban","Eliquis",2020-04-28,2021-02-09,9,60,1
-"medications_before_and_after_hosp","08.03","Amlodipine","Norvasc",2021-01-12,2021-01-18,1,12,1
-"medications_before_and_after_hosp","08.06","Bisoprolol","Zebeta",2021-03-12,2021-03-18,1,6,1
+"medications_before_and_after_hosp","07.02","Aspirin",NA,2019-07-19,2021-04-15,40,344,3
+"medications_before_and_after_hosp","07.06","Enoxaparin","Lovenox",2020-05-05,2021-03-18,30,332,4
+"medications_before_and_after_hosp","07.08","Heparin",NA,2020-04-22,2021-03-13,15,541,3
+"medications_before_and_after_hosp","07.13","Apixaban","Eliquis",2020-04-28,2021-02-26,13,78,5
+"medications_before_and_after_hosp","08.03","Amlodipine","Norvasc",2021-01-12,2021-01-18,1,13,2
+"medications_before_and_after_hosp","08.06","Bisoprolol","Zebeta",2021-03-12,2021-03-30,1,8,2
+"medications_before_and_after_hosp","08.09","Carvedilol","Coreg",2021-01-21,2021-01-21,1,1,1
 "medications_before_and_after_hosp","08.14","Metoprolol","Lopressor, Toprol",2020-08-17,2021-04-15,2,3,1
-"medications_before_and_after_hosp","10.01","Albuterol","Ventolin, Xopenex, Preventil",2009-06-12,2020-05-08,2,18,1
-"medications_before_and_after_hosp","10.05","Fluticasone","Flovent, Flonase",2021-02-19,2021-02-28,1,19,1
+"medications_before_and_after_hosp","10.01","Albuterol","Ventolin, Xopenex, Preventil",2009-06-12,2021-05-12,4,27,6
+"medications_before_and_after_hosp","10.05","Fluticasone","Flovent, Flonase",2009-09-24,2021-05-12,4,27,6
 "medications_before_and_after_hosp","10.06","Ipratropium","Atrovent",2018-04-18,2018-06-21,1,2,1
 "medications_before_and_after_hosp","11.02","Diltiazam","Cardiazem",2021-03-08,2021-03-12,1,124,1
 "medications_before_and_after_hosp","11.05","Nicardipine","Cardene",2021-03-10,2021-03-11,1,27,1
-"medications_before_and_after_hosp","13.04","Enalapril","Vasotec",2020-05-04,2021-01-12,2,18,1
+"medications_before_and_after_hosp","13.02","Captopril","Capoten",2016-04-12,2016-04-12,1,1,1
+"medications_before_and_after_hosp","13.04","Enalapril","Vasotec",2020-05-04,2021-01-12,2,22,2
+"medications_before_and_after_hosp","13.07","Lisinopril","Prinivil, Zestril",2021-01-25,2021-03-09,2,2,1
 "medications_before_and_after_hosp","14.05","Chlorothiazide","Diuril",2021-01-27,2021-01-27,1,1,1
-"medications_before_and_after_hosp","14.08","Furosemide","Lasix",2020-04-23,2021-03-12,12,90,1
-"medications_before_and_after_hosp","14.13","Spironolactone","Aldactone",2020-04-24,2020-05-05,2,17,1
+"medications_before_and_after_hosp","14.08","Furosemide","Lasix",2016-04-12,2021-03-12,13,94,4
+"medications_before_and_after_hosp","14.13","Spironolactone","Aldactone",2020-04-24,2020-05-05,2,18,2
 "medications_before_and_after_hosp","15.03","Magnesium",NA,2017-05-23,2021-02-11,7,26,3
 "medications_before_and_after_hosp","15.04","Potassium",NA,2009-06-12,2021-03-12,21,163,3
 "medications_before_and_after_hosp","15.05","Sodium Bicarbonate",NA,2020-04-23,2021-03-07,5,10,1
-"medications_before_and_after_hosp","16.04","Mylanta",NA,2020-07-15,2020-07-15,1,1,1
-"medications_before_and_after_hosp","16.06","Ranitidine","Zantac",2009-06-10,2016-03-16,2,8,1
+"medications_before_and_after_hosp","16.04","Mylanta",NA,2016-03-16,2021-02-05,3,3,2
+"medications_before_and_after_hosp","16.06","Ranitidine","Zantac",2009-06-10,2016-03-16,2,9,2
 "medications_before_and_after_hosp","16.07","Simethicone","Mylicon",2020-05-18,2020-05-25,1,3,1
-"medications_before_and_after_hosp","16.11","Famotidine","Pepcid",2020-05-07,2021-03-18,23,241,1
+"medications_before_and_after_hosp","16.08","Sucralfate","Carafate",2013-09-03,2013-09-03,1,1,1
+"medications_before_and_after_hosp","16.10","Lansoprazole","Prevacid",2013-10-22,2020-05-25,2,3,3
+"medications_before_and_after_hosp","16.11","Famotidine","Pepcid",2020-05-07,2021-04-22,28,277,5
 "medications_before_and_after_hosp","18.04","Dexamethasone","Decadron",2020-07-20,2020-07-21,1,3,1
-"medications_before_and_after_hosp","18.06","Hydrocortisone","Solu-cortef",2019-07-19,2021-02-26,2,6,2
-"medications_before_and_after_hosp","18.07","Insulin",NA,2020-07-02,2021-01-14,2,27,2
-"medications_before_and_after_hosp","18.08","Levothyroxine","Synthroid",2021-01-26,2021-01-29,1,4,1
-"medications_before_and_after_hosp","18.10","Prednisone","Bronkosol",2020-05-08,2021-03-18,16,79,1
+"medications_before_and_after_hosp","18.06","Hydrocortisone","Solu-cortef",2015-08-16,2021-03-10,6,22,8
+"medications_before_and_after_hosp","18.07","Insulin",NA,2020-07-02,2021-01-14,2,39,7
+"medications_before_and_after_hosp","18.08","Levothyroxine","Synthroid",2021-01-26,2021-01-29,1,11,4
+"medications_before_and_after_hosp","18.10","Prednisone","Bronkosol",2020-05-08,2021-04-22,17,113,5
 "medications_before_and_after_hosp","19.03","Dopamine","Inotropin",2020-04-22,2020-12-27,3,65,1
-"medications_before_and_after_hosp","19.04","Epinephrine","Adrenalin, Vaponefrin",2017-08-14,2021-03-12,10,665,2
+"medications_before_and_after_hosp","19.04","Epinephrine","Adrenalin, Vaponefrin",2017-08-14,2021-04-12,12,670,5
 "medications_before_and_after_hosp","19.07","Milrinone","Primacor",2020-04-25,2021-03-13,3,234,1
-"medications_before_and_after_hosp","22.01","Acetaminophen","Tylenol",2007-05-22,2021-03-17,44,449,1
-"medications_before_and_after_hosp","22.06","Diphenhydramine","Benadryl",2015-08-16,2021-02-26,29,43,1
+"medications_before_and_after_hosp","22.01","Acetaminophen","Tylenol",2007-05-22,2021-03-17,44,491,13
+"medications_before_and_after_hosp","22.05","Diazepam","Valium",2016-05-09,2018-08-29,2,4,2
+"medications_before_and_after_hosp","22.06","Diphenhydramine","Benadryl",2015-08-16,2021-02-26,29,47,4
 "medications_before_and_after_hosp","22.07","Fentanyl","Sublimaze",2020-06-08,2021-03-08,4,146,1
-"medications_before_and_after_hosp","22.09","Ibuprofen","Pediaprofen, Motrin",2009-06-09,2021-03-13,32,114,1
+"medications_before_and_after_hosp","22.09","Ibuprofen","Pediaprofen, Motrin",2009-06-09,2021-03-13,33,134,9
 "medications_before_and_after_hosp","22.11","Ketamine","Ketalar",2021-01-06,2021-01-08,2,21,1
-"medications_before_and_after_hosp","22.12","Ketorolac","Toradol",2013-04-28,2021-03-13,10,65,1
-"medications_before_and_after_hosp","22.13","Lorazepam","Ativan",2020-05-22,2021-03-08,4,10,1
+"medications_before_and_after_hosp","22.12","Ketorolac","Toradol",2013-04-28,2021-03-13,11,66,2
+"medications_before_and_after_hosp","22.13","Lorazepam","Ativan",2018-02-08,2021-03-08,5,12,3
 "medications_before_and_after_hosp","22.15","Midazolam","Versed",2021-01-08,2021-03-09,5,137,1
 "medications_before_and_after_hosp","22.16","Morphine",NA,2013-04-28,2020-06-11,3,28,1
-"medications_before_and_after_hosp","22.22","Oxycodone","OxyContin",2016-05-13,2017-05-23,2,2,1
+"medications_before_and_after_hosp","22.22","Oxycodone","OxyContin",2013-04-29,2020-06-11,3,14,3
 "medications_before_and_after_hosp","23.01","Alteplase","Activase",2020-05-19,2020-05-24,1,4,1
-"medications_before_and_after_hosp","25.05","Cetirizine","Zyrtec",2020-06-04,2021-01-29,5,25,1
-"medications_before_and_after_hosp","26.02","Anakinra (IL-1 blockade)",NA,2020-04-23,2021-03-16,10,223,1
+"medications_before_and_after_hosp","25.03","Loratadine","Claritin",2020-07-02,2020-11-01,2,2,2
+"medications_before_and_after_hosp","25.05","Cetirizine","Zyrtec",2020-06-04,2021-05-12,6,30,4
+"medications_before_and_after_hosp","26.02","Anakinra (IL-1 blockade)",NA,2020-04-23,2021-03-16,10,228,2
 "medications_before_and_after_hosp","26.09","Canakinumab",NA,2020-05-28,2020-11-26,2,2,1
-"medications_before_and_after_hosp","27.02","Oseltamivir","Tamiflu",2009-06-09,2019-12-20,3,12,1
+"medications_before_and_after_hosp","27.02","Oseltamivir","Tamiflu",2009-06-09,2020-03-06,4,18,3
 "medications_before_and_after_hosp","01.01","Eprosartan","Teveten",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","01.02","Losartan","Cozaar",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","01.03","Valsartan","Diovan",NA,NA,NA,NA,NA
@@ -95,9 +104,7 @@
 "medications_before_and_after_hosp","03.25","Imipenem","Primaxin",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","03.26","Meropenem","Merrem",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","03.27","Metronidazole","Flagyl",NA,NA,NA,NA,NA
-"medications_before_and_after_hosp","03.28","Mycostatin","Nystatin",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","03.29","Neomycin",NA,NA,NA,NA,NA,NA
-"medications_before_and_after_hosp","03.30","Nystatin","Mycostatin",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","03.31","Oxacillin",NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","03.33","Piperacillin","Pipracil",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","03.34","Piperacillin/Tazobactam","Zosyn",NA,NA,NA,NA,NA
@@ -145,7 +152,6 @@
 "medications_before_and_after_hosp","08.05","Betaxolol","Betoptic, Kerlone",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","08.07","Bobindolol",NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","08.08","Cartelol","Cartrol, Ocupress",NA,NA,NA,NA,NA
-"medications_before_and_after_hosp","08.09","Carvedilol","Coreg",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","08.10","Celiprolol",NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","08.11","Dievalol",NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","08.12","Esmolol","Brevibloc",NA,NA,NA,NA,NA
@@ -186,11 +192,9 @@
 "medications_before_and_after_hosp","12.02","Aminocaproic acid","Amicar",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","12.03","Protamine",NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","13.01","Benazepril","Lotensin",NA,NA,NA,NA,NA
-"medications_before_and_after_hosp","13.02","Captopril","Capoten",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","13.03","Cilarapril","Primaxin",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","13.05","Enalaprilat","Vasotec",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","13.06","Fosinopril","Monopril",NA,NA,NA,NA,NA
-"medications_before_and_after_hosp","13.07","Lisinopril","Prinivil, Zestril",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","13.08","Pentopril",NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","13.09","Perindopril","Aceon",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","13.10","Quinapril","Accupril",NA,NA,NA,NA,NA
@@ -216,9 +220,7 @@
 "medications_before_and_after_hosp","16.02","Cimetidine","Tagamet",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","16.03","Metoclopramide HCl","Reglan",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","16.05","Ondansetron HCL","Zofran",NA,NA,NA,NA,NA
-"medications_before_and_after_hosp","16.08","Sucralfate","Carafate",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","16.09","Omeprazole","Prilosec",NA,NA,NA,NA,NA
-"medications_before_and_after_hosp","16.10","Lansoprazole","Prevacid",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","17.01","Digitoxin","Crystodigin",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","17.02","Digoxin","Lanoxin",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","17.03","Ouabain",NA,NA,NA,NA,NA,NA
@@ -254,7 +256,6 @@
 "medications_before_and_after_hosp","22.02","Methohexital","Brevitol",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","22.03","Chloral Hydrate","Noctec",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","22.04","Codeine",NA,NA,NA,NA,NA,NA
-"medications_before_and_after_hosp","22.05","Diazepam","Valium",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","22.08","Halothane",NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","22.10","Isoflurane",NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","22.14","Methadone","Dolophine",NA,NA,NA,NA,NA
@@ -273,7 +274,6 @@
 "medications_before_and_after_hosp","24.05","Methyphenidate","Ritalin, Concerta, Methylin, Metadate",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","25.01","Fexofenadine Hydrochloride","Allegra",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","25.02","Azelastine Hydrochloride","Astelin, Astepro",NA,NA,NA,NA,NA
-"medications_before_and_after_hosp","25.03","Loratadine","Claritin",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","25.04","Montelukast Sodium","Singulair",NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","26.01","Adalimumab (TNF inhibitor)",NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","26.03","Etanercept (TNF inhibitor)",NA,NA,NA,NA,NA,NA

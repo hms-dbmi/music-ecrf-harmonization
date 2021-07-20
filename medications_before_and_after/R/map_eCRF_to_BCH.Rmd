@@ -66,6 +66,15 @@ rxnorm_to_bch <- inner_join( ecrf_to_rxnorm, bchmapping, by="RXNORM_CODE")
 # load MISC patient medication data
 misc_meds <- read.delim("../local_ref/music_patients_meds.dsv", sep = ',')
 
+misc_meds <- pivot_wider(misc_meds, 
+                         id_cols = c(PATIENT_NUM, CONCEPT_CD, START_DATE, ADMISSIONDATE, END_DATE, LENGTH_OF_STAY),
+                         names_from = MODIFIER_CD, 
+                         values_from = TVAL_CHAR, 
+                         values_fill = NA,
+                         values_fn = list) %>%  # pivot df so that each MODIFIER value is a column
+  unnest(cols = 'MED:ROUTE', keep_empty = TRUE)   # in cases where there are multiple routes assigned to the same patient / medication / time, separate these into distinct rows
+
+
 # filter MISC patient medication data to concepts that we have identified as potential matches for the eCRF variables
 # filter out duplicated rows
 misc_meds <- misc_meds %>% 
@@ -129,7 +138,7 @@ return_rxnorm_desc <- function(RXNORM_DESCRIPTIONS) {
 
 # summarize music patient data for each concept
 patient_observation_summary <- misc_meds %>% 
-  group_by(CONCEPT_CD, TVAL_CHAR ) %>%
+  group_by(CONCEPT_CD, `MED:ROUTE` ) %>%
   summarise(distinct_patients = length(unique(PATIENT_NUM)),
             distinct_observations = n())
 
@@ -139,7 +148,7 @@ medClass <- meds_auto[, c("Code", "Class")]
 misc_meds_info <- left_join(misc_meds_info, medClass, by = c('ECRF_CODE' = 'Code'))
 
 bch_med_concept_summary <- misc_meds_info %>% 
-  group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_NAME_CHAR, TVAL_CHAR) %>%
+  group_by(CONCEPT_CD, BCH_CONCEPT_PATH, BCH_NAME_CHAR, `MED:ROUTE`) %>%
   summarise(ECRF_CODE = ECRF_CODE,
             ECRF_GENERIC_NAME = ECRF_GENERIC_NAME,
             ECRF_TRADE_NAMES = ECRF_TRADE_NAMES,
@@ -156,7 +165,7 @@ bch_med_concept_summary <- bch_med_concept_summary %>%
   mutate(eCRF_name = 'medcations_before_and_after',
          BCH_NAME_CHAR = tolower(BCH_NAME_CHAR)) %>%
   rename('BCH_CONCEPT_DESCRIPTION' = 'BCH_NAME_CHAR',
-         'MEDICATION_ROUTE' = 'TVAL_CHAR') %>%
+         'MEDICATION_ROUTE' = `MED:ROUTE`) %>%
   select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, ECRF_CLASS,
          RXNORM_CODES, RXNORM_DESCS,
          CONCEPT_CD, BCH_CONCEPT_PATH, BCH_CONCEPT_DESCRIPTION, MEDICATION_ROUTE,  min_date, max_date, distinct_patients, distinct_observations, pat_ids) %>%
