@@ -236,7 +236,7 @@ calc_n_unique_pids <- function(pids) {
 # generate eCRF summary based on filtered mapping
 ecrf_med_concept_summary <- bch_med_concept_summary %>%
   ungroup() %>%
-  group_by(ECRF_CODE) %>%
+  group_by(ECRF_CODE, MEDICATION_ROUTE, MEDICATION_ROUTE_DESC) %>%
   summarise(min_date = min(min_date),
             max_date = max(max_date),
             distinct_patients = calc_n_unique_pids(pat_ids),
@@ -251,7 +251,7 @@ ecrf_med_concept_summary <- left_join(ecrf_med_concept_summary,
 # reorganize and rename columns
 ecrf_med_concept_summary <- ecrf_med_concept_summary %>%
   mutate(eCRF_name = 'medications_before_and_after_hosp') %>%
-  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES,
+  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, MEDICATION_ROUTE,
          min_date, max_date, distinct_patients, distinct_observations, distinct_concepts) %>%
   arrange(ECRF_CODE)
 
