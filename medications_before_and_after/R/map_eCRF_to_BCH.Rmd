@@ -251,7 +251,7 @@ ecrf_med_concept_summary <- left_join(ecrf_med_concept_summary,
 # reorganize and rename columns
 ecrf_med_concept_summary <- ecrf_med_concept_summary %>%
   mutate(eCRF_name = 'medications_before_and_after_hosp') %>%
-  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, MEDICATION_ROUTE,
+  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, MEDICATION_ROUTE, MEDICATION_ROUTE_DESC,
          min_date, max_date, distinct_patients, distinct_observations, distinct_concepts) %>%
   arrange(ECRF_CODE)
 
