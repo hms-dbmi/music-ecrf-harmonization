@@ -1,0 +1,108 @@
+---
+title: "Missing medication extraction"
+output: 
+autor : Pierre
+---
+
+```{r setup, include=FALSE}
+library("tidyr")
+library( 'dplyr' )
+
+```
+
+Loading of the 3 dataset. 
+
+
+
+```{r setup, include=FALSE}
+BCH_Concept_list<- read.csv("Concept_dimension_Table.csv",sep=';',header=TRUE)
+Missing_concept_initial<- read.csv("Missing_concept.csv",sep=';',header=TRUE)
+Medication_mapping<- read.csv("MedicationsMapBCH.CSV",sep=',',header=TRUE)
+
+```
+
+Separation of the keyword in 4 column
+
+```{r}
+Missing_concept <- Missing_concept_initial %>%
+  separate(key, c("key1", "key2","key3", "key4","key5"), "--")
+
+
+```
+
+
+re shape of the missing concept dataset (gather to have each keyword in a separate column and remove of the useless rows (with NA keyword) and columns)
+
+```{r}
+Missing_concept <-  gather(Missing_concept, key="x", value="key", 3:7)
+Missing_concept <- subset(Missing_concept, select = -c(comment,x))
+Missing_concept <- Missing_concept[complete.cases(Missing_concept), ]
+
+
+```
+
+merge between the BCH concept table (using NAME_cHAR column) and the missing concept table using (keyword column)
+```{r}
+names(BCH_Concept_list)[names(BCH_Concept_list) == 'NAME_CHAR'] <- 'key'
+Missing_concept<- merge(x = BCH_Concept_list, y = Missing_concept, by = "key", all.x = TRUE)
+```
+
+filter of the new table to see the resulst of the merge
+remove of the useless columns
+
+```{r}
+Missing_concept <- filter(Missing_concept, !is.na(Class))
+Missing_concept <-subset(Missing_concept, select = -c(CONCEPT_BLOB,UPDATE_DATE, DOWNLOAD_DATE, IMPORT_DATE, SOURCESYSTEM_CD, UPLOAD_ID))
+```
+
+merge between the missing concept table and the current bch mapping using the BCH code
+
+```{r}
+names(Missing_concept)[names(Missing_concept) == 'CONCEPT_CD'] <- 'BCH_CONCEPT_CD'
+Missing_concept <- merge(x = Missing_concept, y = Medication_mapping, by = "BCH_CONCEPT_CD", all.x = TRUE)
+
+```
+cleaning of the final table
+
+```{r}
+Missing_concept <- Missing_concept[, c(4,5,2,1,11)]
+```
+addendum (BCH code and RXNORM desc)
+
+```{r}
+View(Missing_concept)
+
+BCH_description <- BCH_Concept_list[, c(2,3)]
+names(BCH_description)[names(BCH_description) == c('CONCEPT_CD', 'key')] <- c('BCH_CONCEPT_CD', 'NAME_CHAR')
+
+Missing_concept_final <- merge(x = Missing_concept, y = BCH_description, by = "BCH_CONCEPT_CD", all.x = TRUE)
+
+Missing_concept_final <- distinct(Missing_concept_final)
+View(Missing_concept_final)
+
+
+```
+
+
+```{r}
+write.csv(Missing_concept_final, "Missing_Medication_Mapping.csv")
+
+```
+
+
+---- R version ----
+
+platform       x86_64-w64-mingw32          
+arch           x86_64                      
+os             mingw32                     
+system         x86_64, mingw32             
+status                                     
+major          4                           
+minor          1.0                         
+year           2021                        
+month          05                          
+day            18                          
+svn rev        80317                       
+language       R                           
+version.string R version 4.1.0 (2021-05-18)
+nickname       Camp Pontanezen
