@@ -16,8 +16,8 @@ Loading of the 3 dataset.
 
 ```{r setup, include=FALSE}
 BCH_Concept_list<- read.csv("Concept_dimension_Table.csv",sep=';',header=TRUE)
-Missing_concept_initial<- read.csv("Missing_concept.csv",sep=';',header=TRUE)
-Medication_mapping<- read.csv("MedicationsMapBCH.CSV",sep=',',header=TRUE)
+Missing_concept_initial<- read.csv("../data/Missing_concept.csv",sep=';',header=TRUE)
+Medication_mapping<- read.csv("../data/MedicationsMapBCH.CSV",sep=',',header=TRUE)
 
 ```
 
