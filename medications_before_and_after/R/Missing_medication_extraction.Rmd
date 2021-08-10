@@ -17,7 +17,7 @@ Loading of the 3 dataset.
 ```{r setup, include=FALSE}
 BCH_Concept_list<- read.delim("../data/concept_dimensionMeds.dsv",header=TRUE)
 Missing_concept_initial<- read.csv("../data/Missing_concept.csv",sep=';',header=TRUE)
-Medication_mapping<- read.csv("../data/MedicationsMapBCH.CSV",seps=',',header=TRUE)
+Medication_mapping<- read.csv("../data/MedicationsMapBCH.CSV",sep=',',header=TRUE)
 
 ```
 
@@ -41,11 +41,42 @@ Missing_concept <- Missing_concept[complete.cases(Missing_concept), ]
 
 ```
 
+Search for the 'key' within the BCH concept dimension table (NAME_CHAR in BCH_Concept_list)
+```{r}
+
+# we define a function that will takes as input a descriptoin/NAME_CHAR (desc) 
+# and searches the desc for any matching keys using grepl. make sure to use ignore.case = TRUE to account for differences in capitalization
+# sometimes, we mey find that multiple keys match a single NAME_CHAR
+# in these instances, the keys are combined into the same row cell with a | separator
+find_key <- function(desc){
+  return(paste0(Missing_concept$key[sapply(Missing_concept$key, grepl, desc, ignore.case = TRUE)], collapse = '|'))
+}
+
+# subset BCH_Concept_list for entries where any key is found somewhere within the NAME_CHAR (use grep)
+filtered_bch_concepts <- BCH_Concept_list %>%
+  filter(grepl(paste(Missing_concept$key, collapse="|"), NAME_CHAR, ignore.case = TRUE)) %>%
+  mutate(key = sapply(NAME_CHAR, find_key))
+
+# we can now expand the result in cases where we found multiple keys
+# you'll notice the number of rows slightly increase to account for this
+# notice that the '|' must be escaped by a double backslash in R
+filtered_bch_concepts <- separate_rows(filtered_bch_concepts, key, sep = '\\|')
+
+# now filtered_bch_concepts contains only those BCH concepts which match some key within our list of missing concepts
+# the match between the concept NAME_CHAR and the concept key is not exact, so we use grep instead of merge
+# however, now we know that the key in filtered_bch_concepts exactly matches the key column in the original missing_concept table
+# we can merge (left_join) filtered_bch_concepts with missing_concept on key, to include the eCRF and summary metadata associated with each concept
+merged_missing_concepts <- left_join(filtered_bch_concepts, Missing_concept, by = 'key')
+
+```
+
+*pierre initial code for combining BCH concept with missing concept)*
 merge between the BCH concept table (using NAME_cHAR column) and the missing concept table using (keyword column)
 ```{r}
-names(BCH_Concept_list)[names(BCH_Concept_list) == 'NAME_CHAR'] <- 'key'
-Missing_concept<- merge(x = BCH_Concept_list, y = Missing_concept, by = "key", all.x = TRUE)
+#names(BCH_Concept_list)[names(BCH_Concept_list) == 'NAME_CHAR'] <- 'key'
+#Missing_concept<- merge(x = BCH_Concept_list, y = Missing_concept, by = "key", all.x = TRUE)
 ```
+
 
 filter of the new table to see the resulst of the merge
 remove of the useless columns
