@@ -94,6 +94,18 @@ merged_missing_concept_summary <- merged_missing_concept_summary %>%
                                    yes = "missing BCH to RXNORM mapping",
                                    no = ""))
 
+merged_missing_concept_summary_forreview <- merged_missing_concept_summary %>%
+  filter(missing_use_case != 'missing BCH to RXNORM mapping') %>%
+  unique()
+
+
+# merge RXNORM descriptions into one row
+merged_missing_concept_summary_forreview <- merged_missing_concept_summary_forreview %>%
+  group_by(RXNORM_CONCEPT_CD) %>%
+  mutate(RXNORM_DESC = glue::glue_collapse(RXNORM_DESC, sep = ';')) %>%
+  unique()
+
+
 ```
 
 *pierre initial code for combining BCH concept with missing concept)*
