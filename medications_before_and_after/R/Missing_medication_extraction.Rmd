@@ -87,6 +87,13 @@ merged_missing_concept_summary <- merged_missing_concepts %>%
          BCH_CONCEPT_CD = CONCEPT_CD,
          BCH_DESC = BCH_NAME_CHAR)
 
+# define missing use cases
+# if RXNORM info is NA, there is a missing mapping
+merged_missing_concept_summary <- merged_missing_concept_summary %>%
+  mutate(missing_use_case = ifelse(test = is.na(RXNORM_CONCEPT_CD),
+                                   yes = "missing BCH to RXNORM mapping",
+                                   no = ""))
+
 ```
 
 *pierre initial code for combining BCH concept with missing concept)*
