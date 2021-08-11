@@ -18,7 +18,7 @@ Loading of the 3 dataset.
 BCH_Concept_list<- read.delim("../data/concept_dimensionMeds.dsv",header=TRUE)
 Missing_concept_initial<- read.csv("../data/Missing_concept.csv",sep=';',header=TRUE)
 Medication_mapping<- read.csv("../data/MedicationsMapBCH.CSV",sep=',',header=TRUE)
-
+rxnorm_meds_subset <- read.delim('../data/rxnorm.dsv')
 ```
 
 Separation of the keyword in 4 column
@@ -71,6 +71,22 @@ merged_missing_concepts <- left_join(filtered_bch_concepts, Missing_concept, by 
 # add the RXNORM code and description
 # left_join the merged_missing_concepts df with the BCH RXNORM mapping by BCH concept cd
 merged_missing_concepts <- left_join(merged_missing_concepts, Medication_mapping, by = c("CONCEPT_CD" = "BCH_CONCEPT_CD"))
+rxnorm_meds_subset <- rxnorm_meds_subset %>% mutate(RXNORM_CD = paste0('RXNORM:', CODE))
+merged_missing_concepts <- left_join(merged_missing_concepts, rxnorm_meds_subset, by = c("ACT_CONCEPT_CD" = "RXNORM_CD"))
+
+# select columns of interest
+merged_missing_concept_summary <- merged_missing_concepts %>% 
+  select(Class, Generic.Name, # from eCRF
+         ACT_CONCEPT_CD, STR, # from RXNORM
+         CONCEPT_CD, BCH_NAME_CHAR, # from BCH
+         key, automatic_extraction, has_rxnorm_mapping, rxnorm_in_bch, mapped_but_not_in_bch, BCH_CONCEPT_CD_EXIST) %>% # from us 
+  rename(eCRF_Class = Class,
+         eCRF_GenericName = Generic.Name,
+         RXNORM_CONCEPT_CD = ACT_CONCEPT_CD,
+         RXNORM_DESC = STR,
+         BCH_CONCEPT_CD = CONCEPT_CD,
+         BCH_DESC = BCH_NAME_CHAR)
+
 ```
 
 *pierre initial code for combining BCH concept with missing concept)*
