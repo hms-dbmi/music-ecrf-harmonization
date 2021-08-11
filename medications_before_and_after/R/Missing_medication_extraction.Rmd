@@ -68,6 +68,9 @@ filtered_bch_concepts <- separate_rows(filtered_bch_concepts, key, sep = '\\|')
 # we can merge (left_join) filtered_bch_concepts with missing_concept on key, to include the eCRF and summary metadata associated with each concept
 merged_missing_concepts <- left_join(filtered_bch_concepts, Missing_concept, by = 'key')
 
+# add the RXNORM code and description
+# left_join the merged_missing_concepts df with the BCH RXNORM mapping by BCH concept cd
+merged_missing_concepts <- left_join(merged_missing_concepts, Medication_mapping, by = c("CONCEPT_CD" = "BCH_CONCEPT_CD"))
 ```
 
 *pierre initial code for combining BCH concept with missing concept)*
