@@ -171,6 +171,13 @@ Desired columns:
 df2 <- df2 %>% 
   mutate(medcur1_type = str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', ''))
 
+# *Note the following criteria: "If this is the Week 2 - Month 6 Follow-Up visit, please exclude aspirin."*
+# week 2 - month 6 follow ups are characterized by medcur1_current in (3,4,5,6,7)
+# aspirin is characterized by ECRF_CODE = 07.02
+df2 <- df2 %>%
+  filter(!(medcur1_current %in% c(3,4,5,6,7) & ECRF_CODE == '07.02'))
+
+
 out <- pivot_wider(df2,
                     id_cols = c(PATIENT_NUM, medcur1_current, redcap_repeat_instance, medcur1_type),   
                     names_from = Variable...Field.Name,
@@ -181,3 +188,7 @@ out <- pivot_wider(df2,
 write.csv(out[,-1], '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE)
   
 ```
+
+
+
+
