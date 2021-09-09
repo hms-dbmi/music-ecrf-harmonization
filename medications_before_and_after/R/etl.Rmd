@@ -163,13 +163,16 @@ Desired columns:
 - redcap_repeat_instance	
 - current_meds_fu_na (acknowledgement of participant eligibility - ignore / mark as 1 (acknowledged for all))
 - medcur1_current (detailed in healthcore question document, but not in eCRF or in example redcap output)
+- medcur1_type
 - eCRF variables (with expected value)
-- *need to add in medcur1_type*
 
 ```{r}
 
+df2 <- df2 %>% 
+  mutate(medcur1_type = str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', ''))
+
 out <- pivot_wider(df2,
-                    id_cols = c(PATIENT_NUM, medcur1_current, redcap_repeat_instance),   
+                    id_cols = c(PATIENT_NUM, medcur1_current, redcap_repeat_instance, medcur1_type),   
                     names_from = Variable...Field.Name,
                     values_from = ECRF_CODE,
                     values_fill = NA) 
