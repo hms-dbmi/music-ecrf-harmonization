@@ -115,7 +115,7 @@ out3 <- out2 %>%
     values_from = medhospX_type,
     values_fill = NA)
 
-write.csv(out[,-1], '../local_ref/redcap_output_medications_during.csv', row.names = FALSE)
+write.csv(out3[,-1], '../local_ref/redcap_output_medications_during.csv', row.names = FALSE)
 
 
 ```
