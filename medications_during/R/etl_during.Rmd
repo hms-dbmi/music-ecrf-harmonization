@@ -5,26 +5,43 @@ date: "9/16/2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+# This notebook contains the following steps:
+1.Load data extract for the concepts of interest
+2. Determine expected values for REDCap 
+3. Calculate medcur1_current column
+4. Transform and format
+
+# 0. Libraries
+```{r}
+library(tidyverse)
+library(lubridate)
 ```
 
-## R Markdown
+# 1. Load data extract for the codes of interest
+Use the same query as medications_before_and_after -- see that pipeline for details
+```{r}
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+df <- read.csv('../../medications_before_and_after/local_ref/agg40_music_meds_filtered.csv')
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
+  filter(Form.Name == 'additional_medications_during_hospitalization') %>%
+  select(Variable...Field.Name, Choices..Calculations..OR.Slider.Labels) %>%
+  separate(Variable...Field.Name, c('a', 'b', 'c'), sep = '_') %>%
+  filter(!b %in% c('na', 'type', 'name', 'start', 'ae')) %>%
+  mutate(a = str_replace(a, '[[:digit:]]+', ''),
+         Variable...Field.Name = paste0(a, 'X', '_', b, '_', c)) %>%
+  unique() %>% 
+  separate_rows(Choices..Calculations..OR.Slider.Labels, sep = '\\|') %>%
+  mutate(ECRF_CODE = str_replace(Choices..Calculations..OR.Slider.Labels, ',.*$', ''),
+         ECRF_CODE = str_trim(ECRF_CODE),
+         ECRF_CODE = fix_code_formatting(ECRF_CODE)) %>%
+  select(-Choices..Calculations..OR.Slider.Labels)
 
-```{r cars}
-summary(cars)
+bch_med_concept_summary <- read_csv('../../medications_before_and_after/data/bch_med_concept_summary_toReview.csv')
+
+bch_med_concept_summary <- left_join(bch_med_concept_summary, datadict, by = 'ECRF_CODE')
+
+df <- left_join(df, bch_med_concept_summary %>% select(ECRF_CODE, CONCEPT_CD, Variable...Field.Name), by = 'CONCEPT_CD')
+
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
