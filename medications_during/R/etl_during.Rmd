@@ -63,7 +63,7 @@ df <- df %>%
 
 # Add additional columns
 - medhospX_type: overall category of medication
-- medhospX_start_st: start date, mm-dd-yyyy
+- medhospX_start_dt: start date, mm-dd-yyyy
 - redcap_repeat_instance refers to the 'X' in the variable name
 ```{r}
 df2 <- df %>%
@@ -71,14 +71,21 @@ df2 <- df %>%
   mutate(datetime = paste0(date, '-', time),
          datetime = ymd_hms(datetime)) %>%
   group_by(PATIENT_NUM, ECRF_CODE) %>%
-  summarise(datetime = min(datetime)) %>%
+  summarise(datetime = min(datetime),
+            Variable...Field.Name = first(Variable...Field.Name)) %>%
   ungroup() %>%
   mutate(medhospX_type = as.numeric(str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', ''))) %>%
-  group_by(PATIENT_NUM) %>%
-  arrange(medhospX_type) %>%
-  mutate(redcap_repeat_instance = row_number()) 
+  group_by(PATIENT_NUM, medhospX_type) %>%
+  arrange(as.numeric(ECRF_CODE)) %>%
+  mutate(redcap_repeat_instance = row_number())  %>%
+  ungroup() %>%
+  mutate(medhospX_start_dt = format(datetime, "%m-%d-%Y"))
 
+# rename X in variable name depending on 'redcap_repeat_instance'
 
+df3 <- df2 %>%
+  mutate(Variable...Field.Name = str_replace(Variable...Field.Name, 'X', as.character(redcap_repeat_instance)))
+  
 ```
 
 # Pivot into final format
