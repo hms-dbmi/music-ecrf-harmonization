@@ -1,0 +1,128 @@
+---
+title: 'ETL: Medications During Hospitalization eCRF'
+author: "Simran Makwana"
+date: "9/16/2021"
+output: html_document
+---
+
+# This notebook contains the following steps:
+1.Load data extract for the concepts of interest
+2. Determine expected values for REDCap 
+3. Calculate medcur1_current column
+4. Transform and format
+
+# 0. Libraries
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+# 1. Load data extract for the codes of interest
+Use the same query as medications_before_and_after -- see that pipeline for details
+```{r}
+
+df <- read.csv('../../medications_before_and_after/local_ref/agg40_music_meds_filtered.csv')
+
+# if the code is formatted like so: '2.00', convert to '02.00'
+fix_code_formatting <- function(x) {
+  ifelse(test = !grepl("[[:digit:]]{2}.", x), yes = (paste0('0', x)), no = (x))
+}
+
+datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
+  filter(Form.Name == 'additional_medications_during_hospitalization') %>%
+  select(Variable...Field.Name, Choices..Calculations..OR.Slider.Labels) %>%
+  separate(Variable...Field.Name, c('a', 'b', 'c'), sep = '_') %>%
+  filter(!b %in% c('na', 'type', 'name', 'start', 'ae')) %>%
+  mutate(a = str_replace(a, '[[:digit:]]+', ''),
+         Variable...Field.Name = paste0(a, 'X', '_', b, '_', c)) %>%
+  unique() %>% 
+  separate_rows(Choices..Calculations..OR.Slider.Labels, sep = '\\|') %>%
+  mutate(ECRF_CODE = str_replace(Choices..Calculations..OR.Slider.Labels, ',.*$', ''),
+         ECRF_CODE = str_trim(ECRF_CODE),
+         ECRF_CODE = fix_code_formatting(ECRF_CODE)) %>%
+  select(-Choices..Calculations..OR.Slider.Labels)
+
+bch_med_concept_summary <- read_csv('../../medications_before_and_after/data/bch_med_concept_summary_toReview.csv')
+
+bch_med_concept_summary <- left_join(bch_med_concept_summary, datadict, by = 'ECRF_CODE')
+
+df <- left_join(df, bch_med_concept_summary %>% select(ECRF_CODE, CONCEPT_CD, Variable...Field.Name), by = 'CONCEPT_CD')
+
+```
+
+# 2. Filter to medication values during hospitalization
+
+```{r}
+
+df <- df %>%
+  mutate(date = dmy(sapply(strsplit( as.character(START_DATE), " "), '[', 1)),
+         time = sapply(strsplit( as.character(START_DATE), " "), '[', 2),
+         DISCHARGE_DATE = dmy(sapply(strsplit( as.character(END_DATE), " "), '[', 1)),
+         ADMISSION_DATE = dmy(ADMISSIONDATE),
+         days_after_admission = date - ADMISSION_DATE,
+         days_after_discharge = date - DISCHARGE_DATE) %>%
+  filter(days_after_admission >= 0,
+         days_after_discharge <= 0)
+
+```
+
+# Add additional columns
+- medhospX_type: overall category of medication
+- medhospX_start_dt: start date, mm-dd-yyyy
+- redcap_repeat_instance refers to the 'X' in the variable name
+```{r}
+df2 <- df %>%
+  group_by(PATIENT_NUM) %>%
+  mutate(datetime = paste0(date, '-', time),
+         datetime = ymd_hms(datetime)) %>%
+  group_by(PATIENT_NUM, ECRF_CODE) %>%
+  summarise(datetime = min(datetime),
+            Variable...Field.Name = first(Variable...Field.Name)) %>%
+  ungroup() %>%
+  mutate(medhospX_type = as.numeric(str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', ''))) %>%
+  group_by(PATIENT_NUM) %>%
+  arrange(as.numeric(ECRF_CODE)) %>%
+  mutate(redcap_repeat_instance = row_number())  %>%
+  ungroup() %>%
+  mutate(medhospX_start_dt = format(datetime, "%m-%d-%Y"))
+
+# rename X in variable name depending on 'redcap_repeat_instance'
+
+df3 <- df2 %>%
+  mutate(Variable...Field.Name = str_replace(Variable...Field.Name, 'X', as.character(redcap_repeat_instance)))
+  
+```
+
+# Pivot into final format
+```{r}
+
+# pivot variable names
+out <- pivot_wider(df3,
+                  id_cols = c(PATIENT_NUM, medhospX_type, medhospX_start_dt, redcap_repeat_instance),   
+                  names_from = Variable...Field.Name,
+                  values_from = ECRF_CODE,
+                  values_fill = NA) 
+
+# pivot medhospX_start_dt
+out2 <- out %>%
+  mutate(medhospX_start_dt_names = str_replace('medhospX_start_dt', 'X', as.character(redcap_repeat_instance))) %>%
+  pivot_wider(
+    names_from = medhospX_start_dt_names,
+    values_from = medhospX_start_dt,
+    values_fill = NA)
+  
+
+# pivot medhospX_type
+out3 <- out2 %>%
+  mutate(medhospX_type_names = str_replace('medhospX_type', 'X', as.character(redcap_repeat_instance))) %>%
+  pivot_wider(
+    names_from = medhospX_type_names,
+    values_from = medhospX_type,
+    values_fill = NA)
+
+write.csv(out3 %>% select(-PATIENT_NUM, -redcap_repeat_instance), '../local_ref/redcap_output_medications_during.csv', row.names = FALSE)
+
+
+```
+
+
