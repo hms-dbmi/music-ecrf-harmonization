@@ -65,34 +65,19 @@ colnames(eCRF_table) <- name
 4) transfer the zip_column to the eCRF.We do a check of the patient's id for each row to be sure that we don't mix any data. 
 
 ```{r}
-# 1)
-names(Usefull_Patient_table)[names(Usefull_Patient_table) == 'ZIP_CD'] <- 'zipcodeus'
-
-#2)
-Usefull_Patient_table$zipcodeus<- as.character(Usefull_Patient_table$zipcodeus)
-str(Usefull_Patient_table$zipcodeus)
 
 
-#3)
-for (i in 1:dim(Usefull_Patient_table)[1]) {
-  if (nchar(Usefull_Patient_table$zipcodeus[i])==4) {
-      Usefull_Patient_table$zipcodeus[i] <- paste("0", Usefull_Patient_table$zipcodeus[i], sep="")
-    }else{
-      Usefull_Patient_table$zipcodeus[i]<-Usefull_Patient_table$zipcodeus[i]
-    }
+format_zipcode <- function(zipcode){
+  if(nchar(zipcode) == 4){
+    return(paste0(0, zipcode))
+  }else{
+    return(zipcode)
+  }
 }
 
-#4)
-
-for (i in 1:dim(Usefull_Patient_table)[1]){
-for (j in 1:dim(eCRF_table)[1]){
-if(eCRF_table$Patient_id[j]==Usefull_Patient_table$PATIENT_NUM[i]){
-  eCRF_table$zipcodeus[j] <- Usefull_Patient_table$zipcodeus[i]
-}else{
-}
-  
-}
-}
+out <- out %>%
+  mutate(zipcodeus = format_zipcode(ZIP_CD)) %>%
+  select(-ZIP_CD)
 
 ```
 
