@@ -109,17 +109,20 @@ if(eCRF_table$Patient_id[j]==Usefull_Patient_table$PATIENT_NUM[i]){
 
 
 ###Country###
-
-If there is a zipcode, it means that the patient is a US resident. So we are looking into the eCRF zipcode column. If it is empty the value of the country will be 0, if not it will be 1
+Country of residence: 1, US | 2, Canada | 3, Other
+If there is a zipcode, it means that the patient is a US resident. So we are looking into the eCRF zipcode column. If there is a value, country should be 1.
 ```{r}
 
-for (i in 1:dim(eCRF_table)[1]) {
-    if (is.null(eCRF_table$zipcodeus[i])) {
-      eCRF_table$country[i] = 0
-    }else{
-      eCRF_table$country[i] = 1
-    }
+identify_country <- function(zipcode) {
+  if (is.null(zipcode)) {
+    return('')
+  } else {
+    return(1)
+  }
 }
+
+eCRF_table <- eCRF_table %>% 
+  mutate(country = identify_country(zipcodeus))
 
 ```
 
