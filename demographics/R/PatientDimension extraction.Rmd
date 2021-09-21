@@ -92,7 +92,7 @@ identify_country <- function(zipcode) {
   }
 }
 
-eCRF_table <- eCRF_table %>% 
+out <- out %>% 
   mutate(country = identify_country(zipcodeus))
 
 ```
@@ -103,65 +103,38 @@ Identify state abbreviation and county based on zipcode
 
 ```{r}
 
-eCRF_table <- eCRF_table %>%
+out <- out %>%
   left_join(zip_table %>%
               select(state_abbr, county, zipcode),
             by = c('zipcodeus' = 'zipcode')) %>%
-  mutate(usstate = state_abbr,
-         county = county.x) %>%
-  select(-state_abbr,
-         -county.x, county.y)
+  mutate(usstate = state_abbr)  %>%
+  select(-state_abbr)
 
 ```
 
 
 ###Language###
-Language data dictionary: 1, English | 2, Spanish | 3, Both English and Spanish | 4, Other | 99, Decline to answer
-
-1) We add the language column to the patient_table.
-2) We fill the column with the information corresponding to the requirement of the dictionary
-3) Then we copy this column to the eCRF table. We do a check of the patient's id for each row to be sure that we don't mix any data. 
+Data dictionary (language): 1, English | 2, Spanish | 3, Both English and Spanish | 4, Other | 99, Decline to answer
+Data dictionary (language_other): If other language, please specify (if [language] = "4")
 
 ```{r}
-#1)
-Usefull_Patient_table$language <- NA
- 
-#2) 
-for (i in 1:dim(Usefull_Patient_table)[1]) {
-    if (tolower(Usefull_Patient_table$LANGUAGE_CD[i]) == "english") {
-      Usefull_Patient_table$language[i]= 1 
-    } else if(tolower(Usefull_Patient_table$LANGUAGE_CD[i]) == "spanish") {
-      Usefull_Patient_table$language[i]= 2
-    }else{
-      Usefull_Patient_table$language[i]= 4
-    }
-}
-
 ## not sure how case 3 (both english and spanish) or case 99 (decline to answer) would appear in the EHR
 # should check with other sites and as more patients are added
 categorize_language <- function(language){
   language <- tolower(language)
-  if (language == 'english') {
-    return(1)
-  } else if (language == 'spanish') {
-    return(2)
-  } else {
-    return(4)
-  }
-  
+  ifelse (language == 'english', 1, 
+          ifelse(language == 'spanish', 2, 4)
+  )
 }
 
-#3)
+identify_other_language <- function(language){
+  language <- tolower(language)
+  ifelse(!language %in% c('english', 'spanish'), language, '')
+}
 
-for (i in 1:dim(Usefull_Patient_table)[1]){
-for (j in 1:dim(eCRF_table)[1]){
-if(eCRF_table$Patient_id[j]==Usefull_Patient_table$PATIENT_NUM[i]){
-  eCRF_table$language[j] <- Usefull_Patient_table$language[i]
-}else{
-}
-  
-}
-}
+out <- out %>%
+  mutate(language = categorize_language(LANGUAGE_CD),
+         language_other = identify_other_language(LANGUAGE_CD))
 
 
 ```
