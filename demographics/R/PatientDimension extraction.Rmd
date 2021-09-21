@@ -7,6 +7,7 @@ output:
 
 ```{r}
 library( dplyr )
+library(lubridate)
 ```
 
 
@@ -15,10 +16,10 @@ Downloading the Patient Dimension table and extraction of the desired values (bi
 
 ```{r}
 
-Patient_dimension_table <- read.delim("local_ref/example_patient_dimension.txt")
+Patient_dimension_table <- read.csv("../local_ref/music_patient_dimension.csv")
 
 
-Usefull_Patient_table <-Patient_dimension_table %>%
+out <-Patient_dimension_table %>%
   select(PATIENT_NUM, AGE_IN_YEARS_NUM, BIRTH_DATE, LANGUAGE_CD, RACE_CD, ZIP_CD)
 
 
@@ -28,7 +29,7 @@ Usefull_Patient_table <-Patient_dimension_table %>%
 Loading the dictionary relevant to the demographic eCRF
 
 ```{r}
-data_dictionnary <- read.csv("../data/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv")%>%
+data_dictionary <- read.csv("../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv")%>%
   filter(Form.Name=="demographics")
 ```
 
@@ -36,7 +37,7 @@ data_dictionnary <- read.csv("../data/MUSIC_DataDictionary_V3_4Dec20_final versi
 Loading the county-state-zipcode datatable (https://github.com/scpike/us-state-county-zip)
 
 ```{r}
-zip_table <- read.csv("local_ref/Zip_table.csv")
+zip_table <- read_csv('https://raw.githubusercontent.com/scpike/us-state-county-zip/master/geo-data.csv')
 ```
 
 
@@ -55,280 +56,139 @@ colnames(eCRF_table) <- name
 
 ```
 
-###Patient id###
-creation of a commun ID on the eCRF table and the patient table to be sure that the data will not be mixed up
-
-```{r}
-eCRF_table$Patient_id <- Usefull_Patient_table$PATIENT_NUM
-
-```
-
-
 
 
 ###ZIP CODE###
-
-1) rename the column to fit the eCRF
-2) Change the type of the column to text
-3) the zip code were originally 4 digit. So a 0 is added at the beginning when the zipcode is 4 digit. If it is already a 5 digit zipcode it will remain the same
-4) transfer the zip_column to the eCRF.We do a check of the patient's id for each row to be sure that we don't mix any data. 
+Data dictionary: For US residents, please collect the 5-digit zip code
+The zip code were originally 4 digits. So a 0 is added at the beginning when the zipcode is 4 digit. If it is already a 5 digit zipcode it will remain the same
 
 ```{r}
-# 1)
-names(Usefull_Patient_table)[names(Usefull_Patient_table) == 'ZIP_CD'] <- 'zipcodeus'
-
-#2)
-Usefull_Patient_table$zipcodeus<- as.character(Usefull_Patient_table$zipcodeus)
-str(Usefull_Patient_table$zipcodeus)
 
 
-#3)
-for (i in 1:dim(Usefull_Patient_table)[1]) {
-  if (nchar(Usefull_Patient_table$zipcodeus[i])==4) {
-      Usefull_Patient_table$zipcodeus[i] <- paste("0", Usefull_Patient_table$zipcodeus[i], sep="")
-    }else{
-      Usefull_Patient_table$zipcodeus[i]<-Usefull_Patient_table$zipcodeus[i]
-    }
+format_zipcode <- function(zipcode){
+  if(nchar(zipcode) == 4){
+    return(paste0(0, zipcode))
+  }else{
+    return(zipcode)
+  }
 }
 
-#4)
-
-for (i in 1:dim(Usefull_Patient_table)[1]){
-for (j in 1:dim(eCRF_table)[1]){
-if(eCRF_table$Patient_id[j]==Usefull_Patient_table$PATIENT_NUM[i]){
-  eCRF_table$zipcodeus[j] <- Usefull_Patient_table$zipcodeus[i]
-}else{
-}
-  
-}
-}
+out <- out %>%
+  mutate(zipcodeus = format_zipcode(ZIP_CD)) %>%
+  select(-ZIP_CD)
 
 ```
-
-
 
 
 ###Country###
-
-If there is a zipcode, it means that the patient is a US resident. So we are looking into the eCRF zipcode column. If it is empty the value of the country will be 0, if not it will be 1
+Country of residence: 1, US | 2, Canada | 3, Other
+If there is a zipcode, it means that the patient is a US resident. So we are looking into the eCRF zipcode column. If there is a value, country should be 1.
 ```{r}
 
-for (i in 1:dim(eCRF_table)[1]) {
-    if (is.null(eCRF_table$zipcodeus[i])) {
-      eCRF_table$country[i] = 0
-    }else{
-      eCRF_table$country[i] = 1
-    }
+identify_country <- function(zipcode) {
+  if (is.null(zipcode)) {
+    return('')
+  } else {
+    return(1)
+  }
 }
+
+out <- out %>% 
+  mutate(country = identify_country(zipcodeus))
 
 ```
 
-###US state###
+###US state and County###
 
-double loop to check if there is some match between the eCRF zipcode and the zipcode-US-State database, if a match is found, the eCRF state column is filled with the matching US-State
-
-```{r}
-
-for (i in 1:dim(eCRF_table)[1]) {
-for (j in 1:dim(zip_table)[1]) {
-  
-    if (eCRF_table$zipcodeus[i]==zip_table$zipcode[j]) {
-      eCRF_table$usstate[i] <- zip_table$state[j]
-  
-    }else{
-      eCRF_table$usstate[i] <- eCRF_table$usstate[i]
-      }
-}
-}
-
-```
-
-###County###
-
-double loop to check if there is some match between the eCRF zipcode and the zipcode-county database, if a match is found, the eCRF county column is filled with the matching US-State
+Identify state abbreviation and county based on zipcode
 
 ```{r}
-for (i in 1:dim(eCRF_table)[1]) {
-for (j in 1:dim(zip_table)[1]) {
-  
-    if (eCRF_table$zipcodeus[i]==zip_table$zipcode[j]) {
-      eCRF_table$county[i] <- zip_table$county[j]
-  
-    }else{
-      eCRF_table$county[i] <- eCRF_table$county[i]
-      }
-}
-}
+
+out <- out %>%
+  left_join(zip_table %>%
+              select(state_abbr, county, zipcode),
+            by = c('zipcodeus' = 'zipcode')) %>%
+  mutate(usstate = state_abbr)  %>%
+  select(-state_abbr)
 
 ```
-
-
 
 
 ###Language###
-
-1) We add the language column to the patient_table.
-2) We fill the column with the information corresponding to the requirement of the dictionary
-3) Then we copy this column to the eCRF table. We do a check of the patient's id for each row to be sure that we don't mix any data. 
+Data dictionary (language): 1, English | 2, Spanish | 3, Both English and Spanish | 4, Other | 99, Decline to answer
+Data dictionary (language_other): If other language, please specify (if [language] = "4")
 
 ```{r}
-#1)
-Usefull_Patient_table$language <- NA
- 
-#2) 
-for (i in 1:dim(Usefull_Patient_table)[1]) {
-    if (tolower(Usefull_Patient_table$LANGUAGE_CD[i]) == "english") {
-      Usefull_Patient_table$language[i]= 1 
-    } else if(tolower(Usefull_Patient_table$LANGUAGE_CD[i]) == "spanish") {
-      Usefull_Patient_table$language[i]= 2
-    }else{
-      Usefull_Patient_table$language[i]= 4
-    }
+## not sure how case 3 (both english and spanish) or case 99 (decline to answer) would appear in the EHR
+# should check with other sites and as more patients are added
+categorize_language <- function(language){
+  language <- tolower(language)
+  ifelse (language == 'english', 1, 
+          ifelse(language == 'spanish', 2, 4)
+  )
 }
 
-#3)
+identify_other_language <- function(language){
+  language <- tolower(language)
+  ifelse(!language %in% c('english', 'spanish'), language, '')
+}
 
-for (i in 1:dim(Usefull_Patient_table)[1]){
-for (j in 1:dim(eCRF_table)[1]){
-if(eCRF_table$Patient_id[j]==Usefull_Patient_table$PATIENT_NUM[i]){
-  eCRF_table$language[j] <- Usefull_Patient_table$language[i]
-}else{
-}
-  
-}
-}
+out <- out %>%
+  mutate(language = categorize_language(LANGUAGE_CD),
+         language_other = identify_other_language(LANGUAGE_CD))
 
 
 ```
 
-###language other###
 
-we check the eCRF table to select the row with a "4" in the language.Once we check that the id is correct, we populate the "language other" 
-from this row with the string in the patient_table's language column
+###Race### 
+Data dictionary (white, black, indian, alaskan_native, pacific_islander, asian, race_other, race_refused_unknown): 1, Yes | 0, No
+Data dictionary (race_other_list): Please list other race
+
+Note that in BCH, there is no distinction between American Indian or Alaskan Native. They will be treated as other. 
+Other will include those which are explicitly listed as other and also those which do not fit the ecrf categories.
 
 ```{r}
 
-for (i in 1:dim(eCRF_table)[1]){
-for (j in 1:dim(Usefull_Patient_table)[1]){
-  
-if(eCRF_table$language[i]==4 && eCRF_table$Patient_id[i]==Usefull_Patient_table$PATIENT_NUM[j]){
-  eCRF_table$langauge_other[i] <- Usefull_Patient_table$LANGUAGE_CD[j]
-}else{
+identify_other_race <- function(race_other, race_cd){
+  ifelse(race_other, race_cd, '')
 }
-  
-}
-}
+
+# load manually curated race mapping, this will need to be created for each site based on their data
+race_mapping <- read.csv("../data/Race_mapping.csv") %>%
+  separate_rows(bch_race, sep = ',')
+
+out <- out %>%
+  left_join(race_mapping, by = c('RACE_CD' = 'bch_race')) %>%
+  mutate(race_yn = 1) %>%
+  pivot_wider(names_from = ecrf_race,
+              values_from = race_yn,
+              values_fill = 0) %>%
+  mutate(race_other_list = identify_other_race(race_other, RACE_CD)) %>%
+  select(-RACE_CD)
 
 
 ```
 
-###Races### 
-1)We load the mapping for the races. 
-2)We add all the races column to the patient_table.
-3)We fill the column with the information corresponding to the requirement of the dictionary
-4)Then we copy this column to the eCRF table. We do a check of the patient's id for each row to be sure that we don't mix any data. 
 
+# DOB
+Data dictionary (dob): mm-dd-yyyy or enter "-99" if unknown
 ```{r}
-#1) 
-race_mapping <- read.csv("../data/Race_mapping.csv",sep = ";")
-race_mapping
-
-#2)
-
-Usefull_Patient_table$white <- NA
-Usefull_Patient_table$black <- NA
-Usefull_Patient_table$indian <- NA
-Usefull_Patient_table$alaskan_native <- NA
-Usefull_Patient_table$native_hawaiian <- NA
-Usefull_Patient_table$pacific_islander <- NA
-Usefull_Patient_table$asian <- NA
-Usefull_Patient_table$race_other <- NA
-Usefull_Patient_table$race_refused_unknown <- NA
-
-
-
-
-for (j in 1:dim(Usefull_Patient_table)[1]){
-
-  
-  if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$white)){
-    Usefull_Patient_table$white[j] <- 1
-  }else{
-    Usefull_Patient_table$white[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$black)){
-    Usefull_Patient_table$black[j] <- 1
-  }else{
-    Usefull_Patient_table$black[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$indian)){
-    Usefull_Patient_table$indian[j] <- 1
-  }else{
-    Usefull_Patient_table$indian[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$alaskan_native)){
-    Usefull_Patient_table$alaskan_native[j] <- 1
-  }else{
-    Usefull_Patient_table$alaskan_native[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$native_hawaiian)){
-    Usefull_Patient_table$native_hawaiian[j] <- 1
-  }else{
-    Usefull_Patient_table$native_hawaiian[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$pacific_islander)){
-    Usefull_Patient_table$pacific_islander[j] <- 1
-  }else{
-    Usefull_Patient_table$pacific_islander[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$asian)){
-    Usefull_Patient_table$asian[j] <- 1
-  }else{
-    Usefull_Patient_table$asian[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$race_other)){
-    Usefull_Patient_table$race_other[j] <- 1
-  }else{
-    Usefull_Patient_table$race_other[j] <- 0
-  }
-      if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$race_refused_unknown)){
-    Usefull_Patient_table$race_refused_unknown[j] <- 1
-  }else{
-    Usefull_Patient_table$race_refused_unknown[j] <- 0
-  }
-  
-  
-  
-}
-
-
-for (i in 1:dim(eCRF_table)[1]){
-for (j in 1:dim(Usefull_Patient_table)[1]){
-if(eCRF_table$Patient_id[j]==Usefull_Patient_table$PATIENT_NUM[i]){
-  eCRF_table$white[i] <- Usefull_Patient_table$white[j]
-  eCRF_table$black[i] <- Usefull_Patient_table$black[j]
-  eCRF_table$indian[i] <- Usefull_Patient_table$indian[j]
-  eCRF_table$alaskan_native[i] <- Usefull_Patient_table$alaskan_native[j]
-  eCRF_table$native_hawaiian[i] <- Usefull_Patient_table$native_hawaiian[j]
-  eCRF_table$pacific_islander[i] <- Usefull_Patient_table$pacific_islander[j]
-  eCRF_table$asian[i] <- Usefull_Patient_table$asian[j]
-  eCRF_table$race_other[i] <- Usefull_Patient_table$race_other[j]
-  eCRF_table$race_refused_unknown[i] <- Usefull_Patient_table$race_refused_unknown[j]
-}else{
-}
-  
-}
-}
-
-
+out <- out %>%
+  mutate(dob = format(dmy_hms(BIRTH_DATE), '%m-%d-%Y'))
 
 ```
 
-Display of the final eCRF table
-
+# Missing vars
 ```{r}
-View(eCRF_table)
+data_dictionary$Variable...Field.Name[which(!data_dictionary$Variable...Field.Name %in% colnames(out))]
 
-write.csv(eCRF_table, "Test_eCRF.csv")
+```
+
+
+Write output
+```{r}
+
+write.csv(out %>% select(-colnames(out)[!colnames(out) %in% data_dictionary$Variable...Field.Name]), "../local_ref/redcap_output_demographics.csv", row.names = FALSE)
 ```
 
