@@ -140,105 +140,31 @@ out <- out %>%
 ```
 
 
+###Race### 
+Data dictionary (white, black, indian, alaskan_native, pacific_islander, asian, race_other, race_refused_unknown): 1, Yes | 0, No
+Data dictionary (race_other_list): Please list other race
 
-###Races### 
-1)We load the mapping for the races. 
-2)We add all the races column to the patient_table.
-3)We fill the column with the information corresponding to the requirement of the dictionary
-4)Then we copy this column to the eCRF table. We do a check of the patient's id for each row to be sure that we don't mix any data. 
+Note that in BCH, there is no distinction between American Indian or Alaskan Native. They will be treated as other. 
+Other will include those which are explicitly listed as other and also those which do not fit the ecrf categories.
 
 ```{r}
-#1) 
-race_mapping <- read.csv("../data/Race_mapping.csv",sep = ";")
-race_mapping
 
-#2)
-
-Usefull_Patient_table$white <- NA
-Usefull_Patient_table$black <- NA
-Usefull_Patient_table$indian <- NA
-Usefull_Patient_table$alaskan_native <- NA
-Usefull_Patient_table$native_hawaiian <- NA
-Usefull_Patient_table$pacific_islander <- NA
-Usefull_Patient_table$asian <- NA
-Usefull_Patient_table$race_other <- NA
-Usefull_Patient_table$race_refused_unknown <- NA
-
-
-
-
-for (j in 1:dim(Usefull_Patient_table)[1]){
-
-  
-  if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$white)){
-    Usefull_Patient_table$white[j] <- 1
-  }else{
-    Usefull_Patient_table$white[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$black)){
-    Usefull_Patient_table$black[j] <- 1
-  }else{
-    Usefull_Patient_table$black[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$indian)){
-    Usefull_Patient_table$indian[j] <- 1
-  }else{
-    Usefull_Patient_table$indian[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$alaskan_native)){
-    Usefull_Patient_table$alaskan_native[j] <- 1
-  }else{
-    Usefull_Patient_table$alaskan_native[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$native_hawaiian)){
-    Usefull_Patient_table$native_hawaiian[j] <- 1
-  }else{
-    Usefull_Patient_table$native_hawaiian[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$pacific_islander)){
-    Usefull_Patient_table$pacific_islander[j] <- 1
-  }else{
-    Usefull_Patient_table$pacific_islander[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$asian)){
-    Usefull_Patient_table$asian[j] <- 1
-  }else{
-    Usefull_Patient_table$asian[j] <- 0
-  }
-    if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$race_other)){
-    Usefull_Patient_table$race_other[j] <- 1
-  }else{
-    Usefull_Patient_table$race_other[j] <- 0
-  }
-      if(tolower(Usefull_Patient_table$RACE_CD[j]) %in% tolower(race_mapping$race_refused_unknown)){
-    Usefull_Patient_table$race_refused_unknown[j] <- 1
-  }else{
-    Usefull_Patient_table$race_refused_unknown[j] <- 0
-  }
-  
-  
-  
+identify_other_race <- function(race_other, race_cd){
+  ifelse(race_other, race_cd, '')
 }
 
+# load manually curated race mapping, this will need to be created for each site based on their data
+race_mapping <- read.csv("../data/Race_mapping.csv") %>%
+  separate_rows(bch_race, sep = ',')
 
-for (i in 1:dim(eCRF_table)[1]){
-for (j in 1:dim(Usefull_Patient_table)[1]){
-if(eCRF_table$Patient_id[j]==Usefull_Patient_table$PATIENT_NUM[i]){
-  eCRF_table$white[i] <- Usefull_Patient_table$white[j]
-  eCRF_table$black[i] <- Usefull_Patient_table$black[j]
-  eCRF_table$indian[i] <- Usefull_Patient_table$indian[j]
-  eCRF_table$alaskan_native[i] <- Usefull_Patient_table$alaskan_native[j]
-  eCRF_table$native_hawaiian[i] <- Usefull_Patient_table$native_hawaiian[j]
-  eCRF_table$pacific_islander[i] <- Usefull_Patient_table$pacific_islander[j]
-  eCRF_table$asian[i] <- Usefull_Patient_table$asian[j]
-  eCRF_table$race_other[i] <- Usefull_Patient_table$race_other[j]
-  eCRF_table$race_refused_unknown[i] <- Usefull_Patient_table$race_refused_unknown[j]
-}else{
-}
-  
-}
-}
-
+out <- out %>%
+  left_join(race_mapping, by = c('RACE_CD' = 'bch_race')) %>%
+  mutate(race_yn = 1) %>%
+  pivot_wider(names_from = ecrf_race,
+              values_from = race_yn,
+              values_fill = 0) %>%
+  mutate(race_other_list = identify_other_race(race_other, RACE_CD)) %>%
+  select(-RACE_CD)
 
 
 ```
