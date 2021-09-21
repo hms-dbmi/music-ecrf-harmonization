@@ -58,11 +58,8 @@ colnames(eCRF_table) <- name
 
 
 ###ZIP CODE###
-
-1) rename the column to fit the eCRF
-2) Change the type of the column to text
-3) the zip code were originally 4 digit. So a 0 is added at the beginning when the zipcode is 4 digit. If it is already a 5 digit zipcode it will remain the same
-4) transfer the zip_column to the eCRF.We do a check of the patient's id for each row to be sure that we don't mix any data. 
+Data dictionary: For US residents, please collect the 5-digit zip code
+The zip code were originally 4 digits. So a 0 is added at the beginning when the zipcode is 4 digit. If it is already a 5 digit zipcode it will remain the same
 
 ```{r}
 
@@ -80,8 +77,6 @@ out <- out %>%
   select(-ZIP_CD)
 
 ```
-
-
 
 
 ###Country###
