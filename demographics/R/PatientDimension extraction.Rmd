@@ -15,7 +15,7 @@ Downloading the Patient Dimension table and extraction of the desired values (bi
 
 ```{r}
 
-Patient_dimension_table <- read.delim("local_ref/example_patient_dimension.txt")
+Patient_dimension_table <- read.csv("../local_ref/music_patient_dimension.csv")
 
 
 Usefull_Patient_table <-Patient_dimension_table %>%
