@@ -7,6 +7,7 @@ output:
 
 ```{r}
 library( dplyr )
+library(lubridate)
 ```
 
 
@@ -168,6 +169,22 @@ out <- out %>%
 
 
 ```
+
+
+# DOB
+Data dictionary (dob): mm-dd-yyyy or enter "-99" if unknown
+```{r}
+out <- out %>%
+  mutate(dob = format(dmy_hms(BIRTH_DATE), '%m-%d-%Y'))
+
+```
+
+# Missing vars
+```{r}
+data_dictionnary$Variable...Field.Name[which(!data_dictionnary$Variable...Field.Name %in% colnames(out))]
+
+```
+
 
 Write output
 ```{r}
