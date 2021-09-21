@@ -139,26 +139,7 @@ out <- out %>%
 
 ```
 
-###language other###
 
-we check the eCRF table to select the row with a "4" in the language.Once we check that the id is correct, we populate the "language other" 
-from this row with the string in the patient_table's language column
-
-```{r}
-
-for (i in 1:dim(eCRF_table)[1]){
-for (j in 1:dim(Usefull_Patient_table)[1]){
-  
-if(eCRF_table$language[i]==4 && eCRF_table$Patient_id[i]==Usefull_Patient_table$PATIENT_NUM[j]){
-  eCRF_table$langauge_other[i] <- Usefull_Patient_table$LANGUAGE_CD[j]
-}else{
-}
-  
-}
-}
-
-
-```
 
 ###Races### 
 1)We load the mapping for the races. 
