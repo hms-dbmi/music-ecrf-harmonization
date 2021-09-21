@@ -52,3 +52,16 @@ query
 #where (concept_cd like 'HOMEMED:%' or concept_cd like 'ADMINMED:%' or concept_cd like 'AG:%') 
 #and modifier_cd = 'MED:ROUTE'
 #and obs.patient_num = misc.patient_num;
+
+
+### ###  ### ### ###
+### demographics ###
+### ### ###  ### ###
+#create table music_patient_dimension as
+#select * 
+#  from patient_dimension
+#where patient_num in (
+#  select pat_num 
+#  from music_patientslist_september 
+#  left join mrn_patuuid_patnum on music_patientslist_september.mrn = mrn_patuuid_patnum.mrn)
+#;
