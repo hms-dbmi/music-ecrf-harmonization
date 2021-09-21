@@ -329,6 +329,6 @@ Display of the final eCRF table
 ```{r}
 View(eCRF_table)
 
-write.csv(eCRF_table, "Test_eCRF.csv")
+write.csv(eCRF_table, "../local_ref/Test_eCRF.csv")
 ```
 
