@@ -1,23 +1,10 @@
-white;black;indian;alaskan_native;native_hawaiian;pacific_islander;asian;race_other;race_other_list;race_refused_unknown
-White;Black or African american;American indian or Alaska native;American indian or Alaska native;;;Asian;Other;;Unable to answer
-;;;;;;;;;Unknow
-;;;;;;;;;Declined to answer
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
-;;;;;;;;;
+ecrf_race,bch_race
+white,White
+black,Black or African American
+indian,
+alaskan_native,
+native_hawaiian,
+pacific_islander,
+asian,Asian
+race_other,Other
+race_refused_unknown,"Declined to Answer,Unable to Answer,Unknown"
