@@ -139,19 +139,6 @@ eCRF_table <- eCRF_table %>%
   mutate(usstate = state_abbr) %>%
   select(-state_abbr)
 
-
-for (i in 1:dim(eCRF_table)[1]) {
-for (j in 1:dim(zip_table)[1]) {
-  
-    if (eCRF_table$zipcodeus[i]==zip_table$zipcode[j]) {
-      eCRF_table$usstate[i] <- zip_table$state[j]
-  
-    }else{
-      eCRF_table$usstate[i] <- eCRF_table$usstate[i]
-      }
-}
-}
-
 ```
 
 ###County###
