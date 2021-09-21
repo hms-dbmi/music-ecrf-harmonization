@@ -128,9 +128,17 @@ eCRF_table <- eCRF_table %>%
 
 ###US state###
 
-double loop to check if there is some match between the eCRF zipcode and the zipcode-US-State database, if a match is found, the eCRF state column is filled with the matching US-State
+Identify state abbreviation based on zipcode
 
 ```{r}
+
+eCRF_table <- eCRF_table %>%
+  left_join(zip_table %>%
+              select(state_abbr, zipcode),
+            by = c('zipcodeus' = 'zipcode')) %>%
+  mutate(usstate = state_abbr) %>%
+  select(-state_abbr)
+
 
 for (i in 1:dim(eCRF_table)[1]) {
 for (j in 1:dim(zip_table)[1]) {
