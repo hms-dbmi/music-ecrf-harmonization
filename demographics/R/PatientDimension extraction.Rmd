@@ -28,7 +28,7 @@ Usefull_Patient_table <-Patient_dimension_table %>%
 Loading the dictionary relevant to the demographic eCRF
 
 ```{r}
-data_dictionnary <- read.csv("../data/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv")%>%
+data_dictionnary <- read.csv("../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv")%>%
   filter(Form.Name=="demographics")
 ```
 
@@ -36,7 +36,7 @@ data_dictionnary <- read.csv("../data/MUSIC_DataDictionary_V3_4Dec20_final versi
 Loading the county-state-zipcode datatable (https://github.com/scpike/us-state-county-zip)
 
 ```{r}
-zip_table <- read.csv("local_ref/Zip_table.csv")
+zip_table <- read_csv('https://raw.githubusercontent.com/scpike/us-state-county-zip/master/geo-data.csv')
 ```
 
 
