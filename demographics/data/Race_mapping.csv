@@ -6,5 +6,5 @@ alaskan_native,
 native_hawaiian,
 pacific_islander,
 asian,Asian
-race_other,Other
+race_other,"Other,American Indian or Alaska Native"
 race_refused_unknown,"Declined to Answer,Unable to Answer,Unknown"
