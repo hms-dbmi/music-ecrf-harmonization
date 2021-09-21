@@ -169,11 +169,9 @@ out <- out %>%
 
 ```
 
-Display of the final eCRF table
-
+Write output
 ```{r}
-View(eCRF_table)
 
-write.csv(eCRF_table, "../local_ref/Test_eCRF.csv")
+write.csv(out %>% select(-PATIENT_NUM), "../local_ref/redcap_output_demographics.csv", row.names = FALSE)
 ```
 
