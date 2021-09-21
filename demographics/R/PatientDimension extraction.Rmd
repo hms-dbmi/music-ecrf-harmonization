@@ -29,7 +29,7 @@ out <-Patient_dimension_table %>%
 Loading the dictionary relevant to the demographic eCRF
 
 ```{r}
-data_dictionnary <- read.csv("../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv")%>%
+data_dictionary <- read.csv("../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv")%>%
   filter(Form.Name=="demographics")
 ```
 
@@ -181,7 +181,7 @@ out <- out %>%
 
 # Missing vars
 ```{r}
-data_dictionnary$Variable...Field.Name[which(!data_dictionnary$Variable...Field.Name %in% colnames(out))]
+data_dictionary$Variable...Field.Name[which(!data_dictionary$Variable...Field.Name %in% colnames(out))]
 
 ```
 
@@ -189,6 +189,6 @@ data_dictionnary$Variable...Field.Name[which(!data_dictionnary$Variable...Field.
 Write output
 ```{r}
 
-write.csv(out %>% select(-PATIENT_NUM), "../local_ref/redcap_output_demographics.csv", row.names = FALSE)
+write.csv(out %>% select(-colnames(out)[!colnames(out) %in% data_dictionary$Variable...Field.Name]), "../local_ref/redcap_output_demographics.csv", row.names = FALSE)
 ```
 
