@@ -23,6 +23,11 @@ Use the same query as medications_before_and_after -- see that pipeline for deta
 
 df <- read.csv('../../medications_before_and_after/local_ref/agg40_music_meds_filtered.csv')
 
+# if the code is formatted like so: '2.00', convert to '02.00'
+fix_code_formatting <- function(x) {
+  ifelse(test = !grepl("[[:digit:]]{2}.", x), yes = (paste0('0', x)), no = (x))
+}
+
 datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
   filter(Form.Name == 'additional_medications_during_hospitalization') %>%
   select(Variable...Field.Name, Choices..Calculations..OR.Slider.Labels) %>%
