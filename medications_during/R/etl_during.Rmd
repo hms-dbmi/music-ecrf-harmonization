@@ -84,7 +84,7 @@ df2 <- df %>%
   arrange(as.numeric(ECRF_CODE)) %>%
   mutate(redcap_repeat_instance = row_number())  %>%
   ungroup() %>%
-  mutate(medhospX_start_dt = format(datetime, "%m-%d-%Y"))
+  mutate(medhospX_start_dt = format(datetime, "%m/%d/%Y"))
 
 # rename X in variable name depending on 'redcap_repeat_instance'
 
