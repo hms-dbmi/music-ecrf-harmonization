@@ -346,7 +346,7 @@ out <- out %>%
   select(-'PATIENT_NUM')
 
 # write output with patient IDs included
-write.csv(out, '../local_ref/redcap_output.csv', row.names = FALSE)
+write.csv(out, '../local_ref/redcap_output_laboratory_values.csv', row.names = FALSE)
 #write.csv(out[,-1], '../local_ref/redcap_output.csv', row.names = FALSE)
 ```
 
