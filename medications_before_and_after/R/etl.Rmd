@@ -188,7 +188,7 @@ out <- pivot_wider(df2,
 id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
 out <- left_join(out, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>% 
   ungroup() %>% 
-  select(-PATIENT_NUM, medcur1_current) %>%
+  select(-PATIENT_NUM, medcur1_current) %>%   ### redcap gives the following error: The following fields were not found in the project as real data fields: medcur1_current
   rename(record_id = MUSIC_ID) %>%
   mutate(redcap_event_name = "repeating_forms_arm_1") %>%
   relocate(record_id, redcap_event_name)
