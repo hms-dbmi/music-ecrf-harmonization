@@ -195,7 +195,7 @@ out <- left_join(out, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>%
   relocate(record_id, redcap_event_name, redcap_repeat_instrument)
 
 # write output with patient IDs included
-write.csv(out, '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE)
+write.csv(out, '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE, na = '')
 #write.csv(out[,-1], '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE)
   
 ```
