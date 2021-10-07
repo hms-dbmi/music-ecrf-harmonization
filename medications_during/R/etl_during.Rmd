@@ -120,7 +120,17 @@ out3 <- out2 %>%
     values_from = medhospX_type,
     values_fill = NA)
 
-write.csv(out3 %>% select(-PATIENT_NUM, -redcap_repeat_instance), '../local_ref/redcap_output_medications_during.csv', row.names = FALSE)
+# map BCH ids to MUSIC IDs for REDCAP
+id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
+out4 <- left_join(out3, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>% 
+  ungroup() %>% 
+  select(-PATIENT_NUM) %>%
+  rename(record_id = MUSIC_ID) %>%
+  relocate(record_id)
+
+# write output with patient IDs included
+write.csv(out4, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE)
+#write.csv(out3 %>% select(-PATIENT_NUM, -redcap_repeat_instance), '../local_ref/redcap_output_medications_during.csv', row.names = FALSE)
 
 
 ```
