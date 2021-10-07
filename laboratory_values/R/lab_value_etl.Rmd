@@ -342,7 +342,7 @@ out <- out %>%
   relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, lab_values_visit) %>%
   arrange(record_id, redcap_repeat_instance, lab_values_visit) %>%
   ungroup() %>%
-  select(-'PATIENT_NUM')
+  select(-'PATIENT_NUM', 'date', 'time')
 
 # write output with patient IDs included
 write.csv(out, '../local_ref/redcap_output_laboratory_values.csv', row.names = FALSE)
