@@ -346,6 +346,24 @@ out <- out %>%
   arrange(record_id, redcap_repeat_instance, lab_values_visit) %>%
   ungroup() %>%
   select(-'PATIENT_NUM', -'date', -'time')
+```
+
+
+Data formatting based on errors / warnings from BCH upload to REDCap
+```{r}
+
+out <- out %>% 
+  mutate(il_1_value = ifelse(il_1_value == "SEE IL12", '', il_1_value),
+         il_10_value = ifelse(il_10_value == "SEE IL12", '', il_10_value),
+         il_13_value = ifelse(il_13_value == "SEE IL12", '', il_13_value),
+         il_2_value = ifelse(il_2_value == "SEE IL12", '', il_2_value),
+         il_5_value = ifelse(il_5_value == "SEE IL12", '', il_5_value),
+         il_8_value = ifelse(il_8_value == "SEE IL12", '', il_8_value),
+         il_12_value = ifelse(il_12_value == "See Image", '', il_12_value),
+         ast_sgot_value = ifelse(ast_sgot_value == "Not Reported", '', ast_sgot_value),
+         ast_sgpt_value = ifelse(ast_sgpt_value == "Not Reported", '', ast_sgpt_value))
+  
+
 
 # write output with patient IDs included
 write.csv(out, '../local_ref/redcap_output_laboratory_values.csv', row.names = FALSE)
