@@ -126,7 +126,9 @@ out4 <- left_join(out3, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>%
   ungroup() %>% 
   select(-PATIENT_NUM) %>%
   rename(record_id = MUSIC_ID) %>%
-  relocate(record_id)
+  mutate(redcap_event_name = "repeating_forms_arm_1") %>%
+  relocate(record_id, redcap_event_name) 
+  
 
 # write output with patient IDs included
 write.csv(out4, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE)
