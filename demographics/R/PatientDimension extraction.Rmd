@@ -189,6 +189,16 @@ data_dictionary$Variable...Field.Name[which(!data_dictionary$Variable...Field.Na
 Write output
 ```{r}
 
-write.csv(out %>% select(-colnames(out)[!colnames(out) %in% data_dictionary$Variable...Field.Name]), "../local_ref/redcap_output_demographics.csv", row.names = FALSE)
+# map BCH ids to MUSIC IDs for REDCAP
+id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
+out <- left_join(out, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>% 
+  ungroup() %>% 
+  select(-PATIENT_NUM) %>%
+  rename(record_id = MUSIC_ID) %>%
+  relocate(record_id)
+
+# write output with patient IDs included
+write.csv(out, '../local_ref/redcap_output_demographics.csv', row.names = FALSE)
+#write.csv(out %>% select(-colnames(out)[!colnames(out) %in% data_dictionary$Variable...Field.Name]), "../local_ref/redcap_output_demographics.csv", row.names = FALSE)
 ```
 
