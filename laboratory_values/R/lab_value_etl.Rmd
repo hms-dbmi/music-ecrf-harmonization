@@ -27,7 +27,7 @@ lab_dictionary <- read.delim("../data/labDictionary.txt", header = TRUE, sep = '
 
 ```
                                    
-Import test data with randomized patient ids
+Import data 
 ```{r}
 subset_df <- read.csv('../local_ref/testoutput.csv')
 #subset_df$PATIENT_NUM <- floor(runif(nrow(subset_df))*100)
@@ -104,8 +104,8 @@ finalTable <- left_join( subset_df, lab_dictionary, by = c("CONCEPT_CD" = "conce
 
 finalTable <- finalTable %>%
   mutate(date = mdy(as.character(dmy(date), format = "%m-%d-%Y")),
-         ADMISSION_DATE = mdy(as.character(dmy(ADMISSION_DATE), format = "%m-%d-%Y")),
-         DISCHARGE_DATE = mdy(as.character(dmy(DISCHARGE_DATE), format = "%m-%d-%Y")),
+         ADMISSION_DATE = mdy(as.character(dmy_hms(ADMISSION_DATE), format = "%m-%d-%Y")),
+         DISCHARGE_DATE = mdy(as.character(dmy_hms(DISCHARGE_DATE), format = "%m-%d-%Y")),
          days_after_admission = date - ADMISSION_DATE,
          days_after_discharge = date - DISCHARGE_DATE)
 
@@ -255,9 +255,7 @@ for (patient in readmission_table$PATIENT_NUM){
 lab_values_visit
 23, 'Worst Values During Hosp'
 ```{r}
-# create dummy df for mapping variable name to whether high or low is worst, in this case all are 'high'
-# this can be changed to reference variable prefix in the future if that is more convenient
-#worst_values <- data.frame(variableName = unique(finalTable$variableName), worst = 'high')
+# we know what the worst values for certain labs are based on clinician review
 worst_values <- read.csv('../data/worst_values.csv', skip = 1)
 
 # using "option 3" defined in email chain: if a lab value could be 'worst' at either min or max, ignore the worst value specification
