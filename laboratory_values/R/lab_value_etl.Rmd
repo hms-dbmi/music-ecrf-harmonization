@@ -130,8 +130,11 @@ getLabValue <- function(row) {
     value = -88
     
   # for date variables, use the date column
+  # redcap requires the following format: 
+  # (NOTE: Dates must be imported here only in M/D/Y format or Y-M-D format, regardless of the specific date format designated for this field.)
+
   } else if (row['vartype'] == 'date') {
-    value = as.character(ymd(row['date']), format = "%m-%d-%Y")
+    value = as.character(ymd(row['date']), format = "%m/%d/%Y")
     
   # for value variables, if NVAL_NUM is not NA, use NVAL_NUM. else use TVAL_CHAR
   } else if (row['vartype'] == 'value') {
