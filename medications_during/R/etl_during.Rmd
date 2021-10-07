@@ -80,7 +80,7 @@ df2 <- df %>%
             Variable...Field.Name = first(Variable...Field.Name)) %>%
   ungroup() %>%
   mutate(medhospX_type = as.numeric(str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', ''))) %>%
-  group_by(PATIENT_NUM) %>%
+  group_by(PATIENT_NUM, Variable...Field.Name) %>%
   arrange(as.numeric(ECRF_CODE)) %>%
   mutate(redcap_repeat_instance = row_number())  %>%
   ungroup() %>%
