@@ -330,16 +330,24 @@ out <- finalTable %>%
 # should we remove entries with no data?
 #finalTable %>% filter(is.na(NVAL_NUM), TVAL_CHAR == '')
 
+# map BCH ids to MUSIC IDs for REDCAP
+id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
+out <- left_join(out, id_mapping %>% select(PATIENT_NUM, MUSIC_ID))
+
 # Rename columns for redcap
 out <- out %>%
-  rename('record_id' = 'PATIENT_NUM',
+  rename('record_id' = 'MUSIC_ID',
          'redcap_repeat_instrument' = 'formName') %>%
   mutate(redcap_data_access_group = "120_boston_childe",
          redcap_event_name = "repeating_forms_arm_1") %>%
   relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, lab_values_visit) %>%
-  arrange(record_id, redcap_repeat_instance, lab_values_visit)
+  arrange(record_id, redcap_repeat_instance, lab_values_visit) %>%
+  ungroup() %>%
+  select(-'PATIENT_NUM')
 
-write.csv(out[,-1], '../local_ref/redcap_output.csv', row.names = FALSE)
+# write output with patient IDs included
+write.csv(out, '../local_ref/redcap_output.csv', row.names = FALSE)
+#write.csv(out[,-1], '../local_ref/redcap_output.csv', row.names = FALSE)
 ```
 
 
