@@ -1,0 +1,231 @@
+eCRF_name	ECRF_CODE	ECRF_GENERIC_NAME	ECRF_TRADE_NAMES	ECRF_CLASS	RXNORM_CODES	RXNORM_DESCS	CONCEPT_CD	BCH_CONCEPT_DESCRIPTION	MEDICATION_ROUTE	MEDICATION_ROUTE_DESC	min_date	max_date	distinct_patients	distinct_observations	where med was admin	Pierre	Comment
+medcations_before_and_after	10.01	Albuterol	Ventolin, Xopenex, Preventil	Bronchodilators	435	albuterol	ADMINMED:2797322	albuterol	INH	inhalation	2017-11-22	2020-05-08	2	16	admin med	yes	
+medcations_before_and_after	10.05	Fluticasone	Flovent, Flonase	Bronchodilators	41126	fluticasone	ADMINMED:2797819	fluticasone	INH	inhalation	2021-02-19	2021-02-28	1	19	admin med	yes	
+medcations_before_and_after	10.06	Ipratropium	Atrovent	Bronchodilators	7213	ipratropium	ADMINMED:2798045	ipratropium	INH	inhalation	2018-04-18	2018-06-21	1	2	admin med	yes	
+medcations_before_and_after	11.02	Diltiazam	Cardiazem	Calcium Channel Blockers	3443	diltiazem | diltiazem	ADMINMED:2797607	diltiazem	ICU-IV	Intensive care unit intravenous	2021-03-08	2021-03-11	1	12	admin med	yes	
+medcations_before_and_after	11.05	Nicardipine	Cardene	Calcium Channel Blockers	7396	nicardipine | nicardipine	ADMINMED:2798334	nicardipine	ICU-IV	Intensive care unit intravenous	2021-03-10	2021-03-10	1	2	admin med	yes	
+medcations_before_and_after	15.04	Potassium	NA	Electrolytes	847627, 847630, 8591, 54987, 36676	greater than 5 RXNORM codes mapped to BCH code	ADMINMED:2798508	potassium acetate	ICU-IV	Intensive care unit intravenous	2021-01-18	2021-01-18	1	1	admin med	yes	
+medcations_before_and_after	15.04	Potassium	NA	Electrolytes	greater than 5 RXNORM codes mapped to BCH code	greater than 5 RXNORM codes mapped to BCH code	ADMINMED:2798516	potassium chloride	ICU-IV	Intensive care unit intravenous	2020-04-23	2021-03-08	7	22	admin med	yes	
+medcations_before_and_after	19.03	Dopamine	Inotropin	Inotropic agents	3628	dopamine | dopamine	ADMINMED:2797644	dopamine	ICU-IV	Intensive care unit intravenous	2020-04-22	2020-12-26	3	8	admin med	yes	
+medcations_before_and_after	19.04	Epinephrine	Adrenalin, Vaponefrin	Inotropic agents	6387, 3992	lidocaine, epinephrine | epinephrine	ADMINMED:2797692	epinephrine	ICU-IV	Intensive care unit intravenous	2020-04-22	2021-03-10	8	36	admin med	yes	
+medcations_before_and_after	19.07	Milrinone	Primacor	Inotropic agents	52769	milrinone	ADMINMED:2798259	milrinone	ICU-IV	Intensive care unit intravenous	2020-04-25	2021-03-13	3	27	admin med	yes	
+medcations_before_and_after	22.07	Fentanyl	Sublimaze	Sedatives, hypnotics, anesthetics, analgesics	4337	fentanyl | fentanyl	ADMINMED:2797771	fentanyl	ICU-IV	Intensive care unit intravenous	2021-01-08	2021-03-08	3	15	admin med	yes	
+medcations_before_and_after	22.11	Ketamine	Ketalar	Sedatives, hypnotics, anesthetics, analgesics	6130	ketamine	ADMINMED:2798074	ketamine	ICU-IV	Intensive care unit intravenous	2021-01-06	2021-01-08	2	21	admin med	yes	
+medcations_before_and_after	22.13	Lorazepam	Ativan	Sedatives, hypnotics, anesthetics, analgesics	6470	lorazepam | lorazepam	ADMINMED:2798144	lorazepam	ICU-IV	Intensive care unit intravenous	2021-03-08	2021-03-08	1	1	admin med	yes	
+medcations_before_and_after	22.15	Midazolam	Versed	Sedatives, hypnotics, anesthetics, analgesics	6960	midazolam	ADMINMED:2798254	midazolam	ICU-IV	Intensive care unit intravenous	2021-01-08	2021-01-29	2	15	admin med	yes	
+medcations_before_and_after	07.08	Heparin	NA	Antithrombotics	5224	heparin	ADMINMED:212159319	heparin flush	IA	intra-arterial	2020-04-22	2021-03-11	9	21	admin med	yes	
+medcations_before_and_after	02.09	Lidocaine	Xylocaine	Antiarrhythmic	6387	lidocaine	ADMINMED:297664418	lidocaine-sodium bicarbonate	ID	intradermal	2021-04-06	2021-04-07	2	2	admin med	no	
+medcations_before_and_after	02.09	Lidocaine	Xylocaine	Antiarrhythmic	6387	lidocaine	ADMINMED:4103284	lidocaine	ID	intradermal	2020-05-26	2021-02-24	11	15	admin med	no	
+medcations_before_and_after	03.15	Ceftriaxone	Rocephin	Antibiotics	2193	ceftriaxone | ceftriaxone	ADMINMED:2797232	ceftriaxone	IM	intramuscular	2019-09-27	2019-09-29	1	3	admin med	yes	
+medcations_before_and_after	19.04	Epinephrine	Adrenalin, Vaponefrin	Inotropic agents	6387, 3992	lidocaine, epinephrine | epinephrine	ADMINMED:2797692	epinephrine	IM	intramuscular	2020-10-08	2020-10-08	1	1	admin med	yes	
+medcations_before_and_after	02.09	Lidocaine	Xylocaine	Antiarrhythmic	6387	lidocaine	ADMINMED:4103284	lidocaine	IV	intravenous	2021-01-24	2021-01-26	1	53	admin med	yes	
+medcations_before_and_after	02.13	Procainamide	Pronestyl, Procan	Antiarrhythmic	8700	procainamide	ADMINMED:2798546	procainamide	IV	intravenous	2021-03-08	2021-03-13	1	141	admin med	yes	
+medcations_before_and_after	03.03	Amipicillin/Sulbactam	Unasyn	Antibiotics	1009148	ampicillin / sulbactam	ADMINMED:2796908	ampicillin-sulbactam	IV	intravenous	2017-11-03	2020-07-22	2	24	admin med	yes	
+medcations_before_and_after	03.07	Ampicillin	Omnipen	Antibiotics	733	ampicillin	ADMINMED:2796907	ampicillin	IV	intravenous	2020-05-26	2020-05-28	1	7	admin med	yes	
+medcations_before_and_after	03.08	Azithromycin	Zithromax	Antibiotics	18631	azithromycin	ADMINMED:2797013	azithromycin	IV	intravenous	2009-06-10	2020-05-18	3	13	admin med	yes	
+medcations_before_and_after	03.11	Cefazolin	Ancef, Kefzol	Antibiotics	2180	cefazolin | cefazolin	ADMINMED:2797220	cefazolin	IV	intravenous	2016-05-13	2019-07-19	2	3	admin med	yes	
+medcations_before_and_after	03.15	Ceftriaxone	Rocephin	Antibiotics	2193	ceftriaxone | ceftriaxone	ADMINMED:2797232	ceftriaxone	IV	intravenous	2007-05-23	2021-03-14	24	69	admin med	yes	
+medcations_before_and_after	03.19	Clindamycin	Cleocin	Antibiotics	2582	clindamycin	ADMINMED:2797437	clindamycin	IV	intravenous	2014-12-13	2021-03-08	3	15	admin med	yes	
+medcations_before_and_after	03.37	Vancomycin	NA	Antibiotics	20481, 2191, 1596450, 11124, 5224	cefepime, ceftazidime | ceftazidime, gentamicin, vancomycin, heparin	ADMINMED:2798880	vancomycin	IV	intravenous	2007-07-02	2021-03-08	6	31	admin med	yes	
+medcations_before_and_after	06.08	Hydralazine	Apresoline	Antihypertensives	5470	hydralazine | hydralazine	ADMINMED:2797935	hydralazine	IV	intravenous	2020-05-08	2020-05-12	1	4	admin med	yes	
+medcations_before_and_after	07.08	Heparin	NA	Antithrombotics	5224	heparin	ADMINMED:212159319	heparin flush	IV	intravenous	2020-04-23	2021-03-13	11	130	admin med	no	
+medcations_before_and_after	07.08	Heparin	NA	Antithrombotics	greater than 5 RXNORM codes mapped to BCH code	greater than 5 RXNORM codes mapped to BCH code	ADMINMED:2797919	heparin	IV	intravenous	2020-04-23	2021-01-29	5	389	admin med	yes	
+medcations_before_and_after	11.02	Diltiazam	Cardiazem	Calcium Channel Blockers	3443	diltiazem | diltiazem	ADMINMED:2797607	diltiazem	IV	intravenous	2021-03-08	2021-03-12	1	112	admin med	yes	
+medcations_before_and_after	11.05	Nicardipine	Cardene	Calcium Channel Blockers	7396	nicardipine | nicardipine	ADMINMED:2798334	nicardipine	IV	intravenous	2021-03-10	2021-03-11	1	25	admin med	yes	
+medcations_before_and_after	14.05	Chlorothiazide	Diuril	Diuretics	2396	chlorothiazide	ADMINMED:2797261	chlorothiazide	IV	intravenous	2021-01-27	2021-01-27	1	1	admin med	yes	
+medcations_before_and_after	14.08	Furosemide	Lasix	Diuretics	4603	furosemide	ADMINMED:2797841	furosemide	IV	intravenous	2020-04-23	2021-03-12	11	68	admin med	yes	
+medcations_before_and_after	15.03	Magnesium	NA	Electrolytes	greater than 5 RXNORM codes mapped to BCH code	greater than 5 RXNORM codes mapped to BCH code	ADMINMED:2798167	magnesium sulfate	IV	intravenous	2020-10-20	2021-01-24	3	4	admin med	yes	
+medcations_before_and_after	15.04	Potassium	NA	Electrolytes	847627, 847630, 8591, 54987, 36676	greater than 5 RXNORM codes mapped to BCH code	ADMINMED:2798508	potassium acetate	IV	intravenous	2020-08-09	2020-08-11	1	3	admin med	no	
+medcations_before_and_after	15.04	Potassium	NA	Electrolytes	greater than 5 RXNORM codes mapped to BCH code	greater than 5 RXNORM codes mapped to BCH code	ADMINMED:2798516	potassium chloride	IV	intravenous	2009-06-12	2021-03-12	17	86	admin med	yes	
+medcations_before_and_after	15.04	Potassium	NA	Electrolytes	847627, 34322	calcium chloride 0.001 meq/ml / glucose 50 mg/ml / potassium chloride 0.004 meq/ml / sodium chloride 0.103 meq/ml / sodium lactate 0.028 meq/ml injectable solution | calcium chloride 0.001 meq/ml / glucose 50 mg/ml / k+ chloride 0.004 meq/ml / nacl 0.103 meq/ml / sodium lactate 0.028 meq/ml injectable solution | calcium chloride 0.001 meq/ml / glucose 50 mg/ml / pot chloride 0.004 meq/ml / nacl 0.103 meq/ml / sodium lactate 0.028 meq/ml injectable solution, potassium phosphate, calcium chloride 0.001 meq/ml / glucose 50 mg/ml / potassium chloride 0.004 meq/ml / sodium chloride 0.103 meq/ml / sodium lactate 0.028 meq/ml injectable solution	ADMINMED:2798525	potassium phosphate	IV	intravenous	2020-04-24	2021-03-10	10	43	admin med	no	
+medcations_before_and_after	15.05	Sodium Bicarbonate	NA	Electrolytes	greater than 5 RXNORM codes mapped to BCH code	greater than 5 RXNORM codes mapped to BCH code	ADMINMED:2798673	sodium bicarbonate	IV	intravenous	2020-04-23	2021-03-07	5	10	admin med	yes	
+medcations_before_and_after	16.06	Ranitidine	Zantac	Gastrointestinal	9143	ranitidine | ranitidine	ADMINMED:2798594	ranitidine	IV	intravenous	2009-06-10	2009-06-12	1	7	admin med	yes	
+medcations_before_and_after	16.11	Famotidine	Pepcid	Gastrointestinal	8591, 4278	potassium chloride, famotidine	ADMINMED:2797762	famotidine	IV	intravenous	2020-05-07	2021-03-13	13	83	admin med	yes	
+medcations_before_and_after	18.04	Dexamethasone	Decadron	Hormonal agents	3264	dexamethasone	ADMINMED:2797549	dexamethasone	IV	intravenous	2020-07-20	2020-07-21	1	3	admin med	yes	
+medcations_before_and_after	18.06	Hydrocortisone	Solu-cortef	Hormonal agents	5492	hydrocortisone	ADMINMED:2797960	hydrocortisone	IV	intravenous	2021-02-26	2021-02-26	1	1	admin med	yes	
+medcations_before_and_after	19.03	Dopamine	Inotropin	Inotropic agents	3628	dopamine | dopamine	ADMINMED:2797644	dopamine	IV	intravenous	2020-04-22	2020-12-27	3	57	admin med	yes	
+medcations_before_and_after	19.04	Epinephrine	Adrenalin, Vaponefrin	Inotropic agents	6387, 3992	lidocaine, epinephrine | epinephrine	ADMINMED:2797692	epinephrine	IV	intravenous	2020-04-23	2021-03-12	8	627	admin med	yes	
+medcations_before_and_after	19.07	Milrinone	Primacor	Inotropic agents	52769	milrinone	ADMINMED:2798259	milrinone	IV	intravenous	2020-04-25	2021-03-13	3	207	admin med	yes	
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	ADMINMED:2797281	acetaminophen	IV	intravenous	2016-07-28	2021-03-11	24	172	admin med	yes	
+medcations_before_and_after	22.06	Diphenhydramine	Benadryl	Sedatives, hypnotics, anesthetics, analgesics	3498	diphenhydramine | diphenhydramine	ADMINMED:2797614	diphenhydramine	IV	intravenous	2020-04-23	2021-02-26	18	23	admin med	yes	
+medcations_before_and_after	22.07	Fentanyl	Sublimaze	Sedatives, hypnotics, anesthetics, analgesics	4337	fentanyl | fentanyl	ADMINMED:2797771	fentanyl	IV	intravenous	2021-01-24	2021-01-29	1	130	admin med	yes	
+medcations_before_and_after	22.12	Ketorolac	Toradol	Sedatives, hypnotics, anesthetics, analgesics	35827	ketorolac	ADMINMED:2798078	ketorolac	IV	intravenous	2013-04-28	2021-03-13	10	65	admin med	yes	
+medcations_before_and_after	22.13	Lorazepam	Ativan	Sedatives, hypnotics, anesthetics, analgesics	6470	lorazepam | lorazepam	ADMINMED:2798144	lorazepam	IV	intravenous	2021-01-06	2021-01-06	1	2	admin med	yes	
+medcations_before_and_after	22.15	Midazolam	Versed	Sedatives, hypnotics, anesthetics, analgesics	6960	midazolam	ADMINMED:2798254	midazolam	IV	intravenous	2021-01-09	2021-03-09	4	122	admin med	yes	
+medcations_before_and_after	22.16	Morphine	NA	Sedatives, hypnotics, anesthetics, analgesics	7052	morphine	ADMINMED:2798281	morphine	IV	intravenous	2013-04-28	2020-06-08	3	20	admin med	yes	
+medcations_before_and_after	23.01	Alteplase	Activase	Thrombolytics	8410	alteplase	ADMINMED:2797343	alteplase	IV	intravenous	2020-05-19	2020-05-24	1	4	admin med	yes	
+medcations_before_and_after	26.02	Anakinra (IL-1 blockade)	NA	Immunomodulatory	72435	anakinra	ADMINMED:2796914	anakinra	IV	intravenous	2020-04-23	2021-03-16	9	214	admin med	yes	
+medcations_before_and_after	02.13	Procainamide	Pronestyl, Procan	Antiarrhythmic	8700	procainamide	ADMINMED:2798546	procainamide	IV Loading Dose	intravenous loading dose	2021-03-10	2021-03-10	1	1	admin med	yes	Need to be figured out 
+medcations_before_and_after	10.01	Albuterol	Ventolin, Xopenex, Preventil	Bronchodilators	435	albuterol	ADMINMED:2797322	albuterol	MDI	metered-dose inhaler	2009-10-19	2009-10-19	1	1	admin med	yes	
+medcations_before_and_after	02.09	Lidocaine	Xylocaine	Antiarrhythmic	166283	lidocaine / prilocaine	HOMEMED:3681307	lidocaine-prilocaine topical	NA	NA	2020-08-23	2020-08-24	1	2	home med		
+medcations_before_and_after	03.04	Amoxicillin	Amoxil	Antibiotics	723	amoxicillin	HOMEMED:3653741	amoxicillin	NA	NA	2021-03-21	2021-03-21	1	1	home med		
+medcations_before_and_after	03.04	Amoxicillin	Amoxil	Antibiotics	723	amoxicillin	HOMEMED:3653753	amoxicillin	NA	NA	2020-05-29	2020-05-29	1	2	home med		
+medcations_before_and_after	03.04	Amoxicillin	Amoxil	Antibiotics	723	amoxicillin	HOMEMED:3653758	amoxicillin	NA	NA	2009-06-15	2021-01-08	3	9	home med		
+medcations_before_and_after	03.05	Amoxicillin-Clavulanic Acid	Augmentin	Antibiotics	19711	amoxicillin / clavulanate	HOMEMED:3653800	amoxicillin-clavulanate	NA	NA	2016-12-23	2016-12-23	1	2	home med		
+medcations_before_and_after	03.05	Amoxicillin-Clavulanic Acid	Augmentin	Antibiotics	19711	amoxicillin / clavulanate	HOMEMED:3653807	amoxicillin-clavulanate	NA	NA	2020-07-16	2020-07-16	1	1	home med		
+medcations_before_and_after	03.05	Amoxicillin-Clavulanic Acid	Augmentin	Antibiotics	19711	amoxicillin / clavulanate	HOMEMED:3653817	amoxicillin-clavulanate	NA	NA	2014-03-14	2014-03-14	1	1	home med		
+medcations_before_and_after	03.05	Amoxicillin-Clavulanic Acid	Augmentin	Antibiotics	19711	amoxicillin / clavulanate	HOMEMED:3653821	amoxicillin-clavulanate	NA	NA	2020-07-23	2020-07-23	1	1	home med		
+medcations_before_and_after	03.05	Amoxicillin-Clavulanic Acid	Augmentin	Antibiotics	19711	amoxicillin / clavulanate	HOMEMED:3653822	amoxicillin-clavulanate	NA	NA	2017-11-04	2017-11-04	1	1	home med		
+medcations_before_and_after	03.08	Azithromycin	Zithromax	Antibiotics	18631	azithromycin	HOMEMED:3655108	azithromycin	NA	NA	2017-11-27	2017-11-27	1	1	home med		
+medcations_before_and_after	03.08	Azithromycin	Zithromax	Antibiotics	18631	azithromycin	HOMEMED:3655109	azithromycin	NA	NA	2018-11-02	2018-11-02	1	1	home med		
+medcations_before_and_after	03.15	Ceftriaxone	Rocephin	Antibiotics	2193	ceftriaxone | ceftriaxone	HOMEMED:3670549	ceftriaxone	NA	NA	2021-02-20	2021-02-20	1	1	home med		
+medcations_before_and_after	03.15	Ceftriaxone	Rocephin	Antibiotics	2193	ceftriaxone | ceftriaxone	HOMEMED:3671944	ceftriaxone	NA	NA	2020-12-27	2020-12-27	1	1	home med		
+medcations_before_and_after	03.19	Clindamycin	Cleocin	Antibiotics	2582	clindamycin	HOMEMED:3673089	clindamycin	NA	NA	2014-12-13	2014-12-13	1	2	home med		
+medcations_before_and_after	03.20	Erythromycin	NA	Antibiotics	4053	erythromycin	HOMEMED:3676506	erythromycin ophthalmic	NA	NA	2016-08-11	2016-08-11	1	1	home med		
+medcations_before_and_after	03.28	Mycostatin	Nystatin	Antibiotics	7597	nystatin	HOMEMED:3684528	nystatin topical	NA	NA	2019-07-26	2019-07-26	1	1	home med		
+medcations_before_and_after	03.28	Mycostatin	Nystatin	Antibiotics	7597	nystatin	HOMEMED:3684529	nystatin topical	NA	NA	2014-09-06	2014-09-06	1	1	home med		
+medcations_before_and_after	03.30	Nystatin	Mycostatin	Antibiotics	7597	nystatin	HOMEMED:3684528	nystatin topical	NA	NA	2019-07-26	2019-07-26	1	1	home med		
+medcations_before_and_after	03.30	Nystatin	Mycostatin	Antibiotics	7597	nystatin	HOMEMED:3684529	nystatin topical	NA	NA	2014-09-06	2014-09-06	1	1	home med		
+medcations_before_and_after	03.32	Penicillin	NA	Antibiotics	7984	penicillin v | phenoxymethylpenicillin	HOMEMED:288807616	penicillin v potassium	NA	NA	2012-02-17	2014-12-30	1	5	home med		
+medcations_before_and_after	03.37	Vancomycin	NA	Antibiotics	11124	vancomycin	HOMEMED:3671214	vancomycin	NA	NA	2021-02-20	2021-02-20	1	1	home med		
+medcations_before_and_after	06.01	Clonidine	Catapres, Duraclon	Antihypertensives	2599	clonidine | clonidine	HOMEMED:3670577	clonidine	NA	NA	2020-02-05	2020-02-05	1	1	home med		
+medcations_before_and_after	07.02	Aspirin	NA	Antithrombotics	1191	aspirin	HOMEMED:3654772	aspirin	NA	NA	2020-12-21	2020-12-21	1	1	home med		
+medcations_before_and_after	07.02	Aspirin	NA	Antithrombotics	1191	aspirin	HOMEMED:3654774	aspirin	NA	NA	2019-07-20	2021-04-15	38	54	home med		
+medcations_before_and_after	07.06	Enoxaparin	Lovenox	Antithrombotics	67108	enoxaparin	HOMEMED:10697071	enoxaparin	NA	NA	2020-05-24	2020-05-27	2	3	home med		
+medcations_before_and_after	07.06	Enoxaparin	Lovenox	Antithrombotics	67108	enoxaparin	HOMEMED:3676235	enoxaparin	NA	NA	2021-01-21	2021-01-21	1	1	home med		
+medcations_before_and_after	07.06	Enoxaparin	Lovenox	Antithrombotics	67108	enoxaparin	HOMEMED:3676238	enoxaparin	NA	NA	2020-08-21	2020-08-21	1	2	home med		
+medcations_before_and_after	07.08	Heparin	NA	Antithrombotics	5224	heparin	HOMEMED:130873250	heparin flush	NA	NA	2020-12-27	2020-12-27	1	1	home med		
+medcations_before_and_after	07.13	Apixaban	Eliquis	Antithrombotic	1364430	apixaban	HOMEMED:467428636	apixaban	NA	NA	2020-11-25	2021-01-21	1	3	home med		
+medcations_before_and_after	07.13	Apixaban	Eliquis	Antithrombotic	1364430	apixaban	HOMEMED:467428637	apixaban	NA	NA	2020-05-09	2021-02-24	8	13	home med		
+medcations_before_and_after	07.13	Apixaban	Eliquis	Antithrombotic	1364430	apixaban	HOMEMED:467428639	apixaban	NA	NA	2021-02-26	2021-02-26	1	1	home med		
+medcations_before_and_after	07.13	Apixaban	Eliquis	Antithrombotic	1364430	apixaban	HOMEMED:467428640	apixaban	NA	NA	2021-02-26	2021-02-26	1	1	home med		
+medcations_before_and_after	08.03	Amlodipine	Norvasc	Beta Blocker	17767	amlodipine | amlodipine	HOMEMED:3653656	amlodipine	NA	NA	2021-01-14	2021-01-14	1	1	home med		
+medcations_before_and_after	08.06	Bisoprolol	Zebeta	Beta Blocker	19484	bisoprolol	HOMEMED:3656102	bisoprolol	NA	NA	2021-03-17	2021-03-30	1	2	home med		
+medcations_before_and_after	08.09	Carvedilol	Coreg	Beta Blocker	20352	carvedilol	HOMEMED:3671711	carvedilol	NA	NA	2021-01-21	2021-01-21	1	1	home med		
+medcations_before_and_after	10.01	Albuterol	Ventolin, Xopenex, Preventil	Bronchodilators	435	albuterol	HOMEMED:10695172	albuterol	NA	NA	2021-05-12	2021-05-12	1	1	home med		
+medcations_before_and_after	10.01	Albuterol	Ventolin, Xopenex, Preventil	Bronchodilators	435	albuterol	HOMEMED:3653202	albuterol	NA	NA	2021-01-26	2021-01-26	1	1	home med		
+medcations_before_and_after	10.01	Albuterol	Ventolin, Xopenex, Preventil	Bronchodilators	435	albuterol	HOMEMED:3653215	albuterol	NA	NA	2018-11-02	2018-11-02	1	1	home med		
+medcations_before_and_after	10.01	Albuterol	Ventolin, Xopenex, Preventil	Bronchodilators	435	albuterol	HOMEMED:3653217	albuterol	NA	NA	2009-06-15	2009-06-15	1	1	home med		
+medcations_before_and_after	10.01	Albuterol	Ventolin, Xopenex, Preventil	Bronchodilators	435	albuterol	HOMEMED:3653218	albuterol	NA	NA	2017-11-22	2020-06-08	2	5	home med		
+medcations_before_and_after	10.05	Fluticasone	Flovent, Flonase	Bronchodilators	41126	fluticasone	HOMEMED:10697365	fluticasone	NA	NA	2018-06-21	2018-11-02	1	2	home med		
+medcations_before_and_after	10.05	Fluticasone	Flovent, Flonase	Bronchodilators	41126	fluticasone	HOMEMED:10697366	fluticasone	NA	NA	2009-09-24	2021-05-12	2	2	home med		
+medcations_before_and_after	10.05	Fluticasone	Flovent, Flonase	Bronchodilators	41126	fluticasone	HOMEMED:10697368	fluticasone	NA	NA	2021-01-11	2021-01-11	1	1	home med		
+medcations_before_and_after	10.05	Fluticasone	Flovent, Flonase	Bronchodilators	41126	fluticasone	HOMEMED:10697369	fluticasone	NA	NA	2021-02-18	2021-02-18	1	1	home med		
+medcations_before_and_after	10.05	Fluticasone	Flovent, Flonase	Bronchodilators	41126	fluticasone	HOMEMED:3677786	fluticasone nasal	NA	NA	2009-09-24	2021-05-12	2	2	home med		
+medcations_before_and_after	13.02	Captopril	Capoten	Converting Enzyme Inhibitor	1998	captopril	HOMEMED:3671376	captopril	NA	NA	2016-04-12	2016-04-12	1	1	home med		
+medcations_before_and_after	13.04	Enalapril	Vasotec	Converting Enzyme Inhibitor	3827, 3829	enalapril, enalaprilat	HOMEMED:3676203	enalapril	NA	NA	2020-05-09	2020-08-03	1	4	home med		
+medcations_before_and_after	13.07	Lisinopril	Prinivil, Zestril	Converting Enzyme Inhibitor	29046	lisinopril	HOMEMED:3681358	lisinopril	NA	NA	2021-01-25	2021-03-09	2	2	home med		
+medcations_before_and_after	14.08	Furosemide	Lasix	Diuretics	4603	furosemide	HOMEMED:3677944	furosemide	NA	NA	2020-05-09	2020-05-09	1	1	home med		
+medcations_before_and_after	14.08	Furosemide	Lasix	Diuretics	4603	furosemide	HOMEMED:3677945	furosemide	NA	NA	2016-04-12	2016-04-12	1	1	home med		
+medcations_before_and_after	14.08	Furosemide	Lasix	Diuretics	4603	furosemide	HOMEMED:3677950	furosemide	NA	NA	2021-01-29	2021-01-29	1	2	home med		
+medcations_before_and_after	14.13	Spironolactone	Aldactone	Diuretics	9997	spironolactone	HOMEMED:3688386	spironolactone	NA	NA	2020-05-02	2020-05-02	1	1	home med		
+medcations_before_and_after	16.04	Mylanta	NA	Gastrointestinal	466588	aluminum hydroxide / magnesium hydroxide / simethicone	HOMEMED:395571686	al hydroxide/mg hydroxide/simethicone	NA	NA	2016-03-16	2021-02-05	2	2	home med		
+medcations_before_and_after	16.06	Ranitidine	Zantac	Gastrointestinal	9143	ranitidine | ranitidine	HOMEMED:3687183	ranitidine	NA	NA	2016-03-16	2016-03-16	1	1	home med		
+medcations_before_and_after	16.08	Sucralfate	Carafate	Gastrointestinal	10156	sucralfate	HOMEMED:3688482	sucralfate	NA	NA	2013-09-03	2013-09-03	1	1	home med		
+medcations_before_and_after	16.10	Lansoprazole	Prevacid	Gastrointestinal	17128	lansoprazole	HOMEMED:3680918	lansoprazole	NA	NA	2016-10-03	2016-10-03	1	1	home med		
+medcations_before_and_after	16.10	Lansoprazole	Prevacid	Gastrointestinal	17128	lansoprazole	HOMEMED:3680919	lansoprazole	NA	NA	2020-05-25	2020-05-25	1	1	home med		
+medcations_before_and_after	16.10	Lansoprazole	Prevacid	Gastrointestinal	17128	lansoprazole	HOMEMED:395571702	lansoprazole	NA	NA	2013-10-22	2013-10-22	1	1	home med		
+medcations_before_and_after	16.11	Famotidine	Pepcid	Gastrointestinal	4278	famotidine	HOMEMED:3677099	famotidine	NA	NA	2020-07-09	2020-11-12	2	2	home med		
+medcations_before_and_after	16.11	Famotidine	Pepcid	Gastrointestinal	4278	famotidine	HOMEMED:3677102	famotidine	NA	NA	2020-06-08	2021-04-22	9	15	home med		
+medcations_before_and_after	16.11	Famotidine	Pepcid	Gastrointestinal	4278	famotidine	HOMEMED:3677103	famotidine	NA	NA	2020-12-27	2020-12-27	1	1	home med		
+medcations_before_and_after	16.11	Famotidine	Pepcid	Gastrointestinal	4278	famotidine	HOMEMED:3677106	famotidine	NA	NA	2020-06-02	2021-02-18	12	18	home med		
+medcations_before_and_after	18.06	Hydrocortisone	Solu-cortef	Hormonal agents	5492	hydrocortisone	HOMEMED:307878531	hydrocortisone	NA	NA	2020-07-03	2020-07-03	1	1	home med		
+medcations_before_and_after	18.06	Hydrocortisone	Solu-cortef	Hormonal agents	5492	hydrocortisone	HOMEMED:3679251	hydrocortisone	NA	NA	2021-03-10	2021-03-10	1	1	home med		
+medcations_before_and_after	18.06	Hydrocortisone	Solu-cortef	Hormonal agents	5492	hydrocortisone	HOMEMED:3679254	hydrocortisone	NA	NA	2020-07-03	2020-07-04	1	2	home med		
+medcations_before_and_after	18.06	Hydrocortisone	Solu-cortef	Hormonal agents	5492	hydrocortisone	HOMEMED:3679348	hydrocortisone topical	NA	NA	2019-11-05	2019-11-05	1	1	home med		
+medcations_before_and_after	18.06	Hydrocortisone	Solu-cortef	Hormonal agents	5492	hydrocortisone	HOMEMED:3679355	hydrocortisone topical	NA	NA	2019-06-25	2020-05-08	2	3	home med		
+medcations_before_and_after	18.06	Hydrocortisone	Solu-cortef	Hormonal agents	5492	hydrocortisone	HOMEMED:3679361	hydrocortisone topical	NA	NA	2015-08-16	2021-03-02	3	8	home med		
+medcations_before_and_after	18.07	Insulin	NA	Hormonal agents	274783	insulin glargine	HOMEMED:130873270	insulin glargine	NA	NA	2021-01-14	2021-01-14	1	1	home med		
+medcations_before_and_after	18.07	Insulin	NA	Hormonal agents	86009	insulin lispro	HOMEMED:130873400	insulin lispro	NA	NA	2020-07-03	2020-07-03	1	1	home med		
+medcations_before_and_after	18.07	Insulin	NA	Hormonal agents	86009	insulin lispro	HOMEMED:130873401	insulin lispro	NA	NA	2021-01-14	2021-01-14	1	1	home med		
+medcations_before_and_after	18.07	Insulin	NA	Hormonal agents	274783	insulin glargine	HOMEMED:3680123	insulin glargine	NA	NA	2020-07-02	2021-01-13	2	4	home med		
+medcations_before_and_after	18.07	Insulin	NA	Hormonal agents	86009	insulin lispro	HOMEMED:3680164	insulin lispro	NA	NA	2020-07-02	2021-01-13	2	5	home med		
+medcations_before_and_after	18.08	Levothyroxine	Synthroid	Hormonal agents	10582	levothyroxine	HOMEMED:219219211	levothyroxine	NA	NA	2021-01-26	2021-01-26	1	1	home med		
+medcations_before_and_after	18.08	Levothyroxine	Synthroid	Hormonal agents	10582	levothyroxine	HOMEMED:3681121	levothyroxine	NA	NA	2021-01-29	2021-01-29	1	3	home med		
+medcations_before_and_after	18.08	Levothyroxine	Synthroid	Hormonal agents	10582	levothyroxine	HOMEMED:3681122	levothyroxine	NA	NA	2021-01-26	2021-01-29	1	3	home med		
+medcations_before_and_after	18.10	Prednisone	Bronkosol	Hormonal agents	8640	prednisone | prednisone	HOMEMED:3686581	prednisone	NA	NA	2020-05-09	2021-03-17	10	16	home med		
+medcations_before_and_after	18.10	Prednisone	Bronkosol	Hormonal agents	8640	prednisone | prednisone	HOMEMED:3686582	prednisone	NA	NA	2020-06-11	2021-04-22	2	2	home med		
+medcations_before_and_after	18.10	Prednisone	Bronkosol	Hormonal agents	8640	prednisone | prednisone	HOMEMED:3686583	prednisone	NA	NA	2020-05-29	2021-02-11	5	9	home med		
+medcations_before_and_after	18.10	Prednisone	Bronkosol	Hormonal agents	8640	prednisone | prednisone	HOMEMED:3686584	prednisone	NA	NA	2020-11-02	2021-03-10	5	7	home med		
+medcations_before_and_after	19.04	Epinephrine	Adrenalin, Vaponefrin	Inotropic agents	3992	epinephrine | epinephrine	HOMEMED:3676287	epinephrine	NA	NA	2020-10-08	2021-02-12	2	3	home med		
+medcations_before_and_after	19.04	Epinephrine	Adrenalin, Vaponefrin	Inotropic agents	3992	epinephrine | epinephrine	HOMEMED:3676288	epinephrine	NA	NA	2021-02-19	2021-02-19	1	1	home med		
+medcations_before_and_after	19.04	Epinephrine	Adrenalin, Vaponefrin	Inotropic agents	3992	epinephrine | epinephrine	HOMEMED:3676295	epinephrine	NA	NA	2021-04-12	2021-04-12	1	1	home med		
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	HOMEMED:109816030	acetaminophen	NA	NA	2020-05-25	2020-05-25	1	1	home med		
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	HOMEMED:280350337	acetaminophen	NA	NA	2020-11-24	2020-12-27	2	3	home med		
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	HOMEMED:3652593	acetaminophen	NA	NA	2018-02-08	2020-11-14	6	6	home med		
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	HOMEMED:3652597	acetaminophen	NA	NA	2018-02-22	2020-08-12	2	2	home med		
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	HOMEMED:3652610	acetaminophen	NA	NA	2020-08-16	2021-02-20	2	2	home med		
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	HOMEMED:3652621	acetaminophen	NA	NA	2020-03-06	2020-03-06	1	1	home med		
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	HOMEMED:3652626	acetaminophen	NA	NA	2012-12-21	2021-01-31	9	13	home med		
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	HOMEMED:3652627	acetaminophen	NA	NA	2021-02-05	2021-02-05	1	1	home med		
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	HOMEMED:3652628	acetaminophen	NA	NA	2020-05-09	2021-01-30	7	8	home med		
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	HOMEMED:3652631	acetaminophen	NA	NA	2021-02-19	2021-02-19	1	1	home med		
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	HOMEMED:3652652	acetaminophen	NA	NA	2013-01-22	2014-04-13	2	2	home med		
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	HOMEMED:3652680	acetaminophen	NA	NA	2020-05-29	2021-01-13	2	2	home med		
+medcations_before_and_after	22.05	Diazepam	Valium	Sedatives, hypnotics, anesthetics, analgesics	3322	diazepam | diazepam	HOMEMED:10696931	diazepam	NA	NA	2017-06-01	2018-08-29	1	3	home med		
+medcations_before_and_after	22.05	Diazepam	Valium	Sedatives, hypnotics, anesthetics, analgesics	3322	diazepam | diazepam	HOMEMED:3674814	diazepam	NA	NA	2016-05-09	2016-05-09	1	1	home med		
+medcations_before_and_after	22.06	Diphenhydramine	Benadryl	Sedatives, hypnotics, anesthetics, analgesics	3498	diphenhydramine | diphenhydramine	HOMEMED:3670918	diphenhydramine	NA	NA	2016-09-30	2016-09-30	1	1	home med		
+medcations_before_and_after	22.06	Diphenhydramine	Benadryl	Sedatives, hypnotics, anesthetics, analgesics	3498	diphenhydramine | diphenhydramine	HOMEMED:3675148	diphenhydramine	NA	NA	2020-02-05	2020-02-05	1	1	home med		
+medcations_before_and_after	22.06	Diphenhydramine	Benadryl	Sedatives, hypnotics, anesthetics, analgesics	3498	diphenhydramine | diphenhydramine	HOMEMED:3675189	diphenhydramine	NA	NA	2015-08-16	2019-08-06	2	2	home med		
+medcations_before_and_after	22.09	Ibuprofen	Pediaprofen, Motrin	Sedatives, hypnotics, anesthetics, analgesics	5640	ibuprofen	HOMEMED:10697793	ibuprofen	NA	NA	2020-01-16	2020-08-12	2	2	home med		
+medcations_before_and_after	22.09	Ibuprofen	Pediaprofen, Motrin	Sedatives, hypnotics, anesthetics, analgesics	5640	ibuprofen	HOMEMED:10697806	ibuprofen	NA	NA	2014-04-13	2014-04-13	1	1	home med		
+medcations_before_and_after	22.09	Ibuprofen	Pediaprofen, Motrin	Sedatives, hypnotics, anesthetics, analgesics	5640	ibuprofen	HOMEMED:3670706	ibuprofen	NA	NA	2016-09-30	2020-10-26	4	4	home med		
+medcations_before_and_after	22.09	Ibuprofen	Pediaprofen, Motrin	Sedatives, hypnotics, anesthetics, analgesics	5640	ibuprofen	HOMEMED:3679831	ibuprofen	NA	NA	2012-12-21	2021-01-31	4	6	home med		
+medcations_before_and_after	22.09	Ibuprofen	Pediaprofen, Motrin	Sedatives, hypnotics, anesthetics, analgesics	5640	ibuprofen	HOMEMED:3679833	ibuprofen	NA	NA	2016-02-22	2017-06-19	1	2	home med		
+medcations_before_and_after	22.09	Ibuprofen	Pediaprofen, Motrin	Sedatives, hypnotics, anesthetics, analgesics	5640	ibuprofen	HOMEMED:3679836	ibuprofen	NA	NA	2021-02-19	2021-02-19	1	1	home med		
+medcations_before_and_after	22.09	Ibuprofen	Pediaprofen, Motrin	Sedatives, hypnotics, anesthetics, analgesics	5640	ibuprofen	HOMEMED:3679838	ibuprofen	NA	NA	2020-05-09	2021-01-30	3	3	home med		
+medcations_before_and_after	22.09	Ibuprofen	Pediaprofen, Motrin	Sedatives, hypnotics, anesthetics, analgesics	5640	ibuprofen	HOMEMED:3679864	ibuprofen	NA	NA	2016-07-28	2016-07-28	1	1	home med		
+medcations_before_and_after	22.12	Ketorolac	Toradol	Sedatives, hypnotics, anesthetics, analgesics	35827	ketorolac	HOMEMED:3680731	ketorolac	NA	NA	2021-01-13	2021-01-13	1	1	home med		
+medcations_before_and_after	22.13	Lorazepam	Ativan	Sedatives, hypnotics, anesthetics, analgesics	6470	lorazepam | lorazepam	HOMEMED:3681487	lorazepam	NA	NA	2018-02-08	2018-02-08	1	1	home med		
+medcations_before_and_after	22.13	Lorazepam	Ativan	Sedatives, hypnotics, anesthetics, analgesics	6470	lorazepam | lorazepam	HOMEMED:3681496	lorazepam	NA	NA	2020-02-12	2020-02-12	1	1	home med		
+medcations_before_and_after	22.22	Oxycodone	OxyContin	Sedatives, hypnotics, anesthetics, analgesics	7804	oxycodone | oxycodone	HOMEMED:3684971	oxycodone	NA	NA	2013-04-29	2020-06-11	2	7	home med		
+medcations_before_and_after	22.22	Oxycodone	OxyContin	Sedatives, hypnotics, anesthetics, analgesics	7804	oxycodone | oxycodone	HOMEMED:3684972	oxycodone	NA	NA	2013-04-29	2016-07-28	2	5	home med		
+medcations_before_and_after	25.03	Loratadine	Claritin	Antihistamines	28889	loratadine	HOMEMED:130874512	loratadine	NA	NA	2020-07-02	2020-07-02	1	1	home med		
+medcations_before_and_after	25.03	Loratadine	Claritin	Antihistamines	28889	loratadine	HOMEMED:3681473	loratadine	NA	NA	2020-11-01	2020-11-01	1	1	home med		
+medcations_before_and_after	25.05	Cetirizine	Zyrtec	Antihistamines	20610	cetirizine	HOMEMED:3672038	cetirizine	NA	NA	2020-10-08	2020-10-09	1	2	home med		
+medcations_before_and_after	25.05	Cetirizine	Zyrtec	Antihistamines	20610	cetirizine	HOMEMED:3672039	cetirizine	NA	NA	2020-06-08	2021-05-12	2	2	home med		
+medcations_before_and_after	25.05	Cetirizine	Zyrtec	Antihistamines	20610	cetirizine	HOMEMED:3672044	cetirizine	NA	NA	2021-01-26	2021-01-26	1	1	home med		
+medcations_before_and_after	26.02	Anakinra (IL-1 blockade)	NA	Immunomodulatory	72435	anakinra	HOMEMED:3653949	anakinra	NA	NA	2020-10-22	2021-02-09	2	5	home med		
+medcations_before_and_after	27.02	Oseltamivir	Tamiflu	Antiviral	260101	oseltamivir	HOMEMED:130953836	oseltamivir	NA	NA	2018-03-06	2018-03-06	1	2	home med		
+medcations_before_and_after	27.02	Oseltamivir	Tamiflu	Antiviral	260101	oseltamivir	HOMEMED:323172560	oseltamivir	NA	NA	2018-01-12	2020-03-06	3	4	home med		
+medcations_before_and_after	22.07	Fentanyl	Sublimaze	Sedatives, hypnotics, anesthetics, analgesics	4337	fentanyl | fentanyl	ADMINMED:2797771	fentanyl	Nasal	nasal	2020-06-08	2020-06-08	1	1	admin med	no	
+medcations_before_and_after	07.02	Aspirin	NA	Antithrombotics	1191	aspirin	ADMINMED:2796980	aspirin	NG	nasogastric	2021-01-29	2021-01-30	1	2	admin med	yes	
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	ADMINMED:2797281	acetaminophen	NG	nasogastric	2021-01-28	2021-01-28	1	2	admin med	yes	
+medcations_before_and_after	10.01	Albuterol	Ventolin, Xopenex, Preventil	Bronchodilators	435	albuterol	ADMINMED:2797322	albuterol	NEB	nebulizer	2009-06-12	2009-06-12	1	1	admin med	yes	
+medcations_before_and_after	03.20	Erythromycin	NA	Antibiotics	4053	erythromycin	ADMINMED:2797711	erythromycin ophthalmic	OPTH	ophthalmic	2017-08-14	2020-05-19	2	3	admin med	no	
+medcations_before_and_after	03.04	Amoxicillin	Amoxil	Antibiotics	723	amoxicillin	ADMINMED:2796897	amoxicillin	PO	oral	2009-06-12	2020-05-29	3	15	admin med	yes	
+medcations_before_and_after	03.05	Amoxicillin-Clavulanic Acid	Augmentin	Antibiotics	19711	amoxicillin / clavulanate	ADMINMED:2796899	amoxicillin-clavulanate	PO	oral	2017-11-04	2020-07-23	2	3	admin med	yes	
+medcations_before_and_after	03.08	Azithromycin	Zithromax	Antibiotics	18631	azithromycin	ADMINMED:2797013	azithromycin	PO	oral	2009-06-09	2020-05-05	1	2	admin med	yes	
+medcations_before_and_after	03.19	Clindamycin	Cleocin	Antibiotics	2582	clindamycin	ADMINMED:2797437	clindamycin	PO	oral	2014-12-13	2014-12-13	1	1	admin med	yes	
+medcations_before_and_after	03.32	Penicillin	NA	Antibiotics	7984	penicillin v | phenoxymethylpenicillin	ADMINMED:288807609	penicillin v potassium	PO	oral	2013-04-29	2013-04-29	1	1	admin med	yes	
+medcations_before_and_after	06.01	Clonidine	Catapres, Duraclon	Antihypertensives	2599	clonidine | clonidine	ADMINMED:2797449	clonidine	PO	oral	2020-02-02	2021-02-04	2	8	admin med	yes	
+medcations_before_and_after	07.02	Aspirin	NA	Antithrombotics	1191	aspirin	ADMINMED:2796980	aspirin	PO	oral	2019-07-19	2021-03-18	38	282	admin med	yes	
+medcations_before_and_after	07.13	Apixaban	Eliquis	Antithrombotic	1364430	apixaban	ADMINMED:467428629	apixaban	PO	oral	2020-04-28	2021-02-09	9	60	admin med	yes	
+medcations_before_and_after	08.03	Amlodipine	Norvasc	Beta Blocker	17767	amlodipine | amlodipine	ADMINMED:2797372	amlodipine	PO	oral	2021-01-12	2021-01-18	1	12	admin med	yes	
+medcations_before_and_after	08.06	Bisoprolol	Zebeta	Beta Blocker	19484	bisoprolol	ADMINMED:2797099	bisoprolol	PO	oral	2021-03-12	2021-03-18	1	6	admin med	yes	
+medcations_before_and_after	08.14	Metoprolol	Lopressor, Toprol	Beta Blocker	6918	metoprolol	ADMINMED:2798247	metoprolol	PO	oral	2020-08-17	2021-04-15	2	3	admin med	yes	
+medcations_before_and_after	13.04	Enalapril	Vasotec	Converting Enzyme Inhibitor	3827, 3829	enalapril, enalaprilat	ADMINMED:2797681	enalapril	PO	oral	2020-05-04	2021-01-12	2	18	admin med	yes	
+medcations_before_and_after	14.08	Furosemide	Lasix	Diuretics	4603	furosemide	ADMINMED:2797841	furosemide	PO	oral	2020-04-27	2021-01-31	7	22	admin med	yes	
+medcations_before_and_after	14.13	Spironolactone	Aldactone	Diuretics	9997	spironolactone	ADMINMED:2798711	spironolactone	PO	oral	2020-04-24	2020-05-05	2	17	admin med	yes	
+medcations_before_and_after	15.03	Magnesium	NA	Electrolytes	6581	magnesium hydroxide	ADMINMED:2798161	magnesium hydroxide	PO	oral	2017-05-23	2021-01-22	3	4	admin med	no	
+medcations_before_and_after	15.03	Magnesium	NA	Electrolytes	6582	magnesium oxide	ADMINMED:2798164	magnesium oxide	PO	oral	2021-02-08	2021-02-11	1	12	admin med	no	
+medcations_before_and_after	15.03	Magnesium	NA	Electrolytes	greater than 5 RXNORM codes mapped to BCH code	greater than 5 RXNORM codes mapped to BCH code	ADMINMED:2798167	magnesium sulfate	PO	oral	2020-05-20	2020-05-23	1	6	admin med	no	
+medcations_before_and_after	15.04	Potassium	NA	Electrolytes	greater than 5 RXNORM codes mapped to BCH code	greater than 5 RXNORM codes mapped to BCH code	ADMINMED:2798516	potassium chloride	PO	oral	2020-05-25	2021-01-22	2	8	admin med	no	
+medcations_before_and_after	16.04	Mylanta	NA	Gastrointestinal	466588	aluminum hydroxide / magnesium hydroxide / simethicone	ADMINMED:2797319	al hydroxide/mg hydroxide/simethicone	PO	oral	2020-07-15	2020-07-15	1	1	admin med	yes	
+medcations_before_and_after	16.06	Ranitidine	Zantac	Gastrointestinal	9143	ranitidine | ranitidine	ADMINMED:2798594	ranitidine	PO	oral	2016-03-16	2016-03-16	1	1	admin med	yes	
+medcations_before_and_after	16.07	Simethicone	Mylicon	Gastrointestinal	9796	simethicone	ADMINMED:2798662	simethicone	PO	oral	2020-05-18	2020-05-25	1	3	admin med	yes	
+medcations_before_and_after	16.11	Famotidine	Pepcid	Gastrointestinal	8591, 4278	potassium chloride, famotidine	ADMINMED:2797762	famotidine	PO	oral	2020-05-11	2021-03-18	18	158	admin med	yes	
+medcations_before_and_after	18.08	Levothyroxine	Synthroid	Hormonal agents	10582	levothyroxine	ADMINMED:2798119	levothyroxine	PO	oral	2021-01-26	2021-01-29	1	4	admin med	yes	
+medcations_before_and_after	18.10	Prednisone	Bronkosol	Hormonal agents	8640	prednisone | prednisone	ADMINMED:2798541	prednisone	PO	oral	2020-05-08	2021-03-18	16	79	admin med	yes	
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	ADMINMED:2797281	acetaminophen	PO	oral	2007-05-22	2021-03-17	43	257	admin med	yes	
+medcations_before_and_after	22.06	Diphenhydramine	Benadryl	Sedatives, hypnotics, anesthetics, analgesics	3498	diphenhydramine | diphenhydramine	ADMINMED:2797614	diphenhydramine	PO	oral	2015-08-16	2021-02-24	14	20	admin med	yes	
+medcations_before_and_after	22.09	Ibuprofen	Pediaprofen, Motrin	Sedatives, hypnotics, anesthetics, analgesics	5640	ibuprofen	ADMINMED:2797984	ibuprofen	PO	oral	2009-06-09	2021-03-13	32	114	admin med	yes	
+medcations_before_and_after	22.13	Lorazepam	Ativan	Sedatives, hypnotics, anesthetics, analgesics	6470	lorazepam | lorazepam	ADMINMED:2798144	lorazepam	PO	oral	2020-05-22	2020-06-08	2	7	admin med	yes	
+medcations_before_and_after	22.16	Morphine	NA	Sedatives, hypnotics, anesthetics, analgesics	7052	morphine	ADMINMED:2798281	morphine	PO	oral	2020-06-10	2020-06-11	1	5	admin med	yes	
+medcations_before_and_after	22.22	Oxycodone	OxyContin	Sedatives, hypnotics, anesthetics, analgesics	7804	oxycodone | oxycodone	ADMINMED:2798392	oxycodone	PO	oral	2016-05-13	2017-05-23	2	2	admin med	yes	
+medcations_before_and_after	25.05	Cetirizine	Zyrtec	Antihistamines	20610	cetirizine	ADMINMED:2797240	cetirizine	PO	oral	2020-06-04	2021-01-29	5	25	admin med	yes	
+medcations_before_and_after	27.02	Oseltamivir	Tamiflu	Antiviral	260101	oseltamivir	ADMINMED:2798381	oseltamivir	PO	oral	2009-06-09	2019-12-20	3	12	admin med	yes	
+medcations_before_and_after	19.04	Epinephrine	Adrenalin, Vaponefrin	Inotropic agents	107606	bupivacaine / epinephrine | bupivacaine / epinephrine	ADMINMED:2797127	bupivacaine-epinephrine	zzz Other	other	2017-08-14	2017-08-14	1	1	admin med	yes	
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	ADMINMED:2797281	acetaminophen	zzz Other	other	2016-03-06	2016-03-06	1	1	admin med	yes	
+medcations_before_and_after	22.16	Morphine	NA	Sedatives, hypnotics, anesthetics, analgesics	7052	morphine	ADMINMED:2798281	morphine	PCA	patient-controlled analgesia	2017-05-22	2020-06-09	1	3	admin med	yes	
+medcations_before_and_after	07.02	Aspirin	NA	Antithrombotics	1191	aspirin	ADMINMED:2796980	aspirin	PR	per rectum	2020-04-23	2021-01-28	2	5	admin med	yes	
+medcations_before_and_after	22.01	Acetaminophen	Tylenol	Sedatives, hypnotics, anesthetics, analgesics	161	acetaminophen	ADMINMED:2797281	acetaminophen	PR	per rectum	2009-06-09	2021-03-13	6	17	admin med	yes	
+medcations_before_and_after	07.06	Enoxaparin	Lovenox	Antithrombotics	67108	enoxaparin	ADMINMED:2797686	enoxaparin	Subcutaneous	subcutaneous	2020-05-05	2021-03-18	29	326	admin med	yes	
+medcations_before_and_after	18.07	Insulin	NA	Hormonal agents	274783	insulin glargine	ADMINMED:2798012	insulin glargine	Subcutaneous	subcutaneous	2020-07-02	2021-01-13	2	4	admin med	yes	
+medcations_before_and_after	18.07	Insulin	NA	Hormonal agents	86009	insulin lispro	ADMINMED:2798015	insulin lispro	Subcutaneous	subcutaneous	2020-07-02	2021-01-14	2	23	admin med	yes	
+medcations_before_and_after	26.02	Anakinra (IL-1 blockade)	NA	Immunomodulatory	72435	anakinra	ADMINMED:2796914	anakinra	Subcutaneous	subcutaneous	2020-05-18	2020-10-27	2	9	admin med	yes	
+medcations_before_and_after	26.09	Canakinumab	NA	Immunomodulatory	853491	canakinumab	ADMINMED:177596825	canakinumab	Subcutaneous	subcutaneous	2020-05-28	2020-11-26	2	2	admin med	yes	
+medcations_before_and_after	02.09	Lidocaine	Xylocaine	Antiarrhythmic	608568	lidocaine / tetracaine	ADMINMED:16302555	lidocaine-tetracaine topical	TOP	topical	2020-07-19	2021-01-26	3	4	admin med	no	
+medcations_before_and_after	02.09	Lidocaine	Xylocaine	Antiarrhythmic	6387	lidocaine	ADMINMED:2798122	lidocaine topical	TOP	topical	2021-01-06	2021-01-06	1	1	admin med	no	
+medcations_before_and_after	02.09	Lidocaine	Xylocaine	Antiarrhythmic	166283	lidocaine / prilocaine	ADMINMED:2798124	lidocaine-prilocaine topical	TOP	topical	2021-03-08	2021-03-08	1	1	admin med	no	
+medcations_before_and_after	18.06	Hydrocortisone	Solu-cortef	Hormonal agents	5492	hydrocortisone	ADMINMED:2797963	hydrocortisone topical	TOP	topical	2019-07-19	2020-10-17	1	5	admin med	no	
