@@ -27,7 +27,7 @@ lab_dictionary <- read.delim("../data/labDictionary.txt", header = TRUE, sep = '
 
 ```
                                    
-Import test data with randomized patient ids
+Import data 
 ```{r}
 subset_df <- read.csv('../local_ref/testoutput.csv')
 #subset_df$PATIENT_NUM <- floor(runif(nrow(subset_df))*100)
@@ -104,8 +104,8 @@ finalTable <- left_join( subset_df, lab_dictionary, by = c("CONCEPT_CD" = "conce
 
 finalTable <- finalTable %>%
   mutate(date = mdy(as.character(dmy(date), format = "%m-%d-%Y")),
-         ADMISSION_DATE = mdy(as.character(dmy(ADMISSION_DATE), format = "%m-%d-%Y")),
-         DISCHARGE_DATE = mdy(as.character(dmy(DISCHARGE_DATE), format = "%m-%d-%Y")),
+         ADMISSION_DATE = mdy(as.character(dmy_hms(ADMISSION_DATE), format = "%m-%d-%Y")),
+         DISCHARGE_DATE = mdy(as.character(dmy_hms(DISCHARGE_DATE), format = "%m-%d-%Y")),
          days_after_admission = date - ADMISSION_DATE,
          days_after_discharge = date - DISCHARGE_DATE)
 
@@ -130,8 +130,11 @@ getLabValue <- function(row) {
     value = -88
     
   # for date variables, use the date column
+  # redcap requires the following format: 
+  # (NOTE: Dates must be imported here only in M/D/Y format or Y-M-D format, regardless of the specific date format designated for this field.)
+
   } else if (row['vartype'] == 'date') {
-    value = as.character(ymd(row['date']), format = "%m-%d-%Y")
+    value = as.character(ymd(row['date']), format = "%m/%d/%Y")
     
   # for value variables, if NVAL_NUM is not NA, use NVAL_NUM. else use TVAL_CHAR
   } else if (row['vartype'] == 'value') {
@@ -255,9 +258,7 @@ for (patient in readmission_table$PATIENT_NUM){
 lab_values_visit
 23, 'Worst Values During Hosp'
 ```{r}
-# create dummy df for mapping variable name to whether high or low is worst, in this case all are 'high'
-# this can be changed to reference variable prefix in the future if that is more convenient
-#worst_values <- data.frame(variableName = unique(finalTable$variableName), worst = 'high')
+# we know what the worst values for certain labs are based on clinician review
 worst_values <- read.csv('../data/worst_values.csv', skip = 1)
 
 # using "option 3" defined in email chain: if a lab value could be 'worst' at either min or max, ignore the worst value specification
@@ -332,16 +333,41 @@ out <- finalTable %>%
 # should we remove entries with no data?
 #finalTable %>% filter(is.na(NVAL_NUM), TVAL_CHAR == '')
 
+# map BCH ids to MUSIC IDs for REDCAP
+id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
+out <- left_join(out, id_mapping %>% select(PATIENT_NUM, MUSIC_ID))
+
 # Rename columns for redcap
 out <- out %>%
-  rename('record_id' = 'PATIENT_NUM',
+  rename('record_id' = 'MUSIC_ID',
          'redcap_repeat_instrument' = 'formName') %>%
-  mutate(redcap_data_access_group = "120_boston_childe",
-         redcap_event_name = "repeating_forms_arm_1") %>%
-  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, redcap_data_access_group, lab_values_visit) %>%
-  arrange(record_id, redcap_repeat_instance, lab_values_visit)
+  mutate(redcap_event_name = "repeating_forms_arm_1") %>%
+  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, lab_values_visit) %>%
+  arrange(record_id, redcap_repeat_instance, lab_values_visit) %>%
+  ungroup() %>%
+  select(-'PATIENT_NUM', -'date', -'time')
+```
 
-write.csv(out[,-1], '../local_ref/redcap_output.csv', row.names = FALSE)
+
+Data formatting based on errors / warnings from BCH upload to REDCap
+```{r}
+
+out <- out %>% 
+  mutate(il_1_value = ifelse(il_1_value == "SEE IL12", '', il_1_value),
+         il_10_value = ifelse(il_10_value == "SEE IL12", '', il_10_value),
+         il_13_value = ifelse(il_13_value == "SEE IL12", '', il_13_value),
+         il_2_value = ifelse(il_2_value == "SEE IL12", '', il_2_value),
+         il_5_value = ifelse(il_5_value == "SEE IL12", '', il_5_value),
+         il_8_value = ifelse(il_8_value == "SEE IL12", '', il_8_value),
+         il_12_value = ifelse(il_12_value == "See Image", '', il_12_value),
+         ast_sgot_value = ifelse(ast_sgot_value == "Not Reported", '', ast_sgot_value),
+         ast_sgpt_value = ifelse(ast_sgpt_value == "Not Reported", '', ast_sgpt_value))
+  
+
+
+# write output with patient IDs included
+write.csv(out, '../local_ref/redcap_output_laboratory_values.csv', row.names = FALSE)
+#write.csv(out[,-1], '../local_ref/redcap_output.csv', row.names = FALSE)
 ```
 
 
