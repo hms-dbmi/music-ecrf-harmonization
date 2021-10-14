@@ -9,6 +9,7 @@ Libraries
 ```{r}
 rm(list=ls())
 library(tidyverse)
+library(VennDiagram)
 ```
 
 create table meds_concepts as
@@ -92,14 +93,16 @@ allMedsWithMultumMap <- left_join( allMedsWithMultumMap, rxnorm, by= "CUI")
 Compare the direct mapping we made using UMLS with our previously manually generated mapping
 ```{r}
 ###compare with our previous mapping
-manualMap <- read.delim("./Desktop/MUSIC Medications_ mapping from eCRF generic names and trades to BCH variables - BCH med concept summary updated 07-20-21.tsv")
+manualMap <- read.csv("../../medications_before_and_after/data/MUSIC Medications_ mapping from eCRF generic names and trades to BCH variables - BCH med concept summary updated 07-20-21.csv")
 
+# we focus on the mapping from BCH to RXNORM and remove the entries where there were multiple RXNORM codes being mapped to the BCH code
 manualMap <- unique(manualMap[, c("CONCEPT_CD", "RXNORM_CODES")])
-manualMap <- as.data.frame(manualMap %>%
+manualMap <- manualMap %>%
   filter( RXNORM_CODES != "greater than 5 RXNORM codes mapped to BCH code") %>%
   mutate(RXNORM_CODES = strsplit(as.character(RXNORM_CODES), ",")) %>% 
-  unnest(RXNORM_CODES))
+  unnest(RXNORM_CODES)
 
+# I'm not 100% sure what this does. I think I cover it later on . Alba?
 multumMapSubset <- unique(allMedsWithMultumMap %>%
   filter( CONCEPT_CD %in% manualMap$CONCEPT_CD) %>%
   select( CONCEPT_CD, RXNORM_MULTUMMAP = RXNORM ))
@@ -109,7 +112,11 @@ finalCheck$diff <- as.numeric(finalCheck$RXNORM_CODES) - as.numeric(finalCheck$R
 
 
 #### check with mohamad mapping file
-m_mapping <- read.csv("./Desktop/P00036898_EVENT_CATALOG_SYN_RXNORM_CODES.csv")
+m_mapping <- read.csv("../data/P00036898_EVENT_CATALOG_SYN_RXNORM_CODES.csv")
+
+
+# Did I describe this step correctly Alba?
+# extract the BCH codes for ADMINMED and HOMEMED from their distinct columns
 adminMed <- m_mapping %>%
   mutate( CONCEPT_CD = paste0("ADMINMED:", EVENT_CD), 
           MULTUM_CD = gsub("MUL.ORD!", "", RXNORM_CODE), 
@@ -128,5 +135,62 @@ secondCheck$diff <- as.numeric(secondCheck$RXNORM_CODES) - as.numeric(secondChec
 secondCheck$DESCR_CD <- tolower( str_trim( secondCheck$DESCR_CD ) )
 secondCheck <- secondCheck[!duplicated( secondCheck), ]
 
+# create dataframe of different source results
+compare_mappings <- allMedsWithMultumMap %>%
+  select(CONCEPT_CD, SOURCESYSTEM_CD, NAME_CHAR, MULTUM, MULTUM_STR, RXNORM, RXNORM_STR) %>%
+  full_join(manualMap, by = 'CONCEPT_CD') %>%
+  rename(RXNORM.manual = RXNORM_CODES) %>%
+  full_join(mMapping, by = 'CONCEPT_CD') %>%
+  rename(RXNORM.mohamad = RXNORM_CD,
+         MULTUM.mohamad = MULTUM_CD,
+         DESC.mohamad = DESCR_CD) 
+
+# create a subset where we only compare BCH_CD, and RXNORM_CD mapping from each source
+compare_mappings_subset <- compare_mappings %>%
+  select(CONCEPT_CD, RXNORM, 
+         RXNORM.manual, RXNORM.mohamad) %>%
+  rename(CONCEPT_CD.bch = CONCEPT_CD,
+         RXNORM.umls = RXNORM) %>%
+  mutate_all(na_if,"") %>%
+  unique()
+
+
+## note: where does sourcesystem_cd come from" Alba?
+```
+
+Visualize differences in mappings
+```{r}
+# code from https://www.datanovia.com/en/blog/venn-diagram-with-r-or-rstudio-a-million-ways/
+display_venn <- function(x, ...){
+  grid.newpage()
+  venn_object <- venn.diagram(x, filename = NULL, ...)
+  grid.draw(venn_object)
+}
+
+display_venn(x = list(
+    compare_mappings_subset %>% filter(!is.na(RXNORM.umls)) %>% select(RXNORM.umls) %>% unlist() , 
+    compare_mappings_subset %>% filter(!is.na(RXNORM.manual)) %>%select(RXNORM.manual) %>% unlist() , 
+    compare_mappings_subset %>% filter(!is.na(RXNORM.mohamad)) %>%select(RXNORM.mohamad) %>% unlist() 
+    ),
+    category.names = c("UMLS" , "MANUAL" , "MOHAMAD"),
+    output = TRUE ,
+          imagetype="png" ,
+          
+          col=c("#440154ff", '#21908dff', '#FFA500'),
+          fill = c(alpha("#440154ff",0.3), alpha('#21908dff',0.3), alpha('#FFA500',0.3)),
+         
+          cat.default.pos = "outer",
+          cat.pos = c(-27, 27, 135),
+          cat.dist = c(0.055, 0.055, 0.085),
+          cat.fontfamily = "sans",
+          cat.col = c("#440154ff", '#21908dff', '#FFA500'),
+          rotation = 1
+    )
 
 ```
+
+
+
+
+
+
