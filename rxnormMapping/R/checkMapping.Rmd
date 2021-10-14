@@ -102,7 +102,6 @@ manualMap <- manualMap %>%
   mutate(RXNORM_CODES = strsplit(as.character(RXNORM_CODES), ",")) %>% 
   unnest(RXNORM_CODES)
 
-# I'm not 100% sure what this does. I think I cover it later on . Alba?
 multumMapSubset <- unique(allMedsWithMultumMap %>%
   filter( CONCEPT_CD %in% manualMap$CONCEPT_CD) %>%
   select( CONCEPT_CD, RXNORM_MULTUMMAP = RXNORM ))
@@ -115,7 +114,6 @@ finalCheck$diff <- as.numeric(finalCheck$RXNORM_CODES) - as.numeric(finalCheck$R
 m_mapping <- read.csv("../data/P00036898_EVENT_CATALOG_SYN_RXNORM_CODES.csv")
 
 
-# Did I describe this step correctly Alba?
 # extract the BCH codes for ADMINMED and HOMEMED from their distinct columns
 adminMed <- m_mapping %>%
   mutate( CONCEPT_CD = paste0("ADMINMED:", EVENT_CD), 
