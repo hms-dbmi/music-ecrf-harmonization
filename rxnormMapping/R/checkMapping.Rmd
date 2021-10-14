@@ -160,32 +160,26 @@ compare_mappings_subset <- compare_mappings %>%
 
 Visualize differences in mappings
 ```{r}
-# code from https://www.datanovia.com/en/blog/venn-diagram-with-r-or-rstudio-a-million-ways/
-display_venn <- function(x, ...){
-  grid.newpage()
-  venn_object <- venn.diagram(x, filename = NULL, ...)
-  grid.draw(venn_object)
-}
 
-display_venn(x = list(
-    compare_mappings_subset %>% filter(!is.na(RXNORM.umls)) %>% select(RXNORM.umls) %>% unlist() , 
-    compare_mappings_subset %>% filter(!is.na(RXNORM.manual)) %>%select(RXNORM.manual) %>% unlist() , 
-    compare_mappings_subset %>% filter(!is.na(RXNORM.mohamad)) %>%select(RXNORM.mohamad) %>% unlist() 
-    ),
-    category.names = c("UMLS" , "MANUAL" , "MOHAMAD"),
-    output = TRUE ,
-          imagetype="png" ,
-          
-          col=c("#440154ff", '#21908dff', '#FFA500'),
-          fill = c(alpha("#440154ff",0.3), alpha('#21908dff',0.3), alpha('#FFA500',0.3)),
-         
-          cat.default.pos = "outer",
-          cat.pos = c(-27, 27, 135),
-          cat.dist = c(0.055, 0.055, 0.085),
-          cat.fontfamily = "sans",
-          cat.col = c("#440154ff", '#21908dff', '#FFA500'),
-          rotation = 1
-    )
+test <- compare_mappings_subset %>%
+  mutate(all_3_match = (RXNORM.umls == RXNORM.manual) & (RXNORM.manual == RXNORM.mohamad),
+         only_UMLS_MANUAL_match = (RXNORM.umls == RXNORM.manual) & (RXNORM.manual != RXNORM.mohamad | is.na(RXNORM.mohamad)),
+         only_MANUAL_MOHAMAD_match = (RXNORM.mohamad == RXNORM.manual) & (RXNORM.manual != RXNORM.umls | is.na(RXNORM.umls)),
+         only_UMLS_MOHAMAD_match = (RXNORM.mohamad == RXNORM.umls) & (RXNORM.manual != RXNORM.umls | is.na(RXNORM.manual)),
+         only_UMLS_available = is.na(RXNORM.manual) & is.na(RXNORM.mohamad),
+         only_MANUAL_available = is.na(RXNORM.umls) & is.na(RXNORM.mohamad),
+         only_MOHAMAD_available = is.na(RXNORM.manual) & is.na(RXNORM.umls)
+  )
+
+print(paste0("Cases where all mappings match RXNORM codes: ", sum(test$all_3_match, na.rm = TRUE)))
+print(paste0("Cases where only UMLS and MANUAL mappings match RXNORM codes: ", sum(test$only_UMLS_MANUAL_match, na.rm = TRUE)))
+print(paste0("Cases where only MOHAMAD and MANUAL mappings match RXNORM codes: ", sum(test$only_MANUAL_MOHAMAD_match, na.rm = TRUE)))
+print(paste0("Cases where only UMLS and MOHAMAD mappings match RXNORM codes: ", sum(test$only_UMLS_MOHAMAD_match, na.rm = TRUE)))
+print(paste0("Cases where only UMLS mappings are available: ", sum(test$only_UMLS_available, na.rm = TRUE)))
+print(paste0("Cases where only MANUAL mappings are available: ", sum(test$only_MANUAL_available, na.rm = TRUE)))
+print(paste0("Cases where only MOHAMAD mappings are available: ", sum(test$only_MOHAMAD_available, na.rm = TRUE)))
+
+
 
 ```
 
