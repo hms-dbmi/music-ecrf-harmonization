@@ -22,8 +22,8 @@ checked_vars <- checked_vars[-c(1,2),]
 Focus on values which have passed both the checkUnits and the checkRange filters
 ```{r}
 var_prefixes <- checked_vars %>% 
-  filter(checkUnits == 'OK', 
-         checkRange == 'OK') %>%
+  filter(checkUnits == 'OK') %>% #, 
+         #checkRange == 'OK') %>%
   pull(Variable...Field.Name) 
 
 var_prefixes <- gsub('_value', '', var_prefixes)
@@ -213,11 +213,11 @@ write.table(labdict$concept_cd, '../local_ref/concepts_for_query.txt', row.names
 
 # Identify variables left out of phase 1
 ```{r}
-remaining_vars <- data.frame("filter" = c('non-numeric', 'unit-mismatch', 'range-mismatch', 'associated-var-mismatch'),
-                             "n_vars_affected" = c(300, 3, 27, 3))
+#remaining_vars <- data.frame("filter" = c('non-numeric', 'unit-mismatch', 'range-mismatch', 'associated-var-mismatch'),
+#                             "n_vars_affected" = c(300, 3, 27, 3))
 
 
-remaining_vars %>% arrange(desc(n_vars_affected))
+#remaining_vars %>% arrange(desc(n_vars_affected))
 
 ```
 
