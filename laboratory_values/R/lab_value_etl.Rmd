@@ -259,46 +259,47 @@ for (patient in readmission_table$PATIENT_NUM){
 
 lab_values_visit
 23, 'Worst Values During Hosp'
+SKIP WORST VALUES
 ```{r}
 # we know what the worst values for certain labs are based on clinician review
-worst_values <- read.csv('../data/worst_values.csv', skip = 1)
+#worst_values <- read.csv('../data/worst_values.csv', skip = 1)
 
 # using "option 3" defined in email chain: if a lab value could be 'worst' at either min or max, ignore the worst value specification
 # if we do not know if we should use min or max, ignore the worst value specification
-worst_values <- worst_values %>% 
-  filter(worst == 'Min' | worst == 'Max') %>%
-  unique()
+#worst_values <- worst_values %>% 
+#  filter(worst == 'Min' | worst == 'Max') %>%
+#  unique()
 
-worst_values <- rbind(worst_values, 
-                      worst_values %>% mutate(variableName = gsub('_value', '_obtained', variableName)),
-                      worst_values %>% mutate(variableName = gsub('_value', '_date', variableName)),
-                      worst_values %>% mutate(variableName = gsub('_value', '_unit', variableName))
-                      )
+#worst_values <- rbind(worst_values, 
+#                      worst_values %>% mutate(variableName = gsub('_value', '_obtained', variableName)),
+#                      worst_values %>% mutate(variableName = gsub('_value', '_date', variableName)),
+#                      worst_values %>% mutate(variableName = gsub('_value', '_unit', variableName))
+#                      )
 
 #value_vars <- data.frame(variableName = unique(finalTable$variableName[grepl('_value', finalTable$variableName)]),
 #                         worst = 'high')
 
 
-finalTable <- left_join(finalTable, worst_values)
+#finalTable <- left_join(finalTable, worst_values)
 
-define_worst <- function(lab_values_visit, NVAL_NUM, worst) {
-  ifelse(test = lab_values_visit != 23,
-         yes = FALSE,
-         no = ifelse(test = worst == 'Max',
-                     yes = NVAL_NUM == max(NVAL_NUM),
-                     no = ifelse(test = worst == 'Min',
-                                 yes = NVAL_NUM == min(NVAL_NUM),
-                                 no = 'ERROR'
-                                 )
-                     )
-  )
-}
+#define_worst <- function(lab_values_visit, NVAL_NUM, worst) {
+#  ifelse(test = lab_values_visit != 23,
+#         yes = FALSE,
+#         no = ifelse(test = worst == 'Max',
+#                     yes = NVAL_NUM == max(NVAL_NUM),
+#                     no = ifelse(test = worst == 'Min',
+#                                 yes = NVAL_NUM == min(NVAL_NUM),
+#                                 no = 'ERROR'
+#                                 )
+#                     )
+#  )
+#}
 
-finalTable <- finalTable %>% 
-  group_by(PATIENT_NUM, variableName) %>%
-  mutate(is_worst = define_worst(lab_values_visit, NVAL_NUM, worst)) %>%
+#finalTable <- finalTable %>% 
+#  group_by(PATIENT_NUM, variableName) %>%
+#  mutate(is_worst = define_worst(lab_values_visit, NVAL_NUM, worst)) %>%
   # filter out variables where labvaluesvisit == 23 (it had the potential to be the worst) and worst == false (and it was not the worst)
-  filter(!(lab_values_visit == 23 & is_worst == FALSE)) 
+#  filter(!(lab_values_visit == 23 & is_worst == FALSE)) 
 
 
 
