@@ -372,7 +372,7 @@ out <- out %>%
          il_4_value = ifelse(il_4_value == "SEE IL12", '', il_4_value),
          il_6_value = ifelse(il_6_value == "SEE IL12", '', il_6_value),
          troponin_t_value = ifelse(troponin_t_value == "Not Reported", '', troponin_t_value),
-         direc_bilir_value = ifelse(direc_bilir_value == "Not Reported", '', direc_bilir_value))
+         direct_bilir_value = ifelse(direct_bilir_value == "Not Reported", '', direct_bilir_value))
   
 
 # write output with patient IDs included
