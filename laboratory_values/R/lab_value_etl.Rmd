@@ -225,7 +225,7 @@ define_window <- function(days_after_admission, days_after_discharge){
                                  )
                      )
          )
-  )
+  
   
   
 }
