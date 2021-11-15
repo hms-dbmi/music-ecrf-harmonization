@@ -30,8 +30,8 @@ Import data
 ```{r}
 subset_df <- read.csv('../local_ref/testoutput.csv')
 subset_df <- subset_df %>%
-  rename('admission_date' = ADMISSIONDATE,
-         'discharge_date' = DISCHARGE_DATE_FORMATTED)
+  rename('ADMISSION_DATE' = ADMISSIONDATE,
+         'DISCHARGE_DATE' = DISCHARGE_DATE_FORMATTED)
 #subset_df$PATIENT_NUM <- floor(runif(nrow(subset_df))*100)
 #write.csv(subset_df, '../local_ref/testoutput.csv', row.names = FALSE)
 
@@ -105,9 +105,9 @@ subset_df$time <- sapply(strsplit( as.character(subset_df$START_DATE), " "), '['
 finalTable <- left_join( subset_df, lab_dictionary, by = c("CONCEPT_CD" = "concept_cd") )
 
 finalTable <- finalTable %>%
-  mutate(date = mdy(as.character(dmy(date), format = "%m-%d-%Y")),
-         ADMISSION_DATE = mdy(as.character(dmy_hms(ADMISSION_DATE), format = "%m-%d-%Y")),
-         DISCHARGE_DATE = mdy(as.character(dmy_hms(DISCHARGE_DATE), format = "%m-%d-%Y")),
+  mutate(date = dmy(date),
+         ADMISSION_DATE = dmy(ADMISSION_DATE),
+         DISCHARGE_DATE = dmy(DISCHARGE_DATE),
          days_after_admission = date - ADMISSION_DATE,
          days_after_discharge = date - DISCHARGE_DATE)
 
