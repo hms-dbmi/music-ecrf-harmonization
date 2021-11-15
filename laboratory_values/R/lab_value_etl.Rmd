@@ -201,8 +201,8 @@ define_window <- function(days_after_admission, days_after_discharge){
                      yes = 2,
                      
                      # if the observation is not categorized as admission or discharge, but happens during hospitalization, it has potential to be 'worst' value 
-                     no = ifelse(test = days_after_admission >= 0 & days_after_discharge <= 0,
-                                 yes = 23, 
+                     #no = ifelse(test = days_after_admission >= 0 & days_after_discharge <= 0,
+                    #             yes = 23, 
                      
                                  # 2 weeks post discharge (after discharge until less than three weeks)
                                  # if multiple within range, take one closest to exactly three weeks after
@@ -304,6 +304,7 @@ SKIP WORST VALUES
 
 
 ```
+
 
 redcap_repeat_instance
 - Using dates to determine visit number 
