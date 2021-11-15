@@ -7,18 +7,7 @@ output: html_document
 
 *derived from `music_lab_Values.R`*
 
-Use a modification of the following query to extract the data based on concepts in labDictionary.txt:
-*Query has been previously run and saved*
 
-source("connection.R")
-dbGetQuery( con, paste0("select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, 
-  obs.nval_num, obs.units_cd, pat.admission_date, pat.discharge_date 
-  from observation_fact obs, 
-  sa_diag_mis_c_patients pat 
-  where obs.patient_num = pat.patient_num and 
-  obs.concept_cd in ('", concepts, "') and 
-  obs.start_date >= pat.admission_date" )) 
-  
 ```{r}
 library(tidyverse)
 library(lubridate)
@@ -26,10 +15,23 @@ lab_dictionary <- read.delim("../data/labDictionary.txt", header = TRUE, sep = '
 
 
 ```
+
+Use a modification of the following query to extract the data based on concepts in labDictionary.txt:
+*Query has been previously run and saved*
+
+lab_dictionary <- read.delim("../data/labDictionary.txt", header = TRUE, sep = ' ')
+query_first_part <- "select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, obs.nval_num, obs.units_cd, pat.admissiondate, pat.discharge_date_formatted from observation_fact obs, ag440_misc_patients_september pat where obs.patient_num = pat.patient_num and obs.concept_cd in ('"
+query_second_part <- "') and obs.start_date >= pat.admissiondate"
+bch_codes <- paste0(lab_dictionary$concept_cd, collapse = "', '")
+lab_query <- paste0(query_first_part, bch_codes, query_second_part)
+           
                                    
 Import data 
 ```{r}
 subset_df <- read.csv('../local_ref/testoutput.csv')
+subset_df <- subset_df %>%
+  rename('ADMISSION_DATE' = ADMISSIONDATE,
+         'DISCHARGE_DATE' = DISCHARGE_DATE_FORMATTED)
 #subset_df$PATIENT_NUM <- floor(runif(nrow(subset_df))*100)
 #write.csv(subset_df, '../local_ref/testoutput.csv', row.names = FALSE)
 
@@ -103,9 +105,9 @@ subset_df$time <- sapply(strsplit( as.character(subset_df$START_DATE), " "), '['
 finalTable <- left_join( subset_df, lab_dictionary, by = c("CONCEPT_CD" = "concept_cd") )
 
 finalTable <- finalTable %>%
-  mutate(date = mdy(as.character(dmy(date), format = "%m-%d-%Y")),
-         ADMISSION_DATE = mdy(as.character(dmy_hms(ADMISSION_DATE), format = "%m-%d-%Y")),
-         DISCHARGE_DATE = mdy(as.character(dmy_hms(DISCHARGE_DATE), format = "%m-%d-%Y")),
+  mutate(date = dmy(date),
+         ADMISSION_DATE = dmy(ADMISSION_DATE),
+         DISCHARGE_DATE = dmy(DISCHARGE_DATE),
          days_after_admission = date - ADMISSION_DATE,
          days_after_discharge = date - DISCHARGE_DATE)
 
@@ -199,8 +201,8 @@ define_window <- function(days_after_admission, days_after_discharge){
                      yes = 2,
                      
                      # if the observation is not categorized as admission or discharge, but happens during hospitalization, it has potential to be 'worst' value 
-                     no = ifelse(test = days_after_admission >= 0 & days_after_discharge <= 0,
-                                 yes = 23, 
+                     #no = ifelse(test = days_after_admission >= 0 & days_after_discharge <= 0,
+                    #             yes = 23, 
                      
                                  # 2 weeks post discharge (after discharge until less than three weeks)
                                  # if multiple within range, take one closest to exactly three weeks after
@@ -223,7 +225,7 @@ define_window <- function(days_after_admission, days_after_discharge){
                                  )
                      )
          )
-  )
+  
   
   
 }
@@ -234,7 +236,9 @@ define_window <- function(days_after_admission, days_after_discharge){
 ```{r}
 finalTable <- finalTable %>% 
   group_by(PATIENT_NUM, variableName) %>%
-  mutate(lab_values_visit = define_window(days_after_admission, days_after_discharge)) 
+  mutate(lab_values_visit = define_window(days_after_admission, days_after_discharge)) %>%
+  # remove NA lab_values_visit values
+  filter(!is.na(lab_values_visit))
 
 ```
 
@@ -257,58 +261,60 @@ for (patient in readmission_table$PATIENT_NUM){
 
 lab_values_visit
 23, 'Worst Values During Hosp'
+SKIP WORST VALUES
 ```{r}
 # we know what the worst values for certain labs are based on clinician review
-worst_values <- read.csv('../data/worst_values.csv', skip = 1)
+#worst_values <- read.csv('../data/worst_values.csv', skip = 1)
 
 # using "option 3" defined in email chain: if a lab value could be 'worst' at either min or max, ignore the worst value specification
 # if we do not know if we should use min or max, ignore the worst value specification
-worst_values <- worst_values %>% 
-  filter(worst == 'Min' | worst == 'Max') %>%
-  unique()
+#worst_values <- worst_values %>% 
+#  filter(worst == 'Min' | worst == 'Max') %>%
+#  unique()
 
-worst_values <- rbind(worst_values, 
-                      worst_values %>% mutate(variableName = gsub('_value', '_obtained', variableName)),
-                      worst_values %>% mutate(variableName = gsub('_value', '_date', variableName)),
-                      worst_values %>% mutate(variableName = gsub('_value', '_unit', variableName))
-                      )
+#worst_values <- rbind(worst_values, 
+#                      worst_values %>% mutate(variableName = gsub('_value', '_obtained', variableName)),
+#                      worst_values %>% mutate(variableName = gsub('_value', '_date', variableName)),
+#                      worst_values %>% mutate(variableName = gsub('_value', '_unit', variableName))
+#                      )
 
 #value_vars <- data.frame(variableName = unique(finalTable$variableName[grepl('_value', finalTable$variableName)]),
 #                         worst = 'high')
 
 
-finalTable <- left_join(finalTable, worst_values)
+#finalTable <- left_join(finalTable, worst_values)
 
-define_worst <- function(lab_values_visit, NVAL_NUM, worst) {
-  ifelse(test = lab_values_visit != 23,
-         yes = FALSE,
-         no = ifelse(test = worst == 'Max',
-                     yes = NVAL_NUM == max(NVAL_NUM),
-                     no = ifelse(test = worst == 'Min',
-                                 yes = NVAL_NUM == min(NVAL_NUM),
-                                 no = 'ERROR'
-                                 )
-                     )
-  )
-}
+#define_worst <- function(lab_values_visit, NVAL_NUM, worst) {
+#  ifelse(test = lab_values_visit != 23,
+#         yes = FALSE,
+#         no = ifelse(test = worst == 'Max',
+#                     yes = NVAL_NUM == max(NVAL_NUM),
+#                     no = ifelse(test = worst == 'Min',
+#                                 yes = NVAL_NUM == min(NVAL_NUM),
+#                                 no = 'ERROR'
+#                                 )
+#                     )
+#  )
+#}
 
-finalTable <- finalTable %>% 
-  group_by(PATIENT_NUM, variableName) %>%
-  mutate(is_worst = define_worst(lab_values_visit, NVAL_NUM, worst)) %>%
+#finalTable <- finalTable %>% 
+#  group_by(PATIENT_NUM, variableName) %>%
+#  mutate(is_worst = define_worst(lab_values_visit, NVAL_NUM, worst)) %>%
   # filter out variables where labvaluesvisit == 23 (it had the potential to be the worst) and worst == false (and it was not the worst)
-  filter(!(lab_values_visit == 23 & is_worst == FALSE)) 
+#  filter(!(lab_values_visit == 23 & is_worst == FALSE)) 
 
 
 
 ```
 
+
 redcap_repeat_instance
 - Using dates to determine visit number 
-- note that entries inputted at different times on the same date are considered as separate events / visits
+- note that entries inputted at different times on the same date are NOT considered as separate events / visits
 ```{r}
 finalTable <- finalTable %>% 
   group_by(PATIENT_NUM) %>%
-  mutate(datetime = dmy_hms(START_DATE)) %>%
+  mutate(datetime = ymd(date)) %>%
   arrange(datetime) %>%
   mutate(redcap_repeat_instance = match(datetime, sort(unique(datetime)))) %>%
   arrange(redcap_repeat_instance)
@@ -361,9 +367,13 @@ out <- out %>%
          il_8_value = ifelse(il_8_value == "SEE IL12", '', il_8_value),
          il_12_value = ifelse(il_12_value == "See Image", '', il_12_value),
          ast_sgot_value = ifelse(ast_sgot_value == "Not Reported", '', ast_sgot_value),
-         ast_sgpt_value = ifelse(ast_sgpt_value == "Not Reported", '', ast_sgpt_value))
+         ast_sgpt_value = ifelse(ast_sgpt_value == "Not Reported", '', ast_sgpt_value),
+         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL12", '', il_2_receptor_value),
+         il_4_value = ifelse(il_4_value == "SEE IL12", '', il_4_value),
+         il_6_value = ifelse(il_6_value == "SEE IL12", '', il_6_value),
+         troponin_t_value = ifelse(troponin_t_value == "Not Reported", '', troponin_t_value),
+         direct_bilir_value = ifelse(direct_bilir_value == "Not Reported", '', direct_bilir_value))
   
-
 
 # write output with patient IDs included
 write.csv(out, '../local_ref/redcap_output_laboratory_values.csv', row.names = FALSE)
