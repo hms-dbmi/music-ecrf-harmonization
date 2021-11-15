@@ -307,11 +307,11 @@ SKIP WORST VALUES
 
 redcap_repeat_instance
 - Using dates to determine visit number 
-- note that entries inputted at different times on the same date are considered as separate events / visits
+- note that entries inputted at different times on the same date are NOT considered as separate events / visits
 ```{r}
 finalTable <- finalTable %>% 
   group_by(PATIENT_NUM) %>%
-  mutate(datetime = dmy_hms(START_DATE)) %>%
+  mutate(datetime = ymd(date)) %>%
   arrange(datetime) %>%
   mutate(redcap_repeat_instance = match(datetime, sort(unique(datetime)))) %>%
   arrange(redcap_repeat_instance)
