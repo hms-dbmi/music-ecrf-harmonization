@@ -29,6 +29,9 @@ lab_query <- paste0(query_first_part, bch_codes, query_second_part)
 Import data 
 ```{r}
 subset_df <- read.csv('../local_ref/testoutput.csv')
+subset_df <- subset_df %>%
+  rename('admission_date' = ADMISSIONDATE,
+         'discharge_date' = DISCHARGE_DATE_FORMATTED)
 #subset_df$PATIENT_NUM <- floor(runif(nrow(subset_df))*100)
 #write.csv(subset_df, '../local_ref/testoutput.csv', row.names = FALSE)
 
