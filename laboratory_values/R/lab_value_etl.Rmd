@@ -7,18 +7,7 @@ output: html_document
 
 *derived from `music_lab_Values.R`*
 
-Use a modification of the following query to extract the data based on concepts in labDictionary.txt:
-*Query has been previously run and saved*
 
-source("connection.R")
-dbGetQuery( con, paste0("select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, 
-  obs.nval_num, obs.units_cd, pat.admission_date, pat.discharge_date 
-  from observation_fact obs, 
-  sa_diag_mis_c_patients pat 
-  where obs.patient_num = pat.patient_num and 
-  obs.concept_cd in ('", concepts, "') and 
-  obs.start_date >= pat.admission_date" )) 
-  
 ```{r}
 library(tidyverse)
 library(lubridate)
@@ -26,6 +15,16 @@ lab_dictionary <- read.delim("../data/labDictionary.txt", header = TRUE, sep = '
 
 
 ```
+
+Use a modification of the following query to extract the data based on concepts in labDictionary.txt:
+*Query has been previously run and saved*
+
+lab_dictionary <- read.delim("../data/labDictionary.txt", header = TRUE, sep = ' ')
+query_first_part <- "select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, obs.nval_num, obs.units_cd, pat.admissiondate, pat.discharge_date_formatted from observation_fact obs, ag440_misc_patients_september pat where obs.patient_num = pat.patient_num and obs.concept_cd in ('"
+query_second_part <- "') and obs.start_date >= pat.admissiondate"
+bch_codes <- paste0(lab_dictionary$concept_cd, collapse = "', '")
+lab_query <- paste0(query_first_part, bch_codes, query_second_part)
+           
                                    
 Import data 
 ```{r}
