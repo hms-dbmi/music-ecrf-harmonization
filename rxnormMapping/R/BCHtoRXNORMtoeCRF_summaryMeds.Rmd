@@ -1,0 +1,353 @@
+---
+title: "From BCH internal codes to RXNORM through MULTUM: summary of the medications in the eCRF"
+author: "Alba Gutierrez"
+date: "11/12/2021"
+output: html_document
+---
+
+Libraries
+```{r}
+rm(list=ls())
+library(tidyverse)
+library(lubridate)
+library(readxl)
+```
+
+create table meds_concepts as
+```select * from concept_dimension where concept_cd like 'HOMEMED:%' or concept_cd like 'ADMINMED:%';```
+create table umls_meds_subset as 
+```select * from mrconso where sab = 'RXNORM' or sab = 'MMSL';```
+
+Read in files
+```{r}
+allMeds <- read.delim("../data/allMeds.dsv") #concept dimension
+umlsMultumRxnorm <- read.delim("../data/umlsMeds.dsv") #umls mrconso subset for rxnorm and multum
+```
+
+Extract MULTUM code
+Note that the MULTUM code is located before the HOMEMED/ADMINMED code in the BCH concept path.
+It often starts with a 'd', but not always.
+```{r}
+allMeds <- allMeds %>%
+  mutate(MULTUM = sapply(strsplit(as.character(allMeds$CONCEPT_PATH), split = '[\\]'), function(x) x[length(x)-1]),
+         firstMultum = substr(MULTUM, 1,1))
+
+# we expect the multum code to begin with the letter 'd', but notice that there are several cases where it does not.
+# this may mean that 1) we extracted the wrong code or 2) this code is a MULTUM code in a different format than expected
+table(allMeds$firstMultum)
+
+# of the codes which do not start with a 'd', we notice that none of them are in the UMLS MULTUM ontology
+print("Are any of the BCH codes which we extracted as MULTUM but do not start with the letter 'd' actually in the UMLS MULTUM ontology?")
+any((allMeds %>% 
+      filter(firstMultum != 'd') %>% 
+      pull(MULTUM) %>% 
+      as.numeric()) %in% 
+    (umlsMultumRxnorm %>% 
+      filter(SAB == 'MMSL', !grepl('d', CODE), CODE != 'NOCODE')  %>% 
+      pull(CODE) %>% 
+      as.numeric()) 
+    ) 
+
+# we also notice that all of the codes which do not start with a 'd' match the BCH concept_cd (sourcesystem id) for that entry
+print("Do all of the BCH codes which we extracted as MULTUM but do not start with the letter 'd' match the BCH concept_cd?")
+allMeds %>%
+  filter(firstMultum != 'd') %>%
+  mutate(extracted_multum_equal_bch_concept = MULTUM == SOURCESYSTEM_CD) %>%
+  pull(extracted_multum_equal_bch_concept) %>%
+  all(. == TRUE)
+      
+# we also notice that the concept_path is not complete.
+print("Is the BCH concept_path incomplete for all BCH codes which we extracted as MULTUM but do not start with the letter 'd'?")
+allMeds %>%
+  filter(firstMultum != 'd') %>%
+  mutate(noncategorized_concept = grepl('Non-Categorized', CONCEPT_PATH)) %>%
+  pull(noncategorized_concept) %>%
+  all(. == TRUE)
+
+# because of this, we only consider the extracted codes which begin with 'd' to be MULTUM codes, and disregard the rest for now.
+allMedsWithMultum <- allMeds %>% filter(firstMultum == 'd') 
+```
+
+Generate direct mapping from BCH to RXNORM using MULTUM
+```{r}
+# filter the umls database to only include entries where the multum code is part of the bch database and the ontology is multum
+multum <- umlsMultumRxnorm %>% 
+  filter( CODE %in% allMedsWithMultum$MULTUM, 
+          SAB == "MMSL") %>%
+  select( CUI, MULTUM = CODE, MULTUM_STR = STR)
+
+# using the CUIs found in the previous step, link the MULTUM codes to the RXNORM ontology
+rxnorm <- umlsMultumRxnorm %>%
+  filter( CUI %in% multum$CUI, 
+          SAB == "RXNORM") %>%
+  select( CUI, RXNORM = CODE, RXNORM_STR = STR )
+
+# combine the MULTUM, CUI, and RXNORM information with the BCH db info
+allMedsWithMultumMap <- left_join( allMedsWithMultum, multum, by= "MULTUM")
+allMedsWithMultumMap <- left_join( allMedsWithMultumMap, rxnorm, by= "CUI")
+
+```
+
+Extract information from mohapad file.
+```{r}
+#### check with mohamad mapping file
+m_mapping <- read.csv("../data/P00036898_EVENT_CATALOG_SYN_RXNORM_CODES.csv")
+m_mapping2 <- read.csv("../data/bch_RxNorm_mappings.csv", header = FALSE)
+
+#m_mapping2 <- m_mapping2 %>% separate(V2,
+#                           sep = ':',
+#                           into = c('a', 'b', 'RXNORM_CODE')) %>%
+#  filter(!is.na(c))
+
+###CHECK
+#ecrf2rxnormNewMapping <- ecrf2rxnorm %>%
+#  filter( RXNORM_CODE %in% m_mapping2$RXNORM_CODE )
+#allMappedNew <- unique( ecrf2rxnormNewMapping$ECRF_CODE) 
+###
+
+# extract the BCH codes for ADMINMED and HOMEMED from their distinct columns
+adminMed <- m_mapping %>%
+  mutate( CONCEPT_CD = paste0("ADMINMED:", EVENT_CD), 
+          MULTUM_CD = gsub("MUL.ORD!", "", RXNORM_CODE), 
+          RXNORM_CD = gsub("RXNORM!", "", RXNORM_DISPLAY)) %>%
+  select( CONCEPT_CD,MULTUM = MULTUM_CD, RXNORM = RXNORM_CD, NAME_CHAR = DNUM )
+
+homeMed <- m_mapping %>%
+  mutate( CONCEPT_CD = paste0("HOMEMED:", SYNONYM_ID), 
+          MULTUM_CD = gsub("MUL.ORD!", "", RXNORM_CODE), 
+          RXNORM_CD = gsub("RXNORM!", "", RXNORM_DISPLAY)) %>%
+  select( CONCEPT_CD,MULTUM = MULTUM_CD, RXNORM = RXNORM_CD, NAME_CHAR = DNUM )
+
+mMapping <- unique( rbind( adminMed, homeMed ))
+mMapping$NAME_CHAR <- tolower( str_trim( mMapping$NAME_CHAR ) )
+mMapping <- mMapping[!duplicated( mMapping), ]
+
+# create dataframe with all the results from BCH concept dimension table and mohamad table
+allMedsWithMultumMapSelection <- allMedsWithMultumMap %>%
+  filter( !is.na( RXNORM ) ) %>%
+  select( CONCEPT_CD,MULTUM, RXNORM, NAME_CHAR ) %>%
+  unique()
+
+all_rxnormCodes <- rbind( allMedsWithMultumMapSelection, mMapping )
+all_rxnormCodes <- all_rxnormCodes %>%
+  mutate( NAME_CHAR = tolower( trimws( NAME_CHAR ) ) ) %>%
+  unique()
+```
+
+### Check if we are missing some of the medications that we included during our manual mapping
+```{r}
+manualCurated_prevVersion <- as.data.frame(read_xlsx( "../../medications_before_and_after/local_ref/MUSIC Medications_ mapping from eCRF generic names and trades to BCH variables.xlsx"))
+df <- read.delim('../../medications_before_and_after/local_ref/ag440_music_meds_nov21.dsv')
+
+missing <- manualCurated_prevVersion %>%
+  filter( ! CONCEPT_CD %in% all_rxnormCodes$CONCEPT_CD ) %>%
+  select( ECRF_CODE, CONCEPT_CD )
+
+### all of them present in the current mapping
+```
+
+
+### Read the mappings from eCRF to RXNORM
+
+```{r}
+ecrf2rxnorm <- read.csv('../data/ecrf_to_rxnorm_mapping.csv', colClasses = "character")
+```
+
+Check how many of the ecrf2rxnorm codes can be found in the BCH to RXNORM mapping. 
+
+```{r}
+print(length(unique(ecrf2rxnorm$RXNORM_CODE)))
+ecrf2rxnorm$RXNORM_CODE <- as.character(ecrf2rxnorm$RXNORM_CODE)
+all_rxnormCodes$RXNORM <- as.character(all_rxnormCodes$RXNORM)
+ecrf2rxnorm2bch <- left_join( ecrf2rxnorm, all_rxnormCodes, by=c("RXNORM_CODE"="RXNORM"))
+```
+
+Two subsets: the ones with concept_cd and the ones without
+
+```{r}
+ecrfWithBCHconcept <- ecrf2rxnorm2bch[ ! is.na( ecrf2rxnorm2bch$CONCEPT_CD), ]
+ecrfConceptsWithAtLeastBCHconcept <- unique( ecrfWithBCHconcept$ECRF_CODE )
+
+ecrfWithoutBCHconcept <- ecrf2rxnorm2bch[ is.na( ecrf2rxnorm2bch$CONCEPT_CD), ]
+ecrfConceptsWithoutAtLeastBCHconcept <- unique( ecrfWithoutBCHconcept[! ecrfWithoutBCHconcept$ECRF_CODE %in% ecrfConceptsWithAtLeastBCHconcept, c("ECRF_CODE", "ECRF_GENERIC_NAME")] )
+```
+
+### Check if we were including any of the missing ECRF_CODEs before
+
+```{r}
+missing <- manualCurated_prevVersion %>%
+  filter( ECRF_CODE %in% ecrfConceptsWithoutAtLeastBCHconcept$ECRF_CODE ) %>%
+  select( ECRF_CODE, CONCEPT_CD )
+### the ones missing now were not covered before with the manual medication curated list
+```
+
+### Extract the medication information for the MUSIC patients
+
+Remove all the variables except for "ecrfWithBCHconcept"
+
+```{r}
+rm(list=ls()[! ls() %in% c("ecrfWithBCHconcept")])
+```
+
+#### SQL code to create the data extraction: ag440_music_meds_nov21
+
+```{sql, eval=FALSE}
+create table ag440_music_meds_nov21 as 
+select obs.patient_num, obs.concept_cd, obs.modifier_cd, obs.tval_char, obs.start_date, misc.start_date as admissiondate, misc.end_date, misc.length_of_stay 
+from observation_fact obs, ag440_misc_patients_september misc 
+where (concept_cd like 'HOMEMED:%' or concept_cd like 'ADMINMED:%') 
+and obs.patient_num = misc.patient_num;
+```
+
+```{r}
+music_meds <- read.delim('../../medications_before_and_after/local_ref/ag440_music_meds_nov21.dsv')
+
+music_meds$prefix <- sapply(strsplit( as.character(music_meds$CONCEPT_CD), "[:]"), '[', 1)
+
+## select those on the eCRF with BCH concept
+music_meds_ecrf <- music_meds %>%
+  filter( CONCEPT_CD %in% ecrfWithBCHconcept$CONCEPT_CD ) %>%
+  left_join( ecrfWithBCHconcept, by="CONCEPT_CD") %>%
+  unique()
+
+print(paste0( "Total ECRF codes present in BCH: ", length( unique( ecrfWithBCHconcept$ECRF_CODE ))))
+print(paste0( "Total ECRF codes present in BCH in MUSIC patients: ", length( unique( music_meds_ecrf$ECRF_CODE ))))
+```
+
+Clean the dataset, to remove duplicates rows, for the medication with MED:ROUTE associated, take that, for the ones without ROUTE, take @. 
+
+```{r}
+music_meds_ecrf_all <- music_meds_ecrf %>%
+  filter( MODIFIER_CD == "@") %>%
+  mutate( COMBINATION_KEY = paste0( PATIENT_NUM, "-", CONCEPT_CD, "-", ADMISSIONDATE)) %>%
+  unique()
+
+music_meds_ecrf_with_route <- music_meds_ecrf %>%
+  filter( MODIFIER_CD == "MED:ROUTE") %>%
+  mutate( COMBINATION_KEY = paste0( PATIENT_NUM, "-", CONCEPT_CD, "-", ADMISSIONDATE)) %>%
+  unique()
+
+#remove those that have a route 
+music_meds_ecrf_all_subset <- music_meds_ecrf_all %>%
+  filter( ! COMBINATION_KEY %in% music_meds_ecrf_with_route$COMBINATION_KEY )
+
+music_meds_ecf_final <- rbind( music_meds_ecrf_with_route, music_meds_ecrf_all_subset )
+```
+
+
+We make a summary to see how many MISC patients present each one, and in which date ranges. 
+First we add a column based on when the medication was prescribed, during the hospitalization, or before or after. 
+
+```{r}
+music_meds_ecf_final$med_date <- sapply(strsplit( as.character(music_meds_ecf_final$START_DATE), "[ ]"), '[', 1)
+music_meds_ecf_final$misc_start_date <- sapply(strsplit( as.character(music_meds_ecf_final$ADMISSIONDATE), "[ ]"), '[', 1)
+music_meds_ecf_final$misc_end_date <- sapply(strsplit( as.character(music_meds_ecf_final$END_DATE), "[ ]"), '[', 1)
+music_meds_ecf_final$when <- ifelse( dmy( music_meds_ecf_final$med_date ) < dmy( music_meds_ecf_final$misc_start_date), "before", ifelse( dmy( music_meds_ecf_final$med_date) > dmy( music_meds_ecf_final$misc_end_date), "after", "during"))
+```
+
+As a sanity check, and to better understand the data, we will create two subsets, one with the "during" hospitalization, and one with the "before or after", and we check if for the "during hospitalization all the medications prescribed are "ADMINMED". 
+
+```{r}
+during <- music_meds_ecf_final %>%
+  dplyr::filter( when == "during")
+summary( as.factor( during$prefix))
+before_after <- music_meds_ecf_final %>%
+  dplyr::filter( when != "during")
+summary( as.factor( before_after$prefix))
+```
+
+And we create the summary for each medication in our dataset. 
+- in this summary table, each row is a unique BCH concept. 
+```{r}
+# summarise music patient data for each concept
+return_rxnorm_code <- function(RXNORM_CODES) {
+  if (length(unique(RXNORM_CODES)) > 5) {
+    return('greater than 5 RXNORM codes mapped to BCH code') 
+  } else {
+    return(paste(unique(RXNORM_CODES), collapse = ', '))
+  }
+}
+
+return_rxnorm_desc <- function(RXNORM_DESCRIPTIONS) {
+  if (length(unique(RXNORM_DESCRIPTIONS)) > 5) {
+    return('greater than 5 RXNORM codes mapped to BCH code') 
+  } else {
+    return(tolower(paste(unique(RXNORM_DESCRIPTIONS), collapse = ', ')))
+  }
+}
+
+bch_med_concept_summary <- music_meds_ecf_final %>% 
+  group_by(CONCEPT_CD, TVAL_CHAR) %>%
+  summarise(ECRF_CODE = ECRF_CODE,
+            ECRF_GENERIC_NAME = ECRF_GENERIC_NAME,
+            ECRF_TRADE_NAMES = ECRF_TRADE_NAMES,
+            RXNORM_CODES = return_rxnorm_code(RXNORM_CODE),
+            RXNORM_DESCS = return_rxnorm_desc(RXNORM_DESCRIPTION),
+            min_date = min( dmy( med_date ) ), 
+            max_date = max( dmy( med_date ) ),
+            distinct_patients = length(unique(PATIENT_NUM)),
+            distinct_observations = n(),
+            pat_ids = paste0(unique(PATIENT_NUM), collapse = ',')
+            ) %>%
+  unique()
+
+# join the summary with eCRF, RXNORM, and BCH code mapping info
+bch_med_concept_summary <- left_join(bch_med_concept_summary, ecrfWithBCHconcept) 
+
+# reorganize and rename columns
+bch_med_concept_summary <- bch_med_concept_summary %>%
+  mutate(eCRF_name = 'medcations_before_and_after') %>%
+  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES, 
+         RXNORM_CODE, RXNORM_DESCRIPTION, CONCEPT_CD, CONCEPT_CD_DESCRIPTION=NAME_CHAR, MED_ROUTE = TVAL_CHAR,
+         min_date, max_date, distinct_patients, distinct_observations) %>%
+  arrange(ECRF_CODE) %>%
+  unique() # there are still some duplicated rows from the join....
+```
+
+- in this summary table, each row is a unique eCRF code. 
+```{r}
+# summarise music patient data for each code
+ecrf_med_concept_summary <- music_meds_ecf_final %>%
+  group_by(ECRF_CODE) %>%
+  summarise(min_date = min( dmy( med_date ) ), 
+            max_date = max( dmy( med_date ) ),
+            distinct_patients = length(unique(PATIENT_NUM)),
+            distinct_observations = length(PATIENT_NUM),
+            distinct_concepts = length(unique(CONCEPT_CD)))
+# join the summary with eCRF, RXNORM, and BCH code mapping info
+ecrf_med_concept_summary <- left_join(ecrf_med_concept_summary, 
+                                       ecrfWithBCHconcept %>% select(ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES) %>% unique(), 
+                                      by = 'ECRF_CODE') 
+# reorganize and rename columns
+ecrf_med_concept_summary <- ecrf_med_concept_summary %>%
+  mutate(eCRF_name = 'medications_before_and_after_hosp') %>%
+  select(eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES,
+         min_date, max_date, distinct_patients, distinct_observations, distinct_concepts) %>%
+  arrange(ECRF_CODE)
+# add the ecrf codes for which we have no information 
+ecrf2rxnorm <- read.csv('../data/ecrf_to_rxnorm_mapping.csv')
+
+meds_missing <- ecrf2rxnorm %>%
+  dplyr::filter( ! ECRF_CODE %in% ecrf_med_concept_summary$ECRF_CODE) %>%
+  dplyr::mutate( eCRF_name = "medications_before_and_after_hosp") %>%
+  dplyr::select( eCRF_name, ECRF_CODE, ECRF_GENERIC_NAME, ECRF_TRADE_NAMES) %>%
+  unique()
+# add the missing codes at the end of ecrf_med_concept_summary
+ecrf_med_concept_summary <- rbindlist( list( ecrf_med_concept_summary, meds_missing), fill = TRUE )
+```
+
+# Save the output summary
+
+```{r}
+#sort by ECRF_CODE?
+#ecrf_med_concept_summary <- ecrf_med_concept_summary[ order( ecrf_med_concept_summary$ECRF_CODE), ]
+write.csv(ecrf_med_concept_summary, '../local_ref/ecrf_med_concept_summary_toReview_Tuesday.csv', row.names = FALSE)
+write.csv(bch_med_concept_summary, '../local_ref/bch_med_concept_summary_toReview_Tuesday.csv', row.names = FALSE)
+
+```
+
+### QUESTIONS FOR SIMRAN:
+- does this makes sense to you?
+- how could we distinguish between ECRF not present in MISC patients vs. ECRF for what we do not have a mapping?
+- maybe adding a tag column?
+

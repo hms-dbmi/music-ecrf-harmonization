@@ -21,7 +21,7 @@ library(lubridate)
 Use the same query as medications_before_and_after -- see that pipeline for details
 ```{r}
 
-df <- read.csv('../../medications_before_and_after/local_ref/agg40_music_meds_filtered.csv')
+df <- read.delim('../../medications_before_and_after/local_ref/ag440_music_meds_nov21.dsv')
 
 # if the code is formatted like so: '2.00', convert to '02.00'
 fix_code_formatting <- function(x) {
@@ -42,7 +42,7 @@ datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final vers
          ECRF_CODE = fix_code_formatting(ECRF_CODE)) %>%
   select(-Choices..Calculations..OR.Slider.Labels)
 
-bch_med_concept_summary <- read_csv('../../medications_before_and_after/data/bch_med_concept_summary_toReview.csv')
+bch_med_concept_summary <- read_csv('../../medications_before_and_after/data/bch_med_concept_summary_toReview_Tuesday.csv')
 
 bch_med_concept_summary <- left_join(bch_med_concept_summary, datadict, by = 'ECRF_CODE')
 
@@ -53,17 +53,14 @@ df <- left_join(df, bch_med_concept_summary %>% select(ECRF_CODE, CONCEPT_CD, Va
 # 2. Filter to medication values during hospitalization
 
 ```{r}
-
 df <- df %>%
   mutate(date = dmy(sapply(strsplit( as.character(START_DATE), " "), '[', 1)),
-         time = sapply(strsplit( as.character(START_DATE), " "), '[', 2),
          DISCHARGE_DATE = dmy(sapply(strsplit( as.character(END_DATE), " "), '[', 1)),
-         ADMISSION_DATE = dmy(ADMISSIONDATE),
+         ADMISSION_DATE = dmy(sapply(strsplit( as.character(ADMISSIONDATE), " "), '[', 1)),
          days_after_admission = date - ADMISSION_DATE,
          days_after_discharge = date - DISCHARGE_DATE) %>%
   filter(days_after_admission >= 0,
          days_after_discharge <= 0)
-
 ```
 
 # Add additional columns
@@ -73,8 +70,9 @@ df <- df %>%
 ```{r}
 df2 <- df %>%
   group_by(PATIENT_NUM) %>%
-  mutate(datetime = paste0(date, '-', time),
-         datetime = ymd_hms(datetime)) %>%
+  mutate( time = hms(sapply(strsplit( as.character(START_DATE), " "), '[', 2)),
+          datetime = paste0(date, '-', time),
+          datetime = ymd_hms(datetime)) %>%
   group_by(PATIENT_NUM, ECRF_CODE) %>%
   summarise(datetime = min(datetime),
             Variable...Field.Name = first(Variable...Field.Name)) %>%
