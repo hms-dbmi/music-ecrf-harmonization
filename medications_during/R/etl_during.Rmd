@@ -46,8 +46,12 @@ bch_med_concept_summary <- read_csv('../../medications_before_and_after/data/bch
 
 bch_med_concept_summary <- left_join(bch_med_concept_summary, datadict, by = 'ECRF_CODE')
 
-df <- left_join(df, bch_med_concept_summary %>% select(ECRF_CODE, CONCEPT_CD, Variable...Field.Name), by = 'CONCEPT_CD')
+df <- left_join(df, bch_med_concept_summary %>% 
+                  select(ECRF_CODE, CONCEPT_CD, Variable...Field.Name), by = 'CONCEPT_CD') 
 
+# remove NAs that appear because as input we are using now all misc and all medications
+df <- df %>%
+  filter( ! is.na( ECRF_CODE ) )
 ```
 
 # 2. Filter to medication values during hospitalization
@@ -119,7 +123,7 @@ out3 <- out2 %>%
     values_fill = NA)
 
 # map BCH ids to MUSIC IDs for REDCAP
-id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
+id_mapping <- read.csv('../../medications_before_and_after/local_ref/music_id_mapping.csv')
 out4 <- left_join(out3, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>% 
   ungroup() %>% 
   select(-PATIENT_NUM) %>%
