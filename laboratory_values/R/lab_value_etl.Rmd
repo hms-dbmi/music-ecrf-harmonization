@@ -236,6 +236,7 @@ define_window <- function(days_after_admission, days_after_discharge){
 ```{r}
 finalTable <- finalTable %>% 
   group_by(PATIENT_NUM, variableName) %>%
+  rowwise %>%
   mutate(lab_values_visit = define_window(days_after_admission, days_after_discharge)) %>%
   # remove NA lab_values_visit values
   filter(!is.na(lab_values_visit))
@@ -372,7 +373,27 @@ out <- out %>%
          il_4_value = ifelse(il_4_value == "SEE IL12", '', il_4_value),
          il_6_value = ifelse(il_6_value == "SEE IL12", '', il_6_value),
          troponin_t_value = ifelse(troponin_t_value == "Not Reported", '', troponin_t_value),
-         direct_bilir_value = ifelse(direct_bilir_value == "Not Reported", '', direct_bilir_value))
+         direct_bilir_value = ifelse(direct_bilir_value == "Not Reported", '', direct_bilir_value),
+         ferritin_value = ifelse(ferritin_value == "Not Reported", '', ferritin_value),
+         potassium_value = ifelse(potassium_value == "Not Reported", '', potassium_value),
+         il_1_value = ifelse(il_1_value == "SEE IL17", '', il_1_value),
+         il_10_value = ifelse(il_10_value == "SEE IL17", '', il_10_value),
+         il_12_value = ifelse(il_12_value == "SEE IL17", '', il_12_value),
+         il_13_value = ifelse(il_13_value == "SEE IL17", '', il_13_value),
+         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL17", '', il_2_receptor_value),
+         il_2_value = ifelse(il_2_value == "SEE IL17", '', il_2_value),
+         il_4_value = ifelse(il_4_value == "SEE IL17", '', il_4_value),
+         il_5_value = ifelse(il_5_value == "SEE IL17", '', il_5_value),
+         il_6_value = ifelse(il_6_value == "SEE IL17", '', il_6_value),
+         il_8_value = ifelse(il_8_value == "SEE IL17", '', il_8_value),
+         ggtp_value = ifelse(ggtp_value == "Not Reported", '', ggtp_value),
+         hematocrit_value = ifelse(hematocrit_value == "Footnote", '', hematocrit_value),
+         hemoglobin_value = ifelse(hemoglobin_value == "Footnote", '', hemoglobin_value),
+         lymphocyt_value = ifelse(lymphocyt_value == "Footnote", '', lymphocyt_value),
+         neutrophil_value = ifelse(neutrophil_value == "Footnote", '', neutrophil_value),
+         platelets_value = ifelse(platelets_value == "Footnote", '', platelets_value),
+         platelets_value = ifelse(platelets_value == "Not Performed", '', platelets_value),
+         wbc_value = ifelse(wbc_value == "Footnote", '', wbc_value))
   
 
 # write output with patient IDs included
