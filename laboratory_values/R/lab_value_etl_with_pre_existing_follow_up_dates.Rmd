@@ -1,7 +1,7 @@
 ---
 title: 'Lab Values: Data ETL'
 author: "Simran Makwana & Alba Gutierrez"
-date: "11/23/2021"
+date: "11/24/2021"
 output: html_document
 ---
 
@@ -167,13 +167,42 @@ lab_values_visit
 # WRITE SAME CODE TO RE-PLACE THE PREVIOUS DEFINE_TIME_WINDOW FUNCTION
 # ASUMING THAT INSTEAD OF ESTIMATING THE TIME WINDOWS WE WILL ONLY EXTRACT THE INFORMATION 
 # FOR THOSE VISIT FOR WHAT WE HAVE A FOLLOW-UP DATE
+# we need to create a new column: lab_values_visit with values:
+### Value = 1 --> the value closest to hospital admission  (no further than 48 hours before or after)
+### Value = 2 --> the value closest to discharge (3 days or less before discharge)
+### Value = 3 --> the value closest to the 2 weeks post discharge (after discharge until less than three weeks)
+### Value = 4 --> the value closest to the 6 weeks post discharge (3 weeks to less then 9 weeks)
+### Value = 6 --> the value closest to the 6 months post discharge (9 weeks to less than one year)
+####In all cases when we have multiple values for the same lab for the same day we take the closest to the date
+
+finalTable$lab_values_visit <- ifelse( finalTable$date == finalTable$ADMISSION_DATE, 1, 
+                                       ifelse( finalTable$date == finalTable$DISCHARGE_DATE, 2, 
+                                               ifelse( finalTable$date == finalTable$two_weeks, 3, 
+                                                       ifelse( finalTable$date == finalTable$six_weeks, 4, 
+                                                               ifelse( finalTable$date == finalTable$six_months, 6, NA)))))
+finalTableFiltered <- finalTable %>%
+  filter( ! is.na (lab_values_visit )) %>%
+  group_by( PATIENT_NUM, CONCEPT_CD, date )%>%
+  slice_min( order_by = time) %>%
+  unique()
+
+# we check if we have really remove any potential duplicate (same labs measured multiple times during the same day)
+check <- finalTableFiltered %>% 
+  filter( vartype == "obtained" ) %>%
+  group_by( PATIENT_NUM, CONCEPT_CD, date ) %>%
+  count( )
+
+# there are still 10 cases, for 2 patients, in which the day and time is the same but there are multiple distinct values
+# what should we do in this cases? take one randomly?
+### check with Simnran, I think in the code just the first one would be keept 
+#check this example at the end jj[ jj$PATIENT_NUM == "37336854" & jj$CONCEPT_CD == "LAB:2700655" & jj$date == "2020-06-25", ]
 ```
 
 redcap_repeat_instance
 - Using dates to determine visit number 
 - note that entries inputted at different times on the same date are NOT considered as separate events / visits
 ```{r}
-finalTable <- finalTable %>% 
+finalTableFiltered <- finalTableFiltered %>% 
   group_by(PATIENT_NUM) %>%
   mutate(datetime = ymd(date)) %>%
   arrange(datetime) %>%
@@ -186,7 +215,7 @@ Pivot table wider and make compatible with RedCap formatting
 ```{r}
 
 # for cases where a patient has multiple values for a lab at the exact same date / time, just choose the first one
-out <- finalTable %>%
+out <- finalTableFiltered %>%
   group_by(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance, variableName) %>%
   summarise(value = first(value)) %>%
   pivot_wider(id_cols = c(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance), 
@@ -198,8 +227,7 @@ out <- finalTable %>%
 #finalTable %>% filter(is.na(NVAL_NUM), TVAL_CHAR == '')
 
 # map BCH ids to MUSIC IDs for REDCAP
-id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
-out <- left_join(out, id_mapping %>% select(PATIENT_NUM, MUSIC_ID))
+out <- left_join(out, misc_mapping %>% select(PATIENT_NUM, MUSIC_ID))
 
 # Rename columns for redcap
 out <- out %>%
@@ -231,10 +259,8 @@ out <- out %>%
          troponin_t_value = ifelse(troponin_t_value == "Not Reported", '', troponin_t_value),
          direct_bilir_value = ifelse(direct_bilir_value == "Not Reported", '', direct_bilir_value))
   
-
 # write output with patient IDs included
-write.csv(out, '../local_ref/redcap_output_laboratory_values.csv', row.names = FALSE)
-#write.csv(out[,-1], '../local_ref/redcap_output.csv', row.names = FALSE)
+write.csv(out, '../local_ref/redcap_output_laboratory_values_updated.csv', row.names = FALSE)
 ```
 
 
