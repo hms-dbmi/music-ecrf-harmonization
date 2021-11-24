@@ -65,3 +65,16 @@ query
 #  from music_patientslist_september 
 #  left join mrn_patuuid_patnum on music_patientslist_september.mrn = mrn_patuuid_patnum.mrn)
 #;
+
+###########
+## Labs ##
+##########
+### SQL query to have a table with all the lab data in MISC patients
+
+#create table ag440_music_labs_nov21 as 
+#select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, 
+#obs.nval_num, obs.units_cd, pat.ADMISSIONDATE, pat.discharge_date_formatted 
+#from observation_fact obs, 
+#ag440_misc_patients_september pat 
+#where obs.patient_num = pat.patient_num and concept_cd like 'LAB:%';
+

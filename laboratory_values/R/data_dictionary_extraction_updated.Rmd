@@ -1,7 +1,7 @@
 ---
 title: "Extract Info From Data Dictionary"
-author: "Simran Makwana"
-date: "5/3/2021"
+author: "Simran Makwana & Alba Gutierrez"
+date: "11/23/2021"
 output: html_document
 ---
 
@@ -13,16 +13,13 @@ library(tidyverse)
 Load data
 ```{r}
 datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
-checked_vars <- read.csv('../data/numericalLabsToReview.csv', header = FALSE) 
-colnames(checked_vars) <- checked_vars[2,]
-checked_vars <- checked_vars[-c(1,2),]
+checked_vars <- read.csv('../data/numericalLabsToReview.csv', skip=1, header = TRUE) 
 ```
 
-Focus on values which have passed both the checkUnits and the checkRange filters
+Focus on values which have passed the checkUnits filters.
 ```{r}
 var_prefixes <- checked_vars %>% 
-  filter(checkUnits == 'OK') %>% #, 
-         #checkRange == 'OK') %>%
+  filter(checkUnits == 'OK') %>%
   pull(Variable...Field.Name) 
 
 var_prefixes <- gsub('_value', '', var_prefixes)
@@ -44,7 +41,6 @@ datadict_labonly <- datadict %>%
   mutate(Choices..Calculations..OR.Slider.Labels = paste0(Choices..Calculations..OR.Slider.Labels, Field.Note))
 
 datadict_labonly
-
 ```
 
 Sort into variable types (lookint at whole data dictionary)
@@ -52,7 +48,6 @@ The table below shows the frequency of various variable type found in the labora
 As expected, 'date', 'value', and 'obtained' are the most prevalent, with unit being very prevalent as well. 
 We will focus on these 4 types of variables first.
 ```{r}
-
 datadict_labonly <- datadict_labonly %>%
   mutate(vartype = gsub("^.*_", "", Variable...Field.Name)) 
 
@@ -61,39 +56,28 @@ datadict_labonly %>%
   group_by(vartype) %>%
   summarise(n_vars = n()) %>%
   arrange(desc(n_vars))
-
-
 ```
 For 'obtained', we want to know what choices are expected by redcap for each variable in this category.
 The below table shows that the majority of 'obtained' variables have the boolean response 1 (yes) or 0 (no). 
-We will focus on the variables with yes/no response only for now.
+We will include all the variables, not only the yes/no ones. 
 ```{r}
 datadict_labonly %>%
   filter(vartype == 'obtained') %>%
   group_by(Choices..Calculations..OR.Slider.Labels) %>%
   summarise(n_vars = n())
-
-remove_vars <- datadict_labonly %>% 
-  filter(vartype == 'obtained', Choices..Calculations..OR.Slider.Labels != '1, Yes | 0, No') %>% 
-  pull(Variable...Field.Name)
-remove_prefixes <- gsub('_obtained', '', remove_vars)
-
-
 ```
 For 'value', we want to know what choices are expected by redcap for each variable in this category.
 **use column "H" in data dict to verify if numeric etc**
 
 There are several different specifications for the units in which values are provided.
 Variables for which the expected value matches the ‘UNITS_CD’ entry in BCH will be included.
-These variables have already been filtered for when focusing on values which have passed both the checkUnits and the checkRange filters.
+These variables have already been filtered for when focusing on values which have passed the checkUnits filter.
 ```{r}
 datadict_labonly %>%
   filter(vartype == 'value') %>%
   group_by(Choices..Calculations..OR.Slider.Labels) %>%
   summarise(n_vars = n()) %>% 
   arrange(desc(n_vars))
-
-
 ```
 
 Dates are requested in ‘mm-dd-yyyy’ format.
@@ -103,14 +87,10 @@ datadict_labonly %>%
   filter(vartype == 'date') %>%
   group_by(Choices..Calculations..OR.Slider.Labels) %>%
   summarise(n_vars = n())
-
 ```
 
 
-Unit variables rely on value variables.
-In phase 1, we are only including variables where the unit listed below the Value field was used. 
-These variables have already been filtered for when focusing on values which have passed both the checkUnits and the checkRange filters.
-All units will be ‘-88’.
+Unit variables rely on value variables. Summary of the units values are below:
 ```{r}
 datadict_labonly %>%
   filter(vartype == 'unit') %>%
@@ -120,28 +100,7 @@ datadict_labonly %>%
 
 ```
 
-
-We will now select all variables which are associated with the numeric laboratory variables we filtered for previously.
-Remove any variables that were filtered out when examining obtained, unit, or date variables.
-
-account for: "I reviewed the CRP and Tryglicerides, that were as “specify units below”
-they had multiple options with the categorical format: e.g., ###CRP 1, mg/L | 2, mg/dL | 3, Other ….. triglycerids 1, mg/dL | 2, mmol/L | 3, Other; (edited) 
-I just checked that the units we had were one of the options they were giving, but not sure were the specific option should be displayed in the final file"
-
-```{r}
-remove_vars <- c(paste0(remove_prefixes, '_obtained'), 
-              paste0(remove_prefixes, '_value'),
-              paste0(remove_prefixes, '_unit'),
-              paste0(remove_prefixes, '_date'))
-
-# crp ad triglyceride 
-remove_vars <- c(remove_vars,
-                 paste0('crp', c('_obtained', '_date', '_value', '_unit')),
-                 paste0('triglycerid', c('_obtained', '_date', '_value', '_unit')))
-
-our_vars <- our_vars[!our_vars %in% remove_vars]
-
-```
+For the variables for which there is only one unit option, and th eunit listed on the Value Field matched with the one used (as is the case because we filtered by checkUnits), we will write -88. For the ones with multiple options we will put the number for the specific units, 1 or 2. 
 
 Let's view the summaries for the selected variables.
 ```{r}
@@ -173,20 +132,17 @@ datadict_labonly %>%
          vartype == 'obtained') %>%
   pull(Choices..Calculations..OR.Slider.Labels) %>%
   table()
-
-
-
 ```
 
 
-We now have our 'phase 1 variables', which we can reasonably map reported value in the EHR to expected value in RedCap.
+We now have all the variables which we can map reported value in the EHR to expected value in RedCap.
 We can map these variable names to their associated concept_cds using the manually generated 'eCRF to BCH mapping' file and create the corresponding `labDictionary` file.
+
 For now, we will ignore the variables which we do not have concept codes for.
 Then we can use these concept_CD values to query the BCH database.
 After querying the database, a separate script will map values from the query response to the expected values found in this notebook.
 ```{r}
 #our_vars
-
 mapping <- read.csv('../data/eCRF to BCH mapping.csv') %>%
   filter(Form.Name == 'laboratory_values')
 
@@ -203,31 +159,17 @@ labdict <- left_join(as.data.frame(our_vars), mapping, by = c('our_vars' = 'Vari
 
 Save labdict as `labdictionary.txt` for use in other notebooks.
 ```{r}
-write.table(labdict, '../data/labDictionary.txt', quote = FALSE, row.name = FALSE)
+write.table(labdict, '../data/labDictionary_updated.txt', quote = FALSE, row.name = FALSE)
 
 # for manual SQL query:
-write.table(labdict$concept_cd, '../local_ref/concepts_for_query.txt', row.names = FALSE, col.names = FALSE, eol = "', '", quote = FALSE)
+write.table(labdict$concept_cd, '../local_ref/concepts_for_query_updated.txt', row.names = FALSE, col.names = FALSE, eol = "', '", quote = FALSE)
 
 ```
 
-# Identify variables left out of phase 1
 ```{r}
-#remaining_vars <- data.frame("filter" = c('non-numeric', 'unit-mismatch', 'range-mismatch', 'associated-var-mismatch'),
-#                             "n_vars_affected" = c(300, 3, 27, 3))
-
-
-#remaining_vars %>% arrange(desc(n_vars_affected))
-
+sessionInfo()
 ```
 
-# Phase 2
-What are the types of non-numeric vars?
-```{r}
-datadict_labonly %>%
-  #filter(vartype == 'value') %>%
-  filter(Text.Validation.Type.OR.Show.Slider.Number != 'number')
-
-```
 
 
 

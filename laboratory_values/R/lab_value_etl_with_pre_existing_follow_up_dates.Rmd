@@ -1,0 +1,253 @@
+---
+title: 'Lab Values: Data ETL'
+author: "Simran Makwana & Alba Gutierrez"
+date: "11/23/2021"
+output: html_document
+---
+
+*derived from `music_lab_Values.R`*
+
+
+```{r}
+library(tidyverse)
+library(lubridate)
+lab_dictionary <- read.delim("../data/labDictionary_updated.txt", header = TRUE, sep = ' ')
+```
+
+
+Import the lab data from MISC patients. Instead of importing a subset, we import the whole dataset (ag440_music_labs_nov21) and here we filter by the concepts that are in our lab_dictionary and we rename the admission and discharge date colum.  
+```{r}
+all_labs <- read.delim('../local_ref/ag440_music_labs_nov21.dsv')
+subset_df <- all_labs %>%
+  filter( CONCEPT_CD %in% lab_dictionary$concept_cd ) %>%
+  rename('ADMISSION_DATE' = ADMISSIONDATE,
+         'DISCHARGE_DATE' = DISCHARGE_DATE_FORMATTED)
+```
+
+Import the follow-up visit dates. The MUSIC_DATA_2021-11-23_0940.csv is the file extracted from REDCap of the data previously entered by BCH experts. From there we will extract the specific follow-up dates for the MUSIC study for the MISC patients. The variable name that contains the date is "visit_date", extracted from the dictionary. The record id is the internal MUSIC identifier, and the redcap_event_name allows us to know which is the specific follow-up period the date is referring to. Because the ID are MUSIC Ids we also need to load the music_mapping_id. 
+```{r}
+misc_mapping <- read.csv("../../medications_before_and_after/local_ref/music_id_mapping.csv")
+visit_dates  <- read.csv("../local_ref/MUSIC_DATA_2021-11-23_0940.csv")
+visit_dates <- visit_dates %>%
+  filter( visit_date != "" ) %>%
+  select( record_id, redcap_event_name, visit_date )
+
+### check counts: for how many patients we have all the follow-up dates (2 weeks, 6 weeks and 6 months?)
+### in this case only for 12 of the patients all the information has been entered
+counts <- visit_dates %>%
+  group_by( record_id ) %>%
+  mutate( dates_available = n( ) ) %>%
+  select( record_id, dates_available ) %>%
+  unique()
+summary(as.factor( counts$dates_available))
+
+### let's put together in a table all the information, combining the patient timeline with first admission and discharge date with the rest of follow-up dates when available
+misc_followUp <- visit_dates %>%
+  spread( redcap_event_name, visit_date ) %>%
+  left_join( misc_mapping, by = c("record_id"="MUSIC_ID") ) %>%
+  select( PATIENT_NUM, two_weeks = "2_weeks_postdischa_arm_1", 
+          six_weeks = "6_weeks_postdischa_arm_1", six_months = "6_months_postdisch_arm_1")
+
+head(misc_followUp)
+```
+
+
+Data transformation
+- split `START_DATE` field into `date` and `time`
+- perform a left join to combine extracted data with variables in lab dictionary
+- reformat `ADMISSION_DATE` and `DISCHARGE_DATE` as dates
+- calculate `days_after_admission` and `days_after_discharge`
+And we join this information with the follow-up information. 
+```{r}
+subset_df$date <- sapply(strsplit( as.character(subset_df$START_DATE), " "), '[', 1)
+subset_df$time <- sapply(strsplit( as.character(subset_df$START_DATE), " "), '[', 2)
+
+finalTable <- left_join( subset_df, lab_dictionary, by = c("CONCEPT_CD" = "concept_cd") )
+
+finalTable <- finalTable %>%
+  mutate(date = dmy(date),
+         ADMISSION_DATE = dmy(ADMISSION_DATE),
+         DISCHARGE_DATE = dmy(DISCHARGE_DATE),
+         days_after_admission = date - ADMISSION_DATE,
+         days_after_discharge = date - DISCHARGE_DATE) %>%
+  left_join( misc_followUp )
+```
+
+Extract `value` based on type of variable
+- focus on `_date`, `_value`, `_unit`, and `_obtained` variables (identified as most prevalent in `data_dictionary_extraction.Rmd`)
+  - choices accepted for `obtained` variables: 1, 0
+  - choices accepted for `value` variables: no criteria. if NVAL_NUM is not NA, then NVAL_NUM. else TVAL_CHAR
+  - choices accepted for `unit` variables: no criteria. use UNITS_CD column
+  - choices accepted for `date` variables: use date column in mdy format
+```{r}
+# Create function to extract value
+getLabValue <- function(row) {
+  
+  # for obtained variables, if the entry is present, the 'value' is automatically 1 except for:
+  # APTT/PTT that choices are 2, APTT | 3, PTT | 0, Neither	
+  if (row['vartype'] == 'obtained' ) {
+    if( row['variableName'] == 'aptt_ptt_obtained'){
+      value = 3 #in BCH PTT is the one estimated
+    }else{
+      value = 1
+    }
+    
+  # Variables with unit listed below the valaue field will be filled with ‘-88’
+  # WBC and platelets 1, x10^3/uL | 2, 10^9/L | 3, Other --> for WBC and platelets is x10^3/uL			
+  # triglycerid 1, mg/dL | 2, mmol/L | 3, Other	1	 --> for BCH the values mg/dL		
+  # CRP 1, mg/L | 2, mg/dL | 3, Other --> for BCH the value is mg/dL
+  } else if (row['vartype'] == 'unit') {
+    if( row['variableName'] == 'crp_unit'){
+      value = 2
+    }else if( row['variableName'] == 'triglycerid_unit'){
+      value = 1
+    }else if( row['variableName'] == 'wbc_unit'){
+      value = 1
+    }else if( row['variableName'] == 'platelet_unit'){
+      value = 1
+    }else{
+      value = -88
+    }
+    
+  # for date variables, use the date column
+  # redcap requires the following format: 
+  # (NOTE: Dates must be imported here only in M/D/Y format or Y-M-D format, regardless of the specific date format designated for this field.)
+
+  } else if (row['vartype'] == 'date') {
+    value = as.character(ymd(row['date']), format = "%m/%d/%Y")
+    
+  # for value variables, if NVAL_NUM is not NA, use NVAL_NUM. else use TVAL_CHAR
+  } else if (row['vartype'] == 'value') {
+    if(!is.na(row['NVAL_NUM'])){
+      value = row['NVAL_NUM']
+    } else {
+      value = row['TVAL_CHAR']
+    }
+  }
+    
+  # for other variables, mark as 'UNKNOWN' and investigate; there should not be any of these for now
+  else {
+    value = 'UNKNOWN'
+  }
+   
+}
+
+```
+
+```{r}
+finalTable <- finalTable %>%
+  
+  # categorize the variable types
+  mutate(vartype = gsub("^.*_", "", variableName)) %>%
+  
+  # categorize the variable prefixes
+  #mutate(prefix = gsub('_{1}[[:alnum:]]+$', '', variableName)) %>%
+
+  # remove entries with no data
+  filter(!is.na(NVAL_NUM) | TVAL_CHAR != '') %>%
+
+  # remove duplicated rows
+  distinct
+         
+finalTable$value <- apply(finalTable, 1, FUN = getLabValue)
+
+finalTable
+
+```
+
+lab_values_visit
+1, Admission/first obtained during MIS-C hospitalization
+2, Closest to discharge during MIS-C hospitalization
+3, 2 Weeks Post Discharge
+4, 6 Weeks Post Discharge
+6, 6 Months Post Discharge
+
+
+```{r}
+# WRITE SAME CODE TO RE-PLACE THE PREVIOUS DEFINE_TIME_WINDOW FUNCTION
+# ASUMING THAT INSTEAD OF ESTIMATING THE TIME WINDOWS WE WILL ONLY EXTRACT THE INFORMATION 
+# FOR THOSE VISIT FOR WHAT WE HAVE A FOLLOW-UP DATE
+```
+
+redcap_repeat_instance
+- Using dates to determine visit number 
+- note that entries inputted at different times on the same date are NOT considered as separate events / visits
+```{r}
+finalTable <- finalTable %>% 
+  group_by(PATIENT_NUM) %>%
+  mutate(datetime = ymd(date)) %>%
+  arrange(datetime) %>%
+  mutate(redcap_repeat_instance = match(datetime, sort(unique(datetime)))) %>%
+  arrange(redcap_repeat_instance)
+```
+
+
+Pivot table wider and make compatible with RedCap formatting
+```{r}
+
+# for cases where a patient has multiple values for a lab at the exact same date / time, just choose the first one
+out <- finalTable %>%
+  group_by(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance, variableName) %>%
+  summarise(value = first(value)) %>%
+  pivot_wider(id_cols = c(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance), 
+                   names_from = variableName, 
+                   values_from = value, 
+                   values_fill = '')
+
+# should we remove entries with no data?
+#finalTable %>% filter(is.na(NVAL_NUM), TVAL_CHAR == '')
+
+# map BCH ids to MUSIC IDs for REDCAP
+id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
+out <- left_join(out, id_mapping %>% select(PATIENT_NUM, MUSIC_ID))
+
+# Rename columns for redcap
+out <- out %>%
+  rename('record_id' = 'MUSIC_ID',
+         'redcap_repeat_instrument' = 'formName') %>%
+  mutate(redcap_event_name = "repeating_forms_arm_1") %>%
+  relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, lab_values_visit) %>%
+  arrange(record_id, redcap_repeat_instance, lab_values_visit) %>%
+  ungroup() %>%
+  select(-'PATIENT_NUM', -'date', -'time')
+```
+
+
+Data formatting based on errors / warnings from BCH upload to REDCap
+```{r}
+out <- out %>% 
+  mutate(il_1_value = ifelse(il_1_value == "SEE IL12", '', il_1_value),
+         il_10_value = ifelse(il_10_value == "SEE IL12", '', il_10_value),
+         il_13_value = ifelse(il_13_value == "SEE IL12", '', il_13_value),
+         il_2_value = ifelse(il_2_value == "SEE IL12", '', il_2_value),
+         il_5_value = ifelse(il_5_value == "SEE IL12", '', il_5_value),
+         il_8_value = ifelse(il_8_value == "SEE IL12", '', il_8_value),
+         il_12_value = ifelse(il_12_value == "See Image", '', il_12_value),
+         ast_sgot_value = ifelse(ast_sgot_value == "Not Reported", '', ast_sgot_value),
+         ast_sgpt_value = ifelse(ast_sgpt_value == "Not Reported", '', ast_sgpt_value),
+         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL12", '', il_2_receptor_value),
+         il_4_value = ifelse(il_4_value == "SEE IL12", '', il_4_value),
+         il_6_value = ifelse(il_6_value == "SEE IL12", '', il_6_value),
+         troponin_t_value = ifelse(troponin_t_value == "Not Reported", '', troponin_t_value),
+         direct_bilir_value = ifelse(direct_bilir_value == "Not Reported", '', direct_bilir_value))
+  
+
+# write output with patient IDs included
+write.csv(out, '../local_ref/redcap_output_laboratory_values.csv', row.names = FALSE)
+#write.csv(out[,-1], '../local_ref/redcap_output.csv', row.names = FALSE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
