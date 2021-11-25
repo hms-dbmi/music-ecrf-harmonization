@@ -167,6 +167,42 @@ lab_values_visit
 # WRITE SAME CODE TO RE-PLACE THE PREVIOUS DEFINE_TIME_WINDOW FUNCTION
 # ASUMING THAT INSTEAD OF ESTIMATING THE TIME WINDOWS WE WILL ONLY EXTRACT THE INFORMATION 
 # FOR THOSE VISIT FOR WHAT WE HAVE A FOLLOW-UP DATE
+
+### Issue here is that the dates does not have to match necessarily
+### This function allow us to be more or less stric on the days of difference allowed between what is reported in the eCRF and
+extractClosestDate <- function( dateVal, dateList, maxDiffAllowed ){
+  if( is.na( dateVal )){
+    return( NA )
+  }else if( dateVal %in% dateList ){
+    return( dateVal )
+  }else{
+    closestDay <- dateList[ which( abs( dateList - dateVal ) == min( abs( dateList - dateVal )))]
+    daysDiff <- abs(closestDay - dateVal)
+    if( daysDiff <= maxDiffAllowed ){
+      return( closestDay )
+    }else{
+      return( NA )
+    }
+  }
+}
+
+daysAllowed  <- 0
+finalTable <- finalTable %>% 
+  group_by(PATIENT_NUM ) %>%
+  mutate(two_weeks_ehr = extractClosestDate(dateVal = unique( ymd( two_weeks )), 
+                                            dateList = unique( ymd( date )), 
+                                            maxDiffAllowed = daysAllowed), 
+         six_weeks_ehr = extractClosestDate(dateVal = unique( ymd( six_weeks )), 
+                                            dateList = unique( ymd( date )), 
+                                            maxDiffAllowed = daysAllowed), 
+         six_months_ehr = extractClosestDate(dateVal = unique( ymd( six_months )), 
+                                            dateList = unique( ymd( date )), 
+                                            maxDiffAllowed = daysAllowed),
+         closes_to_discharge = extractClosestDate( dateVal = unique(ymd( DISCHARGE_DATE )), 
+                                              dateList = unique( ymd( date )),
+                                              maxDiffAllowed = daysAllowed))
+
+
 # we need to create a new column: lab_values_visit with values:
 ### Value = 1 --> the value closest to hospital admission  (no further than 48 hours before or after)
 ### Value = 2 --> the value closest to discharge (3 days or less before discharge)
@@ -175,11 +211,30 @@ lab_values_visit
 ### Value = 6 --> the value closest to the 6 months post discharge (9 weeks to less than one year)
 ####In all cases when we have multiple values for the same lab for the same day we take the closest to the date
 
-finalTable$lab_values_visit <- ifelse( finalTable$date == finalTable$ADMISSION_DATE, 1, 
-                                       ifelse( finalTable$date == finalTable$DISCHARGE_DATE, 2, 
-                                               ifelse( finalTable$date == finalTable$two_weeks, 3, 
-                                                       ifelse( finalTable$date == finalTable$six_weeks, 4, 
-                                                               ifelse( finalTable$date == finalTable$six_months, 6, NA)))))
+getLabValueVisits <- function(row) {
+  
+  # for obtained variables, if the entry is present, the 'value' is automatically 1
+  if (row['date'] == row['ADMISSION_DATE']) {
+    value = 1
+  }else if (!is.na( row['closes_to_discharge'] ) & row['date'] == row['closes_to_discharge']) {
+    value = 2
+    }
+  else if (!is.na( row['two_weeks_ehr'] ) & row['date'] == row['two_weeks_ehr']) {
+    value = 3
+  }
+  else if (!is.na( row['six_weeks_ehr'] ) & row['date'] == row['six_weeks_ehr']) {
+    value = 4
+  }
+  else if (!is.na( row['six_months_ehr'] ) & row['date'] == row['six_months_ehr']) {
+    value = 6
+  }else{
+    value = NA
+  }
+  return(value)
+}
+
+finalTable$lab_values_visit <- apply(finalTable, 1, FUN = getLabValueVisits)
+  
 finalTableFiltered <- finalTable %>%
   filter( ! is.na (lab_values_visit )) %>%
   group_by( PATIENT_NUM, CONCEPT_CD, date )%>%
