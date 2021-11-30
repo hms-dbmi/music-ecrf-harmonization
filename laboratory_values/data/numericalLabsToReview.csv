@@ -1,58 +1,82 @@
-BCH values ,,,,,,eCRF values,,,,CHECKS,,,
-concept_cd,concept_desc,min,max,units_cd,units_cd_transformed,Variable...Field.Name,Text.Validation.Min,Text.Validation.Max,Field.Note,checkUnits,checkRange,concept_path,Form.Name
-LAB:3774511,CH50,13.5,95,unit/mL,unit/mL,ch50_value,0,19,%,To check,To check,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\CH50\LAB:3774511\
-LAB:3775431,IgE,4,1110,unit/mL,unit/mL,ige_value,1,9999,mg/dL,To check,To check,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\IgE\LAB:3775431\
-LAB:3777235,"CD19+, Absolute",0,3125,cells/mcL,Absolute cells/microliter,cd19_abs_value,110,3000,Absolute,To check,To check,laboratory_values,"\i2b2\Lab View\Laboratory\Allergy/Immunology\CD19+, Absolute\LAB:3777235\"
-LAB:3710029,Sodium,123,171,mmol/L,mmol/L,sodium_value,110,155,mmol/L,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\Sodium\LAB:3710029\
-LAB:3710032,Potassium,2.14,8.61999,mmol/L,mmol/L,potassium_value,2,7.5,mmol/L,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\Potassium\LAB:3710032\
-LAB:3726226,Ferritin,10.1,47743,ng/mL,ng/mL,ferritin_value,5,380,ng/mL,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Therapeutic Drug Monitoring/Toxicology\Ferritin\LAB:3726226\
-LAB:3727476,Troponin T,0.01,2.49,ng/mL,ng/mL,troponin_t_value,0,0.01,ng/mL,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\Troponin T\LAB:3727476\
-LAB:3775096,"Bilirubin, Direct",0.2,23.1,mg/dL,mg/dL,direct_bilir_value,0,0.2,mg/dL,OK,To check,laboratory_values,"\i2b2\Lab View\Laboratory\Chemistry\Bilirubin, Direct\LAB:3775096\"
-LAB:3775097,"Bilirubin, Total",0.2,26.4,mg/dL,mg/dL,total_bilir_value,0,25,mg/dL,OK,To check,laboratory_values,"\i2b2\Lab View\Laboratory\Chemistry\Bilirubin, Total\LAB:3775097\"
-LAB:3775132,Total Protein,4.3,9.6,g/dL,g/dL,total_protein_value,4.1,8.2,g/dL,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\Total Protein\LAB:3775132\
-LAB:3775139,GGTP (Gamma Glutamyl Transpeptidase),6,837,unit/L,U/L,ggtp_value,3,132,U/L,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\GGTP (Gamma Glutamyl Transpeptidase)\LAB:3775139\
-LAB:3775159,"Urea Nitrogen, Urine",267,267,mg/dL,mg/dL,urea_value,2,25,mg/dL,OK,To check,laboratory_values,"\i2b2\Lab View\Laboratory\Urine\Urea Nitrogen, Urine\LAB:3775159\"
-LAB:3775187,Thrombin Time,14.1,150,sec,seconds,thrombin_tm_value,13,19,seconds,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Coagulation\Thrombin Time\LAB:3775187\
-LAB:3775581,CK,9,1466,unit/L,U/L,creatine_kin_value,29,1578,U/L,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\CK\LAB:3775581\
-LAB:3775618,IgG,318,3884,mg/dL,mg/dL,igg_value,160,1640,mg/dL,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\IgG\LAB:3775618\
-LAB:3775623,LDH (Lactate Dehydrogenase),175,4405,unit/L,U/L,ldh_value,100,765,U/L,OK,To check,laboratory_values,
-LAB:3775652,WBC,0.03,33.53,K cells/uL,x10^3/uL or x10^9/L,wbc_value,0.1,200000,x10^3/uL or x10^9/L,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Hematology\WBC\LAB:3775652\
-LAB:3775655,Hemoglobin,2.5,17.5,g/dL,g/dL,hemoglobin_value,4,24,g/dL,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Hematology\Hemoglobin\LAB:3775655\
-LAB:3775656,Hematocrit,7.2,50.9,%,%,hematocrit_value,28,65,%,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Hematology\Hematocrit\LAB:3775656\
-LAB:3775714,Neutrophil/Band,20.2,96.6,%,%,neutrophil_value,1,95,%,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Hematology\Neutrophil/Band\LAB:3775714\
-LAB:3775715,Lymphocyte,0,65.6,%,%,lymphocyt_value,1,95,%,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Hematology\Lymphocyte\LAB:3775715\
-LAB:3775723,PT (Prothrombin),11.6,24.9,sec,seconds,pt_seconds_value,0.9,4,seconds,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Coagulation\PT (Prothrombin)\LAB:3775723\
-LAB:3775725,PTT (Partial Thromboplastin),20,200,sec,seconds,aptt_ptt_value,1,100,seconds,OK,To check,laboratory_values,
-LAB:3775728,Fibrinogen,149,1215,mg/dL,mg/dL,fibrinogen_value,175,425,mg/dL,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Coagulation\Fibrinogen\LAB:3775728\
-LAB:3777231,"CD3+, Absolute",140,4884,cells/mcL,Absolute cells/microliter,cd3_abs_value,723,2271,Absolute cells/microliter,OK,To check,laboratory_values,"\i2b2\Lab View\Laboratory\Allergy/Immunology\CD3+, Absolute\LAB:3777231\"
-LAB:3777232,"CD3+/CD4+, Absolute",53,3564,cells/mcL,Absolute cells/microliter,cd3_cd4_abs_value,396,1309,Absolute cells/microliter,OK,To check,laboratory_values,"\i2b2\Lab View\Laboratory\Allergy/Immunology\CD3+/CD4+, Absolute\LAB:3777232\"
-LAB:3777233,"CD3+/CD8+, Absolute",38,1951,cells/mcL,Absolute cells/microliter,cd3_cd8_abs_value,224,1014,Absolute cells/microliter,OK,To check,laboratory_values,"\i2b2\Lab View\Laboratory\Allergy/Immunology\CD3+/CD8+, Absolute\LAB:3777233\"
-LAB:43435800,Interleukin 2 Receptor,155,15990,pg/mL,pg/mL,il_2_receptor_value,0,10000,pg/mL,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 2 Receptor\LAB:43435800\
-LAB:43435807,Interleukin 4,2.2,8.3,pg/mL,pg/mL,il_4_value,0,2,pg/mL,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 4\LAB:43435807\
-LAB:43435808,Interleukin 6,2,88,pg/mL,pg/mL,il_6_value,0,5,pg/mL,OK,To check,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 6\LAB:43435808\
-LAB:2700655,Creatinine,0.16,2,mg/dL,mg/dL,creatinine_value,0.12,12,mg/dL,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\Creatinine\LAB:2700655\
-LAB:3726100,D-Dimer,0.27,20,mcg/mL FEU,mcg/mL FEU,d_dimer_value,0,100,mcg/mL FEU,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Coagulation\D-Dimer\LAB:3726100\
-LAB:3727470,Triglycerides,58,1211,mg/dL,mg/dL,triglycerid_value,25,12000,"1, mg/dL | 2, mmol/L | 3, Other",OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\Triglycerides\LAB:3727470\
-LAB:3775084,Albumin,2,5.5,g/dL,g/dL,albumin_value,0.5,15,g/dL,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\Albumin\LAB:3775084\
-LAB:3775137,AST (Aspartate Aminotransferase),9,517,unit/L,U/L,ast_sgot_value,0,5000,U/L,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\AST (Aspartate Aminotransferase)\LAB:3775137\
-LAB:3775138,ALT,8,687,unit/L,U/L,ast_sgpt_value,0,5000,U/L,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\ALT\LAB:3775138\
-LAB:3775578,C-Reactive Protein,0.03,37.75999,mg/dL,mg/dL,crp_value,0,40,"1, mg/L | 2, mg/dL | 3, Other",OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\C-Reactive Protein\LAB:3775578\
-LAB:3775603,Glucose Level,58,1500,mg/dL,mg/dL,glucose_value,25,1500,mg/dL,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\Glucose Level\LAB:3775603\
-LAB:3775615,IgA,4,320,mg/dL,mg/dL,iga_value,1,320,mg/dL,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\IgA\LAB:3775615\
-LAB:3775619,IgM,16,234,mg/dL,mg/dL,igm_value,6,300,mg/dL,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\IgM\LAB:3775619\
-LAB:3775660,Platelet,11,1080,K cells/uL,x10^3/uL or x10^9/L,platelets_value,10,1000000,x10^3/uL or x10^9/L,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Hematology\Platelet\LAB:3775660\
-LAB:3775678,ESR (Erythrocyte Sedimentation Rate),1,130,mm/hr,mm/hr,esr_value,0,200,mm/hr,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Hematology\ESR (Erythrocyte Sedimentation Rate)\LAB:3775678\
-LAB:3775726,PTT, Heparin Absorbent,28.2,48,sec,seconds,aptt_ptt_value,1,100,seconds,OK,OK,laboratory_values,
-LAB:3775804,Percent CD3+,13,89,%,%,cd3_value,0,100,%,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Percent CD3+\LAB:3775804\
-LAB:3775805,Percent CD3+/CD4+,3,55,%,%,cd3_cd4_value,0,100,%,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Percent CD3+/CD4+\LAB:3775805\
-LAB:3775806,Percent CD3+/CD8+,9,60,%,%,cd3_cd8_value,0,100,%,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Percent CD3+/CD8+\LAB:3775806\
-LAB:3775807,Percent CD3-/CD16+ or CD56+,1,21,%,%,cd3_cd16_cd56_value,0,100,%,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Percent CD3-/CD16+ or CD56+\LAB:3775807\
-LAB:3775808,Percent CD19+,0,85,%,%,cd19_value,0,100,%,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Percent CD19+\LAB:3775808\
-LAB:3998842,B-Type Natriuretic Peptide,10,2145,pg/mL,pg/mL,bnp_value,0,10000,pg/mL,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Chemistry\B-Type Natriuretic Peptide\LAB:3998842\
-LAB:43435799,Interleukin 2,2.1,20.7,pg/mL,pg/mL,il_2_value,0,10000,pg/mL,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 2\LAB:43435799\
-LAB:43435801,Interleukin 12,1.9,5,pg/mL,pg/mL,il_12_value,0,10000,pg/mL,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 12\LAB:43435801\
-LAB:43435803,Interleukin 8,3,15.3,pg/mL,pg/mL,il_8_value,0,10000,pg/mL,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 8\LAB:43435803\
-LAB:43435804,Interleukin 1 beta,5,23.6,pg/mL,pg/mL,il_1_value,0,10000,pg/mL,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 1 beta\LAB:43435804\
-LAB:43435805,Interleukin 10,2.8,441.6,pg/mL,pg/mL,il_10_value,0,10000,pg/mL,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 10\LAB:43435805\
-LAB:43435806,Interleukin 13,1.7,20.4,pg/mL,pg/mL,il_13_value,0,10000,pg/mL,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 13\LAB:43435806\
-LAB:43435809,Interleukin 5,2.1,168.3,pg/mL,pg/mL,il_5_value,0,10000,pg/mL,OK,OK,laboratory_values,\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 5\LAB:43435809\
+"","concept_cd","concept_desc","min","max","units_cd","units_cd_transformed","Variable...Field.Name","Text.Validation.Min","Text.Validation.Max","Field.Note","checkUnits","concept_path","Form.Name"
+"1","LAB:3775809","CD4/CD8 Ratio",0.82999,5.05,"NOT DEFINED IN SOURCE","NOT DEFINED IN SOURCE","ac4_cd8_ratio_value",0.05,10,"ratio","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\CD4/CD8 Ratio\LAB:3775809\","laboratory_values"
+"2","LAB:3775084","Albumin",1.9,5.1,"g/dL","g/dL","albumin_value",0.5,15,"g/dL","OK","\i2b2\Lab View\Laboratory\Chemistry\Albumin\LAB:3775084\","laboratory_values"
+"3","LAB:3775725","PTT (Partial Thromboplastin)",20,153.8,"sec","seconds","aptt_ptt_value",1,100,"seconds","OK","\i2b2\Lab View\Laboratory\Coagulation\PTT (Partial Thromboplastin)\LAB:3775725\","laboratory_values"
+"4","LAB:3775726","PTT, Heparin Absorbent",27.3,32.1,"sec","seconds","aptt_ptt_value",1,100,"seconds","OK","\i2b2\Lab View\Laboratory\Coagulation\PTT, Heparin Absorbent\LAB:3775726\","laboratory_values"
+"5","LAB:3775137","AST (Aspartate Aminotransferase)",12,531,"unit/L","U/L","ast_sgot_value",0,5000,"U/L","OK","\i2b2\Lab View\Laboratory\Chemistry\AST (Aspartate Aminotransferase)\LAB:3775137\","laboratory_values"
+"6","LAB:3775138","ALT",9,687,"unit/L","U/L","ast_sgpt_value",0,5000,"U/L","OK","\i2b2\Lab View\Laboratory\Chemistry\ALT\LAB:3775138\","laboratory_values"
+"7","LAB:3998842","B-Type Natriuretic Peptide",10,3862,"pg/mL","pg/mL","bnp_value",0,10000,"pg/mL","OK","\i2b2\Lab View\Laboratory\Chemistry\B-Type Natriuretic Peptide\LAB:3998842\","laboratory_values"
+"8","LAB:3775560","C3",121,189,"mg/dL","mg/dL","c3_value",35,127,"mg/dL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\C3\LAB:3775560\","laboratory_values"
+"9","LAB:3775562","C4",21,49,"mg/dL","mg/dL","c4_value",6,23,"mg/dL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\C4\LAB:3775562\","laboratory_values"
+"10","LAB:3777235","CD19+, Absolute",4,2238,"cells/mcL","Absolute cells/microliter","cd19_abs_value",110,3000,"Absolute","To check","\i2b2\Lab View\Laboratory\Allergy/Immunology\CD19+, Absolute\LAB:3777235\","laboratory_values"
+"11","LAB:3775808","Percent CD19+",0,55,"%","%","cd19_value",0,100,"%","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Percent CD19+\LAB:3775808\","laboratory_values"
+"12","LAB:3777231","CD3+, Absolute",315,4359,"cells/mcL","Absolute cells/microliter","cd3_abs_value",723,2271,"Absolute cells/microliter","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\CD3+, Absolute\LAB:3777231\","laboratory_values"
+"13","LAB:3775807","Percent CD3-/CD16+ or CD56+",3,37,"%","%","cd3_cd16_cd56_value",0,100,"%","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Percent CD3-/CD16+ or CD56+\LAB:3775807\","laboratory_values"
+"14","LAB:3777232","CD3+/CD4+, Absolute",189,2282,"cells/mcL","Absolute cells/microliter","cd3_cd4_abs_value",396,1309,"Absolute cells/microliter","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\CD3+/CD4+, Absolute\LAB:3777232\","laboratory_values"
+"15","LAB:3775805","Percent CD3+/CD4+",21,57,"%","%","cd3_cd4_value",0,100,"%","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Percent CD3+/CD4+\LAB:3775805\","laboratory_values"
+"16","LAB:3777233","CD3+/CD8+, Absolute",105,1951,"cells/mcL","Absolute cells/microliter","cd3_cd8_abs_value",224,1014,"Absolute cells/microliter","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\CD3+/CD8+, Absolute\LAB:3777233\","laboratory_values"
+"17","LAB:3775806","Percent CD3+/CD8+",10,39,"%","%","cd3_cd8_value",0,100,"%","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Percent CD3+/CD8+\LAB:3775806\","laboratory_values"
+"18","LAB:3775804","Percent CD3+",39,89,"%","%","cd3_value",0,100,"%","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Percent CD3+\LAB:3775804\","laboratory_values"
+"19","LAB:3775581","CK",9,249,"unit/L","U/L","creatine_kin_value",29,1578,"U/L","OK","\i2b2\Lab View\Laboratory\Chemistry\CK\LAB:3775581\","laboratory_values"
+"20","LAB:2700655","Creatinine",0.1,3.15,"mg/dL","mg/dL","creatinine_value",0.12,12,"mg/dL","OK","\i2b2\Lab View\Laboratory\Chemistry\Creatinine\LAB:2700655\","laboratory_values"
+"21","LAB:3775578","C-Reactive Protein",0.03,36.47,"mg/dL","mg/dL","crp_value",0,40,"1, mg/L | 2, mg/dL | 3, Other","OK","\i2b2\Lab View\Laboratory\Chemistry\C-Reactive Protein\LAB:3775578\","laboratory_values"
+"22","LAB:3726100","D-Dimer",0.27,20,"mcg/mL FEU","mcg/mL FEU","d_dimer_value",0,100,"mcg/mL FEU","OK","\i2b2\Lab View\Laboratory\Coagulation\D-Dimer\LAB:3726100\","laboratory_values"
+"23","LAB:3775096","Bilirubin, Direct",0.1,4,"mg/dL","mg/dL","direct_bilir_value",0,0.2,"mg/dL","OK","\i2b2\Lab View\Laboratory\Chemistry\Bilirubin, Direct\LAB:3775096\","laboratory_values"
+"24","LAB:3775678","ESR (Erythrocyte Sedimentation Rate)",1,124,"mm/hr","mm/hr","esr_value",0,200,"mm/hr","OK","\i2b2\Lab View\Laboratory\Hematology\ESR (Erythrocyte Sedimentation Rate)\LAB:3775678\","laboratory_values"
+"25","LAB:3726226","Ferritin",10.1,3735,"ng/mL","ng/mL","ferritin_value",5,380,"ng/mL","OK","\i2b2\Lab View\Laboratory\Therapeutic Drug Monitoring/Toxicology\Ferritin\LAB:3726226\","laboratory_values"
+"26","LAB:3775728","Fibrinogen",159,1800,"mg/dL","mg/dL","fibrinogen_value",175,425,"mg/dL","OK","\i2b2\Lab View\Laboratory\Coagulation\Fibrinogen\LAB:3775728\","laboratory_values"
+"27","LAB:3775139","GGTP (Gamma Glutamyl Transpeptidase)",5,547,"unit/L","U/L","ggtp_value",3,132,"U/L","OK","\i2b2\Lab View\Laboratory\Chemistry\GGTP (Gamma Glutamyl Transpeptidase)\LAB:3775139\","laboratory_values"
+"28","LAB:3775603","Glucose Level",55,563,"mg/dL","mg/dL","glucose_value",25,1500,"mg/dL","OK","\i2b2\Lab View\Laboratory\Chemistry\Glucose Level\LAB:3775603\","laboratory_values"
+"29","LAB:3775656","Hematocrit",7.6,57.5,"%","%","hematocrit_value",28,65,"%","OK","\i2b2\Lab View\Laboratory\Hematology\Hematocrit\LAB:3775656\","laboratory_values"
+"30","LAB:3775655","Hemoglobin",2.7,18.9,"g/dL","g/dL","hemoglobin_value",4,24,"g/dL","OK","\i2b2\Lab View\Laboratory\Hematology\Hemoglobin\LAB:3775655\","laboratory_values"
+"31","LAB:43435802","Interferon gamma",4.2,49.8,"pg/mL","pg/mL","ifn_gamma_value",0,10000,"pg/mL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Interferon gamma\LAB:43435802\","laboratory_values"
+"32","LAB:3775615","IgA",24,320,"mg/dL","mg/dL","iga_value",1,320,"mg/dL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\IgA\LAB:3775615\","laboratory_values"
+"33","LAB:3775431","IgE",4,1110,"unit/mL","unit/mL","ige_value",1,9999,"mg/dL","To check","\i2b2\Lab View\Laboratory\Allergy/Immunology\IgE\LAB:3775431\","laboratory_values"
+"34","LAB:3775618","IgG",352,3884,"mg/dL","mg/dL","igg_value",160,1640,"mg/dL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\IgG\LAB:3775618\","laboratory_values"
+"35","LAB:3775619","IgM",28,234,"mg/dL","mg/dL","igm_value",6,300,"mg/dL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\IgM\LAB:3775619\","laboratory_values"
+"36","LAB:43435804","Interleukin 1 beta",5,23.6,"pg/mL","pg/mL","il_1_value",0,10000,"pg/mL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 1 beta\LAB:43435804\","laboratory_values"
+"37","LAB:43435805","Interleukin 10",2.8,451.7,"pg/mL","pg/mL","il_10_value",0,10000,"pg/mL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 10\LAB:43435805\","laboratory_values"
+"38","LAB:43435801","Interleukin 12",1.9,5,"pg/mL","pg/mL","il_12_value",0,10000,"pg/mL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 12\LAB:43435801\","laboratory_values"
+"39","LAB:43435806","Interleukin 13",1.7,20.4,"pg/mL","pg/mL","il_13_value",0,10000,"pg/mL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 13\LAB:43435806\","laboratory_values"
+"40","LAB:43435800","Interleukin 2 Receptor",319,29866.1,"pg/mL","pg/mL","il_2_receptor_value",0,10000,"pg/mL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 2 Receptor\LAB:43435800\","laboratory_values"
+"41","LAB:43435799","Interleukin 2",2.1,20.7,"pg/mL","pg/mL","il_2_value",0,10000,"pg/mL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 2\LAB:43435799\","laboratory_values"
+"42","LAB:43435807","Interleukin 4",2.2,5,"pg/mL","pg/mL","il_4_value",0,2,"pg/mL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 4\LAB:43435807\","laboratory_values"
+"43","LAB:43435809","Interleukin 5",2.1,49.5,"pg/mL","pg/mL","il_5_value",0,10000,"pg/mL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 5\LAB:43435809\","laboratory_values"
+"44","LAB:43435808","Interleukin 6",2,430.5,"pg/mL","pg/mL","il_6_value",0,5,"pg/mL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 6\LAB:43435808\","laboratory_values"
+"45","LAB:43435803","Interleukin 8",3,11.8,"pg/mL","pg/mL","il_8_value",0,10000,"pg/mL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Interleukin 8\LAB:43435803\","laboratory_values"
+"46","LAB:3775729","INR",0.82999,1.73,"NOT DEFINED IN SOURCE","NOT DEFINED IN SOURCE","inr_units_value",0.6,9.9,"units","OK","\i2b2\Lab View\Laboratory\Coagulation\INR\LAB:3775729\","laboratory_values"
+"47","LAB:3775623","LDH (Lactate Dehydrogenase)",172,2230,"unit/L","U/L","ldh_value",100,765,"U/L","OK","\i2b2\Lab View\Laboratory\Chemistry\LDH (Lactate Dehydrogenase)\LAB:3775623\","laboratory_values"
+"48","LAB:3775715","Lymphocyte",4.1,66.5,"%","%","lymphocyt_value",1,95,"%","OK","\i2b2\Lab View\Laboratory\Hematology\Lymphocyte\LAB:3775715\","laboratory_values"
+"49","LAB:3775714","Neutrophil/Band",21.2,91.3,"%","%","neutrophil_value",1,95,"%","OK","\i2b2\Lab View\Laboratory\Hematology\Neutrophil/Band\LAB:3775714\","laboratory_values"
+"50","LAB:3775660","Platelet",47,1080,"K cells/uL","x10^3/uL or x10^9/L","platelets_value",10,1e+06,"x10^3/uL or x10^9/L","OK","\i2b2\Lab View\Laboratory\Hematology\Platelet\LAB:3775660\","laboratory_values"
+"51","LAB:3710032","Potassium",2.14,7.38,"mmol/L","mmol/L","potassium_value",2,7.5,"mmol/L","OK","\i2b2\Lab View\Laboratory\Chemistry\Potassium\LAB:3710032\","laboratory_values"
+"52","LAB:899263035","",0.02,63.02,"ng/mL","ng/mL","procalcit_value",0,0.1,"ng/mL","OK","","laboratory_values"
+"53","LAB:3775723","PT (Prothrombin)",11.6,20.6,"sec","seconds","pt_seconds_value",0.9,4,"seconds","OK","\i2b2\Lab View\Laboratory\Coagulation\PT (Prothrombin)\LAB:3775723\","laboratory_values"
+"54","LAB:3710029","Sodium",124,152,"mmol/L","mmol/L","sodium_value",110,155,"mmol/L","OK","\i2b2\Lab View\Laboratory\Chemistry\Sodium\LAB:3710029\","laboratory_values"
+"55","LAB:361276796","% T-sum",1,16,"NOT DEFINED IN SOURCE","NOT DEFINED IN SOURCE","t_sum_value",0,100,"%","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\% T-sum\LAB:361276796\","laboratory_values"
+"56","LAB:3775187","Thrombin Time",13.1,150,"sec","seconds","thrombin_tm_value",13,19,"seconds","OK","\i2b2\Lab View\Laboratory\Coagulation\Thrombin Time\LAB:3775187\","laboratory_values"
+"57","LAB:43435810","Tumor Necrosis Factor alpha",1.7,13.9,"pg/mL","pg/mL","tnf_alpha_value",0,10000,"pg/mL","OK","\i2b2\Lab View\Laboratory\Allergy/Immunology\Tumor Necrosis Factor alpha\LAB:43435810\","laboratory_values"
+"58","LAB:3775097","Bilirubin, Total",0.1,17.6,"mg/dL","mg/dL","total_bilir_value",0,25,"mg/dL","OK","\i2b2\Lab View\Laboratory\Chemistry\Bilirubin, Total\LAB:3775097\","laboratory_values"
+"59","LAB:3775132","Total Protein",4.4,9.5,"g/dL","g/dL","total_protein_value",4.1,8.2,"g/dL","OK","\i2b2\Lab View\Laboratory\Chemistry\Total Protein\LAB:3775132\","laboratory_values"
+"60","LAB:3727470","Triglycerides",58,701,"mg/dL","mg/dL","triglycerid_value",25,12000,"1, mg/dL | 2, mmol/L | 3, Other","OK","\i2b2\Lab View\Laboratory\Chemistry\Triglycerides\LAB:3727470\","laboratory_values"
+"61","LAB:3727476","Troponin T",0.01,3.38,"ng/mL","ng/mL","troponin_t_value",0,0.01,"ng/mL","OK","\i2b2\Lab View\Laboratory\Chemistry\Troponin T\LAB:3727476\","laboratory_values"
+"62","LAB:3775652","WBC",1.58,44.58,"K cells/uL","x10^3/uL or x10^9/L","wbc_value",0.1,2e+05,"x10^3/uL or x10^9/L","OK","\i2b2\Lab View\Laboratory\Hematology\WBC\LAB:3775652\","laboratory_values"
+"63","LAB:3774464","PTT, Inhibitor Screen",NA,NA,"","","aptt_ptt_value",1,100,"seconds","To check","\i2b2\Lab View\Laboratory\Coagulation\PTT, Inhibitor Screen\LAB:3774464\","laboratory_values"
+"64","LAB:3775159","Urea Nitrogen, Urine",NA,NA,"","","urea_value",2,25,"mg/dL","To check","\i2b2\Lab View\Laboratory\Urine\Urea Nitrogen, Urine\LAB:3775159\","laboratory_values"
+"65","LAB:3775934","LD-4(Lactate Dehydrogenase-4) Isoenzymes",NA,NA,"","","lactate_value",1,500,"mmol/L","To check","\i2b2\Lab View\Laboratory\Chemistry\LD-4(Lactate Dehydrogenase-4) Isoenzymes\LAB:3775934\","laboratory_values"
+"66","LAB:3775933","LD-3(Lactate Dehydrogenase-3) Isoenzymes",NA,NA,"","","lactate_value",1,500,"mmol/L","To check","\i2b2\Lab View\Laboratory\Chemistry\LD-3(Lactate Dehydrogenase-3) Isoenzymes\LAB:3775933\","laboratory_values"
+"67","LAB:3775283","Fx Lactate",NA,NA,"","","lactate_value",1,500,"mmol/L","To check","\i2b2\Lab View\Laboratory\Endocrinology\Fx Lactate\LAB:3775283\","laboratory_values"
+"68","LAB:3726264","Fx Lactate",NA,NA,"","","lactate_value",1,500,"mmol/L","To check","\i2b2\Lab View\Laboratory\Endocrinology\Fx Lactate\LAB:3726264\","laboratory_values"
+"69","LAB:3775932","LD-2(Lactate Dehydrogenase-2) Isoenzymes",NA,NA,"","","lactate_value",1,500,"mmol/L","To check","\i2b2\Lab View\Laboratory\Chemistry\LD-2(Lactate Dehydrogenase-2) Isoenzymes\LAB:3775932\","laboratory_values"
+"70","LAB:3775931","LD-1(Lactate Dehydrogenase-1) Isoenzymes",NA,NA,"","","lactate_value",1,500,"mmol/L","To check","\i2b2\Lab View\Laboratory\Chemistry\LD-1(Lactate Dehydrogenase-1) Isoenzymes\LAB:3775931\","laboratory_values"
+"71","LAB:4743978","Lactate (Endocrine)",NA,NA,"","","lactate_value",1,500,"mmol/L","To check","\i2b2\Lab View\Laboratory\Endocrinology\Lactate (Endocrine)\LAB:4743978\","laboratory_values"
+"72","LAB:3775935","LD-5(Lactate Dehydrogenase-5) Isoenzymes",NA,NA,"","","lactate_value",1,500,"mmol/L","To check","\i2b2\Lab View\Laboratory\Chemistry\LD-5(Lactate Dehydrogenase-5) Isoenzymes\LAB:3775935\","laboratory_values"
+"73","LAB:3726101","D-Lactate",NA,NA,"","","lactate_value",1,500,"mmol/L","To check","\i2b2\Lab View\Laboratory\Chemistry\D-Lactate\LAB:3726101\","laboratory_values"
+"74","LAB:3727475","Troponin I",NA,NA,"","","troponin_l_value",0,0.05,"ng/mL","To check","\i2b2\Lab View\Laboratory\Chemistry\Troponin I\LAB:3727475\","laboratory_values"
+"75","LAB:99786933","Bicarbonate Capillary POCT",NA,NA,"","","bicarbonate_value",18,32,"mmol/L","To check","\i2b2\Lab View\Laboratory\Blood Gas\Bicarbonate Capillary POCT\LAB:99786933\","laboratory_values"
+"76","LAB:595618431","Bicarbonate Venous POCT",NA,NA,"","","bicarbonate_value",18,32,"mmol/L","To check","\i2b2\Lab View\Laboratory\Blood Gas\Bicarbonate Venous POCT\LAB:595618431\","laboratory_values"
+"77","LAB:595618401","Bicarbonate Arterial POCT",NA,NA,"","","bicarbonate_value",18,32,"mmol/L","To check","\i2b2\Lab View\Laboratory\Blood Gas\Bicarbonate Arterial POCT\LAB:595618401\","laboratory_values"
+"78","LAB:99786915","Bicarbonate Venous POCT",NA,NA,"","","bicarbonate_value",18,32,"mmol/L","To check","\i2b2\Lab View\Laboratory\Blood Gas\Bicarbonate Venous POCT\LAB:99786915\","laboratory_values"
+"79","LAB:99786894","Bicarbonate Arterial POCT",NA,NA,"","","bicarbonate_value",18,32,"mmol/L","To check","\i2b2\Lab View\Laboratory\Blood Gas\Bicarbonate Arterial POCT\LAB:99786894\","laboratory_values"
+"80","LAB:7872583","Complement AH50",NA,NA,"","","ah50_value",0,46,"%","To check","\i2b2\Lab View\Laboratory\Allergy/Immunology\Complement AH50\LAB:7872583\","laboratory_values"
+"81","LAB:3774511","CH50",NA,NA,"","","ch50_value",0,19,"%","To check","\i2b2\Lab View\Laboratory\Allergy/Immunology\CH50\LAB:3774511\","laboratory_values"

@@ -73,6 +73,24 @@ finalTable <- finalTable %>%
   left_join( misc_followUp )
 ```
 
+#### Check the quality of the follow up dates
+
+```{r}
+qc_dates <- finalTable %>%
+  mutate( two_weeks_daysDiff = abs( ymd( two_weeks) - ymd( ADMISSION_DATE)), 
+          six_weeks_daysDiff = abs( ymd( six_weeks) - ymd( ADMISSION_DATE)), 
+          six_months_daysDiff = abs( ymd( six_months) - ymd( ADMISSION_DATE)), 
+          check_two_weeks = ifelse( two_weeks_daysDiff > 21 | two_weeks_daysDiff < 7, "check", "ok"), 
+          check_six_weeks = ifelse( six_weeks_daysDiff > 49| six_weeks_daysDiff < 35, "check", "ok") , 
+          check_six_months = ifelse( six_months_daysDiff > 214 | six_months_daysDiff < 150, "check", "ok")) %>%
+  select( PATIENT_NUM, ADMISSION_DATE, DISCHARGE_DATE, two_weeks, six_weeks, 
+          six_months, two_weeks_daysDiff, six_weeks_daysDiff, six_months_daysDiff, 
+          check_two_weeks, check_six_weeks, check_six_months) %>%
+  unique()
+```
+
+
+
 Extract `value` based on type of variable
 - focus on `_date`, `_value`, `_unit`, and `_obtained` variables (identified as most prevalent in `data_dictionary_extraction.Rmd`)
   - choices accepted for `obtained` variables: 1, 0
@@ -136,23 +154,14 @@ getLabValue <- function(row) {
 
 ```{r}
 finalTable <- finalTable %>%
-  
   # categorize the variable types
   mutate(vartype = gsub("^.*_", "", variableName)) %>%
-  
-  # categorize the variable prefixes
-  #mutate(prefix = gsub('_{1}[[:alnum:]]+$', '', variableName)) %>%
-
   # remove entries with no data
   filter(!is.na(NVAL_NUM) | TVAL_CHAR != '') %>%
-
   # remove duplicated rows
   distinct
          
 finalTable$value <- apply(finalTable, 1, FUN = getLabValue)
-
-finalTable
-
 ```
 
 lab_values_visit
@@ -162,118 +171,58 @@ lab_values_visit
 4, 6 Weeks Post Discharge
 6, 6 Months Post Discharge
 
-
 ```{r}
-# WRITE SAME CODE TO RE-PLACE THE PREVIOUS DEFINE_TIME_WINDOW FUNCTION
-# ASUMING THAT INSTEAD OF ESTIMATING THE TIME WINDOWS WE WILL ONLY EXTRACT THE INFORMATION 
-# FOR THOSE VISIT FOR WHAT WE HAVE A FOLLOW-UP DATE
+extractClosestPeriod <- function( row ){
 
-### Issue here is that the dates does not have to match necessarily
-### This function allow us to be more or less stric on the days of difference allowed between what is reported in the eCRF and
-extractClosestDate <- function( dateVal, dateList, maxDiffAllowed ){
-  if( is.na( dateVal )){
-    return( NA )
-  }else if( dateVal %in% dateList ){
-    return( dateVal )
-  }else{
-    closestDay <- dateList[ which( abs( dateList - dateVal ) == min( abs( dateList - dateVal )))]
-    daysDiff <- abs(closestDay - dateVal)
-    if( daysDiff <= maxDiffAllowed ){
-      return( closestDay )
-    }else{
-      return( NA )
-    }
-  }
+  dateList <- c(ymd(row['ADMISSION_DATE']), ymd(row['DISCHARGE_DATE']),
+                ymd(row['two_weeks']), ymd(row['six_weeks']),
+                ymd(row['six_months']))
+  names(dateList) <- c("1", "2", "3", "4", "6")
+  dateVal <- ymd(row['date'])
+  closestDay <- dateList[ which( abs( dateList - dateVal  ) == min( abs( dateList - dateVal ), na.rm = TRUE))]
+  period <- names(closestDay)
+  daysDiff <- abs( closestDay - dateVal )
+  return( paste0(period, ":", daysDiff, collapse = "*"))
 }
 
-daysAllowed  <- 0
-finalTable <- finalTable %>% 
-  group_by(PATIENT_NUM ) %>%
-  mutate(two_weeks_ehr = extractClosestDate(dateVal = unique( ymd( two_weeks )), 
-                                            dateList = unique( ymd( date )), 
-                                            maxDiffAllowed = daysAllowed), 
-         six_weeks_ehr = extractClosestDate(dateVal = unique( ymd( six_weeks )), 
-                                            dateList = unique( ymd( date )), 
-                                            maxDiffAllowed = daysAllowed), 
-         six_months_ehr = extractClosestDate(dateVal = unique( ymd( six_months )), 
-                                            dateList = unique( ymd( date )), 
-                                            maxDiffAllowed = daysAllowed),
-         closes_to_discharge = extractClosestDate( dateVal = unique(ymd( DISCHARGE_DATE )), 
-                                              dateList = unique( ymd( date )),
-                                              maxDiffAllowed = daysAllowed))
+finalTable$checking <- apply(finalTable, 1, FUN = extractClosestPeriod)
+finalTable <- separate_rows(finalTable, checking, sep = "\\*")
+finalTable <-separate(finalTable, checking, into = c('lab_values_visit', 'daysdiff'), sep = ':') 
 
-
-# we need to create a new column: lab_values_visit with values:
-### Value = 1 --> the value closest to hospital admission  (no further than 48 hours before or after)
-### Value = 2 --> the value closest to discharge (3 days or less before discharge)
-### Value = 3 --> the value closest to the 2 weeks post discharge (after discharge until less than three weeks)
-### Value = 4 --> the value closest to the 6 weeks post discharge (3 weeks to less then 9 weeks)
-### Value = 6 --> the value closest to the 6 months post discharge (9 weeks to less than one year)
-####In all cases when we have multiple values for the same lab for the same day we take the closest to the date
-
-getLabValueVisits <- function(row) {
-  
-  # for obtained variables, if the entry is present, the 'value' is automatically 1
-  if (row['date'] == row['ADMISSION_DATE']) {
-    value = 1
-  }else if (!is.na( row['closes_to_discharge'] ) & row['date'] == row['closes_to_discharge']) {
-    value = 2
-    }
-  else if (!is.na( row['two_weeks_ehr'] ) & row['date'] == row['two_weeks_ehr']) {
-    value = 3
-  }
-  else if (!is.na( row['six_weeks_ehr'] ) & row['date'] == row['six_weeks_ehr']) {
-    value = 4
-  }
-  else if (!is.na( row['six_months_ehr'] ) & row['date'] == row['six_months_ehr']) {
-    value = 6
-  }else{
-    value = NA
-  }
-  return(value)
-}
-
-finalTable$lab_values_visit <- apply(finalTable, 1, FUN = getLabValueVisits)
-  
 finalTableFiltered <- finalTable %>%
-  filter( ! is.na (lab_values_visit )) %>%
-  group_by( PATIENT_NUM, CONCEPT_CD, date )%>%
-  slice_min( order_by = time) %>%
-  unique()
-
-# we check if we have really remove any potential duplicate (same labs measured multiple times during the same day)
-check <- finalTableFiltered %>% 
-  filter( vartype == "obtained" ) %>%
-  group_by( PATIENT_NUM, CONCEPT_CD, date ) %>%
-  count( )
-
-# there are still 10 cases, for 2 patients, in which the day and time is the same but there are multiple distinct values
-# what should we do in this cases? take one randomly?
-### check with Simnran, I think in the code just the first one would be keept 
-#check this example at the end jj[ jj$PATIENT_NUM == "37336854" & jj$CONCEPT_CD == "LAB:2700655" & jj$date == "2020-06-25", ]
+ group_by( PATIENT_NUM, CONCEPT_CD, lab_values_visit, vartype ) %>%
+  slice_min( order_by = daysDiff) 
 ```
 
 redcap_repeat_instance
 - Using dates to determine visit number 
 - note that entries inputted at different times on the same date are NOT considered as separate events / visits
 ```{r}
-finalTableFiltered <- finalTableFiltered %>% 
-  group_by(PATIENT_NUM) %>%
-  mutate(datetime = ymd(date)) %>%
-  arrange(datetime) %>%
-  mutate(redcap_repeat_instance = match(datetime, sort(unique(datetime)))) %>%
-  arrange(redcap_repeat_instance)
+#finalTableFiltered <- finalTableFiltered %>% 
+#  group_by(PATIENT_NUM) %>%
+#  mutate(datetime = ymd(date)) %>%
+#  arrange(datetime) %>%
+#  mutate(redcap_repeat_instance = match(datetime, sort(unique(datetime)))) %>%
+#  arrange(redcap_repeat_instance)
 ```
 
+Because we are choosing 1 lab value per time point (the closest to the date), we should not have more than one value for redcap_repeat_instance. 
+
+```{r}
+finalTableFiltered <- finalTableFiltered %>% 
+  group_by(PATIENT_NUM) %>%
+  mutate(redcap_repeat_instance = lab_values_visit ) %>%
+  arrange(redcap_repeat_instance)
+```
 
 Pivot table wider and make compatible with RedCap formatting
 ```{r}
 
 # for cases where a patient has multiple values for a lab at the exact same date / time, just choose the first one
 out <- finalTableFiltered %>%
-  group_by(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance, variableName) %>%
+  group_by(PATIENT_NUM, formName, lab_values_visit, redcap_repeat_instance, variableName) %>%
   summarise(value = first(value)) %>%
-  pivot_wider(id_cols = c(PATIENT_NUM, formName, date, time, lab_values_visit, redcap_repeat_instance), 
+  pivot_wider(id_cols = c(PATIENT_NUM, formName, lab_values_visit, redcap_repeat_instance), 
                    names_from = variableName, 
                    values_from = value, 
                    values_fill = '')
@@ -292,7 +241,7 @@ out <- out %>%
   relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, lab_values_visit) %>%
   arrange(record_id, redcap_repeat_instance, lab_values_visit) %>%
   ungroup() %>%
-  select(-'PATIENT_NUM', -'date', -'time')
+  select(-'PATIENT_NUM')
 ```
 
 

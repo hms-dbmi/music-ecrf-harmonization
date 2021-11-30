@@ -13,7 +13,7 @@ library(tidyverse)
 Load data
 ```{r}
 datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
-checked_vars <- read.csv('../data/numericalLabsToReview.csv', skip=1, header = TRUE) 
+checked_vars <- read.csv('../data/numericalLabsToReview.csv', header = TRUE) 
 ```
 
 Focus on values which have passed the checkUnits filters.
