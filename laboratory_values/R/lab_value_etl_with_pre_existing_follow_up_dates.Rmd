@@ -114,17 +114,20 @@ getLabValue <- function(row) {
   # WBC and platelets 1, x10^3/uL | 2, 10^9/L | 3, Other --> for WBC and platelets is x10^3/uL			
   # triglycerid 1, mg/dL | 2, mmol/L | 3, Other	1	 --> for BCH the values mg/dL		
   # CRP 1, mg/L | 2, mg/dL | 3, Other --> for BCH the value is mg/dL
+  # IgE: Expected unit value: 'mg/dL'; current unit value: 'unit/mL'
   } else if (row['vartype'] == 'unit') {
     if( row['variableName'] == 'crp_unit'){
-      value = 2
+      value = '2'
     }else if( row['variableName'] == 'triglycerid_unit'){
-      value = 1
+      value = '1'
     }else if( row['variableName'] == 'wbc_unit'){
-      value = 1
+      value = '1'
     }else if( row['variableName'] == 'platelet_unit'){
-      value = 1
-    }else{
-      value = -88
+      value = '1'
+    }else if (row['variableName'] == 'ige_unit'){
+      value = 'unit/mL'
+    } else {
+      value = '-88'
     }
     
   # for date variables, use the date column
@@ -257,6 +260,21 @@ for (col in colnames(out)) {
   
 }
   
+
+```
+
+Replace the BCH values for sars_cov2ntpcr_value with those expected from redcap.
+Our patients have Negative, NEGATIVE, Positive, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate'
+```{r}
+table(out$sars_cov2ntpcr_value)
+
+# We map "Negative" to 0 (Not detected) and "Positive" to 1 (Detected)
+reset_sars_cov2ntpcr_values <- function(x){
+  ifelse(x == "Negative", '0', 
+         ifelse(x == "Positive", '1', x))
+}
+
+out <- out %>% mutate(sars_cov2ntpcr_value = reset_sars_cov2ntpcr_values(sars_cov2ntpcr_value))
 
 ```
 
