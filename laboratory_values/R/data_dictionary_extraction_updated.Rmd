@@ -151,17 +151,17 @@ datadict_labonly <- datadict_labonly %>%
           concept_cd = 'LAB:1044704735',
           name_char = 'SARS CoV-2 (COVID-19) PCR, Resp, QuaL',
           concept_path = NA,
-          checkUnits = 'Our patients have Negative, NEGATIVE, Positive, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate') %>%
+          checkUnits = 'Expected and current units match') %>%
   add_row(Variable...Field.Name = 'sars_cov2ntpcr_date',
           concept_cd = 'LAB:1044704735',
           name_char = 'SARS CoV-2 (COVID-19) PCR, Resp, QuaL',
           concept_path = NA,
-          checkUnits = 'Our patients have Negative, NEGATIVE, Positive, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate') %>%
+          checkUnits = 'Expected and current units match') %>%
   add_row(Variable...Field.Name = 'sars_cov2ntpcr_value',
           concept_cd = 'LAB:1044704735',
           name_char = 'SARS CoV-2 (COVID-19) PCR, Resp, QuaL',
           concept_path = NA,
-          checkUnits = 'Our patients have Negative, NEGATIVE, Positive, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate')  
+          checkUnits = 'Expected and current units match')  
 
 ```
 
