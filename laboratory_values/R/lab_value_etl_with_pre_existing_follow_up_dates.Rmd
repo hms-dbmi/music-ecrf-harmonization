@@ -280,7 +280,7 @@ out <- out %>% mutate(sars_cov2ntpcr_value = reset_sars_cov2ntpcr_values(sars_co
 
 
 
-Data formatting based on errors / warnings from BCH upload to REDCap
+ata formatting based on errors / warnings from BCH upload to REDCapD
 ```{r}
 out <- out %>% 
   mutate(il_1_value = ifelse(il_1_value == "SEE IL12", '', il_1_value),
