@@ -189,6 +189,8 @@ finalTable$checking <- apply(finalTable, 1, FUN = extractClosestPeriod)
 finalTable <- separate_rows(finalTable, checking, sep = "\\*")
 finalTable <-separate(finalTable, checking, into = c('lab_values_visit', 'daysDiff'), sep = ':') 
 
+finalTable <- finalTable %>% filter(daysDiff <= 5)
+
 finalTableFiltered <- finalTable %>%
  group_by( PATIENT_NUM, CONCEPT_CD, lab_values_visit, vartype ) %>%
   slice_min( order_by = daysDiff) 
@@ -243,6 +245,21 @@ out <- out %>%
   ungroup() %>%
   select(-'PATIENT_NUM')
 ```
+
+Fill the blank 'obtained' variables with 0, indicating that this lab was not collected for that time period.
+```{r}
+set_obtained_values <- function(x) {ifelse (x == '', 0, x)}
+
+
+for (col in colnames(out)) {
+  
+  if (grepl('obtained',  col)) {out[,eval(col)] = sapply(out[,eval(col)], set_obtained_values)}
+  
+}
+  
+
+```
+
 
 
 Data formatting based on errors / warnings from BCH upload to REDCap
