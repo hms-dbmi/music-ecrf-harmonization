@@ -185,14 +185,14 @@ extractClosestPeriod <- function( row ){
   closestDay <- dateList[ which( abs( dateList - dateVal  ) == min( abs( dateList - dateVal ), na.rm = TRUE))]
   period <- names(closestDay)
   daysDiff <- abs( closestDay - dateVal )
-  return( paste0(period, ":", daysDiff, collapse = "*"))
+  return( paste0(period[[1]], ":", daysDiff[[1]]))
 }
 
 finalTable$checking <- apply(finalTable, 1, FUN = extractClosestPeriod)
-finalTable <- separate_rows(finalTable, checking, sep = "\\*")
+#finalTable <- separate_rows(finalTable, checking, sep = "\\*")
 finalTable <-separate(finalTable, checking, into = c('lab_values_visit', 'daysDiff'), sep = ':') 
 
-finalTable <- finalTable %>% filter(daysDiff <= 5)
+#finalTable <- finalTable %>% filter(daysDiff <= 5)
 
 finalTableFiltered <- finalTable %>%
  group_by( PATIENT_NUM, CONCEPT_CD, lab_values_visit, vartype ) %>%
