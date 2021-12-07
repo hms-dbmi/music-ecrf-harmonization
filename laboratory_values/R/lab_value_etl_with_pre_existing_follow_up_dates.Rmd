@@ -77,9 +77,9 @@ finalTable <- finalTable %>%
 
 ```{r}
 qc_dates <- finalTable %>%
-  mutate( two_weeks_daysDiff = abs( ymd( two_weeks) - ymd( ADMISSION_DATE)), 
-          six_weeks_daysDiff = abs( ymd( six_weeks) - ymd( ADMISSION_DATE)), 
-          six_months_daysDiff = abs( ymd( six_months) - ymd( ADMISSION_DATE)), 
+  mutate( two_weeks_daysDiff = abs( ymd( two_weeks) - ymd( DISCHARGE_DATE)), 
+          six_weeks_daysDiff = abs( ymd( six_weeks) - ymd( DISCHARGE_DATE)), 
+          six_months_daysDiff = abs( ymd( six_months) - ymd( DISCHARGE_DATE)), 
           check_two_weeks = ifelse( two_weeks_daysDiff > 21 | two_weeks_daysDiff < 7, "check", "ok"), 
           check_six_weeks = ifelse( six_weeks_daysDiff > 49| six_weeks_daysDiff < 35, "check", "ok") , 
           check_six_months = ifelse( six_months_daysDiff > 214 | six_months_daysDiff < 150, "check", "ok")) %>%
