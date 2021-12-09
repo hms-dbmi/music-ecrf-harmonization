@@ -46,7 +46,8 @@ Focus on values which have passed the checkUnits filters.
 var_func <- function(variablename){
   
   for (prefix in var_prefixes) {
-    if (grepl(prefix, variablename)) {return(paste0(prefix, '_value'))}
+    if (grepl(paste0(prefix, c('_obtained','_value','_unit', '_unit_other', '_obtained', '_date'), collapse = '|'), variablename)) {return(paste0(prefix, '_value'))}
+    
   }
   
   return('')
