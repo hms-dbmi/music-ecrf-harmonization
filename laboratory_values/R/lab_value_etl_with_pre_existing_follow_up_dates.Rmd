@@ -17,7 +17,7 @@ lab_dictionary <- read.delim("../data/labDictionary_updated.txt", header = TRUE,
 
 Import the lab data from MISC patients. Instead of importing a subset, we import the whole dataset (ag440_music_labs_nov21) and here we filter by the concepts that are in our lab_dictionary and we rename the admission and discharge date colum.  
 ```{r}
-all_labs <- read.delim('../local_ref/ag440_music_labs_nov21.dsv')
+all_labs <- read.csv('../local_ref/ag440_music_labs_nov21.dsv')
 subset_df <- all_labs %>%
   filter( CONCEPT_CD %in% lab_dictionary$concept_cd ) %>%
   rename('ADMISSION_DATE' = ADMISSIONDATE,
@@ -27,7 +27,7 @@ subset_df <- all_labs %>%
 Import the follow-up visit dates. The MUSIC_DATA_2021-11-23_0940.csv is the file extracted from REDCap of the data previously entered by BCH experts. From there we will extract the specific follow-up dates for the MUSIC study for the MISC patients. The variable name that contains the date is "visit_date", extracted from the dictionary. The record id is the internal MUSIC identifier, and the redcap_event_name allows us to know which is the specific follow-up period the date is referring to. Because the ID are MUSIC Ids we also need to load the music_mapping_id. 
 ```{r}
 misc_mapping <- read.csv("../../local_ref/music_id_mapping.csv")
-visit_dates  <- read.csv("../local_ref/MUSIC_DATA_2021-11-23_0940.csv")
+visit_dates  <- read.csv("../local_ref/MUSIC_DATA_2021-12-01_1413.csv")
 visit_dates <- visit_dates %>%
   filter( visit_date != "" ) %>%
   select( record_id, redcap_event_name, visit_date )
@@ -276,16 +276,34 @@ for (col in colnames_to_fill) {
 
 Replace the BCH values for sars_cov2ntpcr_value with those expected from redcap.
 Our patients have Negative, NEGATIVE, Positive, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate'
+
+Replace the BCH values for total_anti_value with those expected from redcap. 
+Our patients have values ‘Non-reactive’ and ‘Reactive’, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate
 ```{r}
-table(out$sars_cov2ntpcr_value)
 
 # We map "Negative" to 0 (Not detected) and "Positive" to 1 (Detected)
+table(out$sars_cov2ntpcr_value)
+
 reset_sars_cov2ntpcr_values <- function(x){
   ifelse(x == "Negative", '0', 
          ifelse(x == "Positive", '1', x))
 }
 
 out <- out %>% mutate(sars_cov2ntpcr_value = reset_sars_cov2ntpcr_values(sars_cov2ntpcr_value))
+
+# we map "Non-reactive" to 0 (Not detected) and "Reactive" to 1 (Detected)
+table(out$total_anti_value)
+
+reset_total_anti_value <- function(x){
+  ifelse(x == "Non-reactive", '0', 
+         ifelse(x == "Reactive", '1', x))
+}
+
+out <- out %>% mutate(total_anti_value = reset_total_anti_value(total_anti_value))
+
+table(out$total_anti_value)
+
+
 
 ```
 

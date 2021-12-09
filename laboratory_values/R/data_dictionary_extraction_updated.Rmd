@@ -162,7 +162,22 @@ datadict_labonly <- datadict_labonly %>%
           concept_cd = 'LAB:1044704735',
           name_char = 'SARS CoV-2 (COVID-19) PCR, Resp, QuaL',
           concept_path = NA,
-          checkUnits = 'Expected and current units match')  
+          checkUnits = 'Expected and current units match')  %>%
+  add_row(Variable...Field.Name = 'total_anti_obtained',
+          concept_cd = 'LAB:1062063907',
+          name_char = 'SARS CoV-2 Total Antibody',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'total_anti_date',
+          concept_cd = 'LAB:1062063907',
+          name_char = 'SARS CoV-2 Total Antibody',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'total_anti_value',
+          concept_cd = 'LAB:1062063907',
+          name_char = 'SARS CoV-2 Total Antibody',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match')
 
 ```
 
@@ -286,21 +301,7 @@ datadict_labonly <- datadict_labonly %>%
           name_char = 'SARS CoV-2 IgG',
           concept_path = NA,
           checkUnits = 'Our patients have numeric values with NOT DEFINED IN SOURCE units, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate') %>%
-  add_row(Variable...Field.Name = 'total_anti_obtained',
-          concept_cd = 'LAB:1062063907',
-          name_char = 'SARS CoV-2 Total Antibody',
-          concept_path = NA,
-          checkUnits = 'Our patients have Non-reactive and Reactive, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate') %>%
-  add_row(Variable...Field.Name = 'total_anti_date',
-          concept_cd = 'LAB:1062063907',
-          name_char = 'SARS CoV-2 Total Antibody',
-          concept_path = NA,
-          checkUnits = 'Our patients have Non-reactive and Reactive, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate') %>%
-  add_row(Variable...Field.Name = 'total_anti_value',
-          concept_cd = 'LAB:1062063907',
-          name_char = 'SARS CoV-2 Total Antibody',
-          concept_path = NA,
-          checkUnits = 'Our patients have Non-reactive and Reactive, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate')
+
 
  
   
