@@ -177,6 +177,26 @@ datadict_labonly <- datadict_labonly %>%
           concept_cd = 'LAB:1062063907',
           name_char = 'SARS CoV-2 Total Antibody',
           concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'il_17_date',
+          concept_cd = 'LAB:768388111',
+          name_char = 'Interleukin 17',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'il_17_value',
+          concept_cd = 'LAB:768388111',
+          name_char = 'Interleukin 17',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'il_17_obtained',
+          concept_cd = 'LAB:768388111',
+          name_char = 'Interleukin 17',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'il_17_unit',
+          concept_cd = 'LAB:768388111',
+          name_char = 'Interleukin 17',
+          concept_path = NA,
           checkUnits = 'Expected and current units match')
 
 ```
@@ -338,10 +358,7 @@ finalmap <- rbind(finalmap,
 ```{r}
 
 # If there are no data found for these patients in BCH, but we have a concept_cd, we cannot do anything.
-# If BCH expects to find labs for this patient, they should provide us with a list of keywords which might be associated with the lab.
 testbad2 <- testbad %>% filter(grepl('no data for MIS-C patients in BCH', checkUnits))
-
-
 
 ```
 
