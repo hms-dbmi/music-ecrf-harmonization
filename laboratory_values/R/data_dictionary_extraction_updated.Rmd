@@ -300,7 +300,7 @@ datadict_labonly <- datadict_labonly %>%
           concept_cd = 'LAB:1055858179',
           name_char = 'SARS CoV-2 IgG',
           concept_path = NA,
-          checkUnits = 'Our patients have numeric values with NOT DEFINED IN SOURCE units, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate') %>%
+          checkUnits = 'Our patients have numeric values with NOT DEFINED IN SOURCE units, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate') 
 
 
  
