@@ -329,6 +329,21 @@ out <- out %>%
 )
 ```
 
+There are some variables where we have a concept code for them in our mapping, but they are not present in any BCH MUSIC patients.
+We add them here with the value for obtained being 0
+- troponin I
+- ah50
+- ch50
+```{r}
+
+out <- out %>% 
+  mutate(troponin_l_obtained  = 0,
+         ah50_obtained  = 0, 
+         ch50_obtained = 0)
+
+
+```
+
 
 Data formatting based on errors / warnings from BCH upload to REDCap
 ```{r}
