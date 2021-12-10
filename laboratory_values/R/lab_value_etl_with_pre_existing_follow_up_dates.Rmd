@@ -344,7 +344,7 @@ out <- out %>%
 ```
 
 There are some variables where we have a concept code for them in our mapping, but they are not present in any BCH MUSIC patients.
-We add them here with the value for obtained being 0
+We add them here with the value for obtained being 0 IF there are other labs in their panel... otherwise leave blank
 - troponin I
 - ah50
 - ch50
@@ -353,8 +353,8 @@ We add them here with the value for obtained being 0
 
 out <- out %>% 
   mutate(troponin_l_obtained  = 0,
-         ah50_obtained  = 0, 
-         ch50_obtained = 0,
+         ah50_obtained  = ifelse(compl_obtained == 1, yes = 0, else = ''), 
+         ch50_obtained = ifelse(compl_obtained == 1, yes = 0, else = ''),
          nt_probnp_obtained = 0)
 
 
@@ -467,6 +467,8 @@ Data formatting based on errors / warnings from BCH upload to REDCap
   
 # write output with patient IDs included
 write.csv(out, '../local_ref/redcap_output_laboratory_values_updated.csv', row.names = FALSE)
+write.csv(out %>% filter(record_id %in% c(120002, 120112)), '../local_ref/TEST_redcap_output_laboratory_values_updated.csv', row.names = FALSE)
+
 ```
 
 
