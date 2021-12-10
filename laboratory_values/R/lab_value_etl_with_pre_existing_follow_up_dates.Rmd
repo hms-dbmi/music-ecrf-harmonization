@@ -265,20 +265,12 @@ out <- out %>%
 ```
 
 Fill the blank 'obtained' variables with 0, indicating that this lab was not collected for that time period.
-We cannot fill with 0 the variables that are under a higher category (cytokine_obtained, immunog_obtained, compl_obtained). 
-We exclude those columns of being automatically filled. 
 
 ```{r}
 set_obtained_values <- function(x) {ifelse (x == '', 0, x)}
 
-excludedColnames <-c( "tnf_alpha_obtained","il_1_obtained", "il_2_obtained", "il_2_receptor_obtained", "il_4_obtained", "il_5_obtained",
-                      "il_6_obtained", "il_8_obtained", "il_10_obtained", "il_12_obtained", "il_13_obtained", 
-                      "il_17_obtained", "il_19_obtained", "ifn_gamma_obtained", "igg_obtained", "iga_obtained", "igm_obtained", "ige_obtained",
-                      "c3_obtained", "c4_obtained", "cd3_abs_obtained", "cd3_cd4_obtained", "cd3_cd4_abs_obtained", 
-                      "cd3_obtained","cd3_cd8_obtained", "cd3_cd8_abs_obtained", "cd3_cd16_cd56_obtained", "cd19_obtained", 
-                      "cd19_abs_obtained","ac4_cd8_ratio_obtained", "t_sum_obtained")
 
-colnames_to_fill <- colnames( out )[! colnames( out ) %in% excludedColnames ]
+colnames_to_fill <- colnames( out )
 
 for (col in colnames_to_fill) {
   
