@@ -17,7 +17,7 @@ lab_dictionary <- read.delim("../data/labDictionary_updated.txt", header = TRUE,
 
 Import the lab data from MISC patients. Instead of importing a subset, we import the whole dataset (ag440_music_labs_nov21) and here we filter by the concepts that are in our lab_dictionary and we rename the admission and discharge date colum.  
 ```{r}
-all_labs <- read.delim('../local_ref/ag440_music_labs_nov21.dsv')
+all_labs <- read.csv('../local_ref/ag440_music_labs_nov21.dsv')
 subset_df <- all_labs %>%
   filter( CONCEPT_CD %in% lab_dictionary$concept_cd ) %>%
   rename('ADMISSION_DATE' = ADMISSIONDATE,
@@ -27,7 +27,7 @@ subset_df <- all_labs %>%
 Import the follow-up visit dates. The MUSIC_DATA_2021-11-23_0940.csv is the file extracted from REDCap of the data previously entered by BCH experts. From there we will extract the specific follow-up dates for the MUSIC study for the MISC patients. The variable name that contains the date is "visit_date", extracted from the dictionary. The record id is the internal MUSIC identifier, and the redcap_event_name allows us to know which is the specific follow-up period the date is referring to. Because the ID are MUSIC Ids we also need to load the music_mapping_id. 
 ```{r}
 misc_mapping <- read.csv("../../local_ref/music_id_mapping.csv")
-visit_dates  <- read.csv("../local_ref/MUSIC_DATA_2021-11-23_0940.csv")
+visit_dates  <- read.csv("../local_ref/MUSIC_DATA_2021-12-01_1413.csv")
 visit_dates <- visit_dates %>%
   filter( visit_date != "" ) %>%
   select( record_id, redcap_event_name, visit_date )
@@ -355,6 +355,49 @@ out <- out %>%
   mutate(troponin_l_obtained  = 0,
          ah50_obtained  = 0, 
          ch50_obtained = 0)
+
+
+```
+
+Create a report for BCH of which patients / values require manual review
+```{r}
+flagged <- data.frame('record_id' = '', 
+                      'variable' = '',
+                      'visit' = '',
+                      'value' = '')[-1,]
+
+report_manual_review <- function(r,c){}
+
+value_vars <- grep('_value$', colnames(test_out))
+unexpected_values = c('SEE IL12', 'See Image', 'Not Reported', 'Footnote', 'SEE IL17')
+
+# for each row in out
+for (r in c(1:nrow(test_out))){
+  
+  record_id <- test_out$record_id[r]
+  visit <- test_out$lab_values_visit[r]
+
+  # for each value variable
+  for (c in value_vars) {
+    
+    variable <- colnames(test_out)[c]
+
+    # if value is in our list of weird things
+    if (test_out[r,c] %in% unexpected_values) {
+    
+      # return list of: record, variable, visit, value
+      ret_val <- (c('record_id' = record_id,
+               'variable' = variable,
+               'visit' = visit,
+               'value' = test_out[r,c]))
+      
+      flagged <- rbind(flagged, ret_val)
+      
+    }
+    
+  }
+}
+
 
 
 ```
