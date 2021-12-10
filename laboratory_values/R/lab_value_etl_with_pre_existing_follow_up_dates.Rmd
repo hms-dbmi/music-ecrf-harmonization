@@ -268,7 +268,7 @@ Fill the blank 'obtained' variables with 0, indicating that this lab was not col
 We cannot fill with 0 the variables that are under a higher category (cytokine_obtained, immunog_obtained, compl_obtained). 
 We exclude those columns of being automatically filled. 
 ```{r}
-set_obtained_values <- function(x) {ifelse (x == '', 0, x)}
+set_obtained_values <- function(x) {ifelse (x == '', '0', x)}
 
 
 excludedColnames <-c( "tnf_alpha_obtained","il_1_obtained", "il_2_obtained", "il_2_receptor_obtained", "il_4_obtained", "il_5_obtained",
@@ -341,6 +341,44 @@ out <- out %>%
                                       cd19_obtained == 1 | ac4_cd8_ratio_obtained == 1, 1, 0), 
           other_labs = 0
 )
+```
+
+Fill the blank 'obtained' variables with 0, indicating that this lab was not collected for that time period.
+Do this for that are under a higher category (cytokine_obtained, immunog_obtained, compl_obtained) IF the category obtained value is TRUE. 
+```{r}
+
+
+out <- out %>% 
+  mutate(tnf_alpha_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(tnf_alpha_obtained), ''),
+         il_1_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_1_obtained), ''),
+         il_2_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_2_obtained), ''),
+         il_2_receptor_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_2_receptor_obtained), ''),
+         il_4_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_4_obtained), ''),
+         il_5_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_5_obtained), ''),
+         il_6_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_6_obtained), ''),
+         il_8_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_8_obtained), ''),
+         il_10_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_10_obtained), ''),
+         il_12_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_12_obtained), ''),
+         il_13_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_13_obtained), ''),
+         il_17_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_17_obtained), ''),
+         ifn_gamma_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(ifn_gamma_obtained), ''),
+         igg_obtained = ifelse(immunog_obtained == 1, set_obtained_values(igg_obtained), ''),
+         iga_obtained = ifelse(immunog_obtained == 1, set_obtained_values(iga_obtained), ''),
+         igm_obtained = ifelse(immunog_obtained == 1, set_obtained_values(igm_obtained), ''),
+         ige_obtained = ifelse(immunog_obtained == 1, set_obtained_values(ige_obtained), ''),
+         c3_obtained = ifelse(compl_obtained == 1, set_obtained_values(c3_obtained), ''),
+         c4_obtained = ifelse(compl_obtained == 1, set_obtained_values(c4_obtained), ''),
+         cd3_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_obtained), ''),
+         cd3_abs_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_abs_obtained), ''),
+         cd3_cd4_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_cd4_obtained), ''),
+         cd3_cd4_abs_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_cd4_abs_obtained), ''),
+         cd3_cd8_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_cd8_obtained), ''),
+         cd3_cd8_abs_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_cd8_abs_obtained), ''),
+         cd3_cd16_cd56_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_cd16_cd56_obtained), ''),
+         cd19_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd19_obtained), ''),
+         ac4_cd8_ratio_obtained = ifelse(lympho_obtained == 1, set_obtained_values(ac4_cd8_ratio_obtained), ''))
+  
+
 ```
 
 There are some variables where we have a concept code for them in our mapping, but they are not present in any BCH MUSIC patients.
