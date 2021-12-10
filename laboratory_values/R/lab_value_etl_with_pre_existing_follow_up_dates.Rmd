@@ -162,7 +162,9 @@ finalTable <- finalTable %>%
   # remove entries with no data
   filter(!is.na(NVAL_NUM) | TVAL_CHAR != '') %>%
   # remove duplicated rows
-  distinct
+  distinct %>%
+  # filter out labs where reported value is "Not Reported"
+  filter(TVAL_CHAR != "Not Reported")
          
 finalTable$value <- apply(finalTable, 1, FUN = getLabValue)
 ```
@@ -204,7 +206,7 @@ finalTable <- finalTable %>%
 finalTableFiltered <- finalTable %>%
  group_by( PATIENT_NUM, CONCEPT_CD, period ) %>%
   slice_min( order_by = daysDiff ) %>%
-  slice_min( order_by = time )
+  slice_min( order_by = dmy_hms(START_DATE) )
 
 #finalTableFilteredCheck <- finalTableFiltered %>%
 #  filter( vartype == "obtained") %>%
@@ -427,15 +429,16 @@ for (r in c(1:nrow(out))){
     if (out[r,c] %in% unexpected_values) {
     
       # if value is specifically "Not Reported"
-      if(out[r,c] == "Not Reported"){
+      ####### NOTE THIS SHOULD NOT HAPPEN ANY MORE
+      #if(out[r,c] == "Not Reported"){
         
         # clear all related values and set obtained to 0
-        prefix <- gsub('_value', '', colnames(out)[c])
-        out[r,which(grepl(prefix, colnames(out)))] <- ''
-        out[r,which(grepl(paste0(prefix, '_obtained'), colnames(out)))] <- '0'
+      #  prefix <- gsub('_value', '', colnames(out)[c])
+      #  out[r,which(grepl(prefix, colnames(out)))] <- ''
+      #  out[r,which(grepl(paste0(prefix, '_obtained'), colnames(out)))] <- '0'
         
       # else add record, variable, visit, value, to flagged df and just delete weird thing from out
-      } else {
+      #} else {
         
         flagged <- flagged %>% 
         add_row('record_id' = record_id,
@@ -444,7 +447,7 @@ for (r in c(1:nrow(out))){
                'value' = out[r,c] %>% pull)
       
         out[r,c] <- ''
-      }
+      #}
       
 
     }
@@ -507,7 +510,7 @@ Data formatting based on errors / warnings from BCH upload to REDCap
   
 # write output with patient IDs included
 write.csv(out, '../local_ref/redcap_output_laboratory_values_updated.csv', row.names = FALSE)
-write.csv(out %>% filter(record_id %in% c(120002, 120112)), '../local_ref/TEST_redcap_output_laboratory_values_updated.csv', row.names = FALSE)
+write.csv(out %>% filter(record_id %in% c(120002, 120122)), '../local_ref/TEST_redcap_output_laboratory_values_updated.csv', row.names = FALSE)
 
 ```
 
