@@ -330,6 +330,7 @@ datadict_labonly <- datadict_labonly %>%
 
 3. Incorrect or missing checkUnits
 - we add IgE to the lab dictionary, as we account for the difference in units in the lab_value_etl_with_pre_existing_follow_up script
+- we add cd19_abs as the unites do indeed match
 ```{r}
 test <- datadict_labonly %>%
   group_by(Variable...Field.Name) %>%
@@ -345,6 +346,8 @@ testbad
 # we can still use the variables where the units do not match, but just need to treat it differently in the redcap output (list unit, etc)
 finalmap <- rbind(finalmap, 
             datadict_labonly %>% filter(grepl('ige', Variable...Field.Name)) %>% select(Variable...Field.Name, concept_cd, name_char, concept_path, checkUnits))
+finalmap <- rbind(finalmap, 
+            datadict_labonly %>% filter(grepl('cd19_abs', Variable...Field.Name)) %>% select(Variable...Field.Name, concept_cd, name_char, concept_path, checkUnits))
 
 ```
 
