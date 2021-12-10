@@ -368,30 +368,32 @@ flagged <- data.frame('record_id' = '',
 
 report_manual_review <- function(r,c){}
 
-value_vars <- grep('_value$', colnames(test_out))
+value_vars <- grep('_value$', colnames(out))
 unexpected_values = c('SEE IL12', 'See Image', 'Not Reported', 'Footnote', 'SEE IL17')
 
 # for each row in out
-for (r in c(1:nrow(test_out))){
+for (r in c(1:nrow(out))){
   
-  record_id <- test_out$record_id[r]
-  visit <- test_out$lab_values_visit[r]
+  record_id <- as.character(out$record_id[r])
+  visit <- out$lab_values_visit[r]
 
   # for each value variable
   for (c in value_vars) {
     
-    variable <- colnames(test_out)[c]
+    variable <- colnames(out)[c]
 
     # if value is in our list of weird things
-    if (test_out[r,c] %in% unexpected_values) {
+    if (out[r,c] %in% unexpected_values) {
     
-      # return list of: record, variable, visit, value
-      ret_val <- (c('record_id' = record_id,
+      # add record, variable, visit, value, to flagged df
+      flagged <- flagged %>% 
+        add_row('record_id' = record_id,
                'variable' = variable,
                'visit' = visit,
-               'value' = test_out[r,c]))
+               'value' = out[r,c] %>% pull)
       
-      flagged <- rbind(flagged, ret_val)
+      # delete weird thing from out
+      out[r,c] <- ''
       
     }
     
@@ -405,51 +407,51 @@ for (r in c(1:nrow(test_out))){
 
 Data formatting based on errors / warnings from BCH upload to REDCap
 ```{r}
-out <- out %>% 
-  mutate(il_1_value = ifelse(il_1_value == "SEE IL12", '', il_1_value),
-         il_10_value = ifelse(il_10_value == "SEE IL12", '', il_10_value),
-         il_13_value = ifelse(il_13_value == "SEE IL12", '', il_13_value),
-         il_2_value = ifelse(il_2_value == "SEE IL12", '', il_2_value),
-         il_5_value = ifelse(il_5_value == "SEE IL12", '', il_5_value),
-         il_8_value = ifelse(il_8_value == "SEE IL12", '', il_8_value),
-         il_12_value = ifelse(il_12_value == "See Image", '', il_12_value),
-         ast_sgot_value = ifelse(ast_sgot_value == "Not Reported", '', ast_sgot_value),
-         ast_sgpt_value = ifelse(ast_sgpt_value == "Not Reported", '', ast_sgpt_value),
-         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL12", '', il_2_receptor_value),
-         il_4_value = ifelse(il_4_value == "SEE IL12", '', il_4_value),
-         il_6_value = ifelse(il_6_value == "SEE IL12", '', il_6_value),
-         troponin_t_value = ifelse(troponin_t_value == "Not Reported", '', troponin_t_value),
-         direct_bilir_value = ifelse(direct_bilir_value == "Not Reported", '', direct_bilir_value),
-         ige_value = ifelse(ige_value == "Footnote", '', ige_value),
-         lymphocyt_value = ifelse(lymphocyt_value == "Footnote", '', lymphocyt_value),
-         neutrophil_value = ifelse(neutrophil_value == "Footnote", '', neutrophil_value),
-         ifn_gamma_value = ifelse(ifn_gamma_value == "SEE IL17", '', ifn_gamma_value),
-         il_1_value = ifelse(il_1_value == "SEE IL17", '', il_1_value),
-         il_10_value = ifelse(il_10_value == "SEE IL17", '', il_10_value),
-         il_12_value = ifelse(il_12_value == "SEE IL17", '', il_12_value),
-         il_13_value = ifelse(il_13_value == "SEE IL17", '', il_13_value),
-         il_17_value = ifelse(il_17_value == "SEE IL17", '', il_17_value),
-         #il_19_value = ifelse(il_19_value == "SEE IL17", '', il_19_value),
-         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL17", '', il_2_receptor_value),
-         il_2_value = ifelse(il_2_value == "SEE IL17", '', il_2_value),
-         il_4_value = ifelse(il_4_value == "SEE IL17", '', il_4_value),
-         il_5_value = ifelse(il_5_value == "SEE IL17", '', il_5_value),
-         il_6_value = ifelse(il_6_value == "SEE IL17", '', il_6_value),
-         il_8_value = ifelse(il_8_value == "SEE IL17", '', il_8_value),
-         tnf_alpha_value = ifelse(tnf_alpha_value == "SEE IL17", '', tnf_alpha_value),
-         ggtp_value = ifelse(ggtp_value == "Not Reported", '', ggtp_value),
-         ifn_gamma_value = ifelse(ifn_gamma_value == "SEE IL12", '', ifn_gamma_value),
-         il_12_value = ifelse(il_12_value == "SEE IL12", '', il_12_value),
-         il_17_value = ifelse(il_17_value == "SEE IL12", '', il_17_value),
+#out <- out %>% 
+#  mutate(il_1_value = ifelse(il_1_value == "SEE IL12", '', il_1_value),
+#         il_10_value = ifelse(il_10_value == "SEE IL12", '', il_10_value),
+#         il_13_value = ifelse(il_13_value == "SEE IL12", '', il_13_value),
+#         il_2_value = ifelse(il_2_value == "SEE IL12", '', il_2_value),
+#         il_5_value = ifelse(il_5_value == "SEE IL12", '', il_5_value),
+#         il_8_value = ifelse(il_8_value == "SEE IL12", '', il_8_value),
+#         il_12_value = ifelse(il_12_value == "See Image", '', il_12_value),
+#         ast_sgot_value = ifelse(ast_sgot_value == "Not Reported", '', ast_sgot_value),
+#         ast_sgpt_value = ifelse(ast_sgpt_value == "Not Reported", '', ast_sgpt_value),
+#         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL12", '', il_2_receptor_value),
+#         il_4_value = ifelse(il_4_value == "SEE IL12", '', il_4_value),
+#         il_6_value = ifelse(il_6_value == "SEE IL12", '', il_6_value),
+#         troponin_t_value = ifelse(troponin_t_value == "Not Reported", '', troponin_t_value),
+#         direct_bilir_value = ifelse(direct_bilir_value == "Not Reported", '', direct_bilir_value),
+#         ige_value = ifelse(ige_value == "Footnote", '', ige_value),
+#         lymphocyt_value = ifelse(lymphocyt_value == "Footnote", '', lymphocyt_value),
+#         neutrophil_value = ifelse(neutrophil_value == "Footnote", '', neutrophil_value),
+#         ifn_gamma_value = ifelse(ifn_gamma_value == "SEE IL17", '', ifn_gamma_value),
+#         il_1_value = ifelse(il_1_value == "SEE IL17", '', il_1_value),
+#         il_10_value = ifelse(il_10_value == "SEE IL17", '', il_10_value),
+#         il_12_value = ifelse(il_12_value == "SEE IL17", '', il_12_value),
+#         il_13_value = ifelse(il_13_value == "SEE IL17", '', il_13_value),
+#         il_17_value = ifelse(il_17_value == "SEE IL17", '', il_17_value),
+#         #il_19_value = ifelse(il_19_value == "SEE IL17", '', il_19_value),
+#         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL17", '', il_2_receptor_value),
+#         il_2_value = ifelse(il_2_value == "SEE IL17", '', il_2_value),
+#         il_4_value = ifelse(il_4_value == "SEE IL17", '', il_4_value),
+#         il_5_value = ifelse(il_5_value == "SEE IL17", '', il_5_value),
+#         il_6_value = ifelse(il_6_value == "SEE IL17", '', il_6_value),
+#         il_8_value = ifelse(il_8_value == "SEE IL17", '', il_8_value),
+#         tnf_alpha_value = ifelse(tnf_alpha_value == "SEE IL17", '', tnf_alpha_value),
+#         ggtp_value = ifelse(ggtp_value == "Not Reported", '', ggtp_value),
+#         ifn_gamma_value = ifelse(ifn_gamma_value == "SEE IL12", '', ifn_gamma_value),
+#         il_12_value = ifelse(il_12_value == "SEE IL12", '', il_12_value),
+#         il_17_value = ifelse(il_17_value == "SEE IL12", '', il_17_value),
          #il_19_value = ifelse(il_19_value == "SEE IL12", '', il_19_value),
-         tnf_alpha_value = ifelse(tnf_alpha_value == "SEE IL12", '', tnf_alpha_value),
-         bicarbonate_value = ifelse(bicarbonate_value == "Not Reported", '', bicarbonate_value),
-         hematocrit_value = ifelse(hematocrit_value == "Footnote", '', hematocrit_value),
-         hemoglobin_value = ifelse(hemoglobin_value == "Footnote", '', hemoglobin_value),
-         platelets_value = ifelse(platelets_value == "Footnote", '', platelets_value),
-         wbc_value = ifelse(wbc_value == "Footnote", '', wbc_value),
-         ferritin_value = ifelse(ferritin_value == "Not Reported", '', ferritin_value),
-         potassium_value = ifelse(potassium_value == "Not Reported", '', potassium_value))
+#         tnf_alpha_value = ifelse(tnf_alpha_value == "SEE IL12", '', tnf_alpha_value),
+#         bicarbonate_value = ifelse(bicarbonate_value == "Not Reported", '', bicarbonate_value),
+#         hematocrit_value = ifelse(hematocrit_value == "Footnote", '', hematocrit_value),
+#         hemoglobin_value = ifelse(hemoglobin_value == "Footnote", '', hemoglobin_value),
+#         platelets_value = ifelse(platelets_value == "Footnote", '', platelets_value),
+#         wbc_value = ifelse(wbc_value == "Footnote", '', wbc_value),
+#         ferritin_value = ifelse(ferritin_value == "Not Reported", '', ferritin_value),
+#         potassium_value = ifelse(potassium_value == "Not Reported", '', potassium_value))
   
 # write output with patient IDs included
 write.csv(out, '../local_ref/redcap_output_laboratory_values_updated.csv', row.names = FALSE)
