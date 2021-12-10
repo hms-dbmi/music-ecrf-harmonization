@@ -379,16 +379,27 @@ for (r in c(1:nrow(out))){
     # if value is in our list of weird things
     if (out[r,c] %in% unexpected_values) {
     
-      # add record, variable, visit, value, to flagged df
-      flagged <- flagged %>% 
+      # if value is specifically "Not Reported"
+      if(out[r,c] == "Not Reported"){
+        
+        # clear all related values and set obtained to 0
+        prefix <- gsub('_value', '', colnames(out)[c])
+        out[r,which(grepl(prefix, colnames(out)))] <- ''
+        out[r,which(grepl(paste0(prefix, '_obtained'), colnames(out)))] <- '0'
+        
+      # else add record, variable, visit, value, to flagged df and just delete weird thing from out
+      } else {
+        
+        flagged <- flagged %>% 
         add_row('record_id' = record_id,
                'variable' = variable,
                'visit' = visit,
                'value' = out[r,c] %>% pull)
       
-      # delete weird thing from out
-      out[r,c] <- ''
+        out[r,c] <- ''
+      }
       
+
     }
     
   }
