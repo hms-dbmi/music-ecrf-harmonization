@@ -349,12 +349,14 @@ We add them here with the value for obtained being 0
 - troponin I
 - ah50
 - ch50
+- nt-probnp
 ```{r}
 
 out <- out %>% 
   mutate(troponin_l_obtained  = 0,
          ah50_obtained  = 0, 
-         ch50_obtained = 0)
+         ch50_obtained = 0,
+         nt_probnp_obtained = 0)
 
 
 ```
