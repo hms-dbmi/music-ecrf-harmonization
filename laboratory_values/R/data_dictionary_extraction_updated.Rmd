@@ -197,7 +197,48 @@ datadict_labonly <- datadict_labonly %>%
           concept_cd = 'LAB:768388111',
           name_char = 'Interleukin 17',
           concept_path = NA,
-          checkUnits = 'Expected and current units match')
+          checkUnits = 'Expected and current units match') %>%
+  ##### manually adding thes concepts as a 'doubled' concept - we found 2 concept cds for these
+  add_row(Variable...Field.Name = 'lymphocyt_value',
+          concept_cd = 'LAB:3775664',
+          name_char = 'Lymphocyte',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Lymphocyte\\LAB:3775664\\",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'lymphocyt_obtained',
+          concept_cd = 'LAB:3775664',
+          name_char = 'Lymphocyte',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Lymphocyte\\LAB:3775664\\",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'lymphocyt_date',
+          concept_cd = 'LAB:3775664',
+          name_char = 'Lymphocyte',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Lymphocyte\\LAB:3775664\\",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'lymphocyt_unit',
+          concept_cd = 'LAB:3775664',
+          name_char = 'Lymphocyte',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Lymphocyte\\LAB:3775664\\",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'neutrophil_value',
+          concept_cd = 'LAB:3775663',
+          name_char = 'Neutrophil/Band',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Neutrophil/Band\\LAB:3775663",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'neutrophil_date',
+          concept_cd = 'LAB:3775663',
+          name_char = 'Neutrophil/Band',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Neutrophil/Band\\LAB:3775663",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'neutrophil_unit',
+          concept_cd = 'LAB:3775663',
+          name_char = 'Neutrophil/Band',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Neutrophil/Band\\LAB:3775663",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'neutrophil_obtained',
+          concept_cd = 'LAB:3775663',
+          name_char = 'Neutrophil/Band',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Neutrophil/Band\\LAB:3775663",
+          checkUnits = 'Expected and current units match') 
 
 ```
 
