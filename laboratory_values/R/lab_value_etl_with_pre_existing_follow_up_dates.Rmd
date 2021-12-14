@@ -520,7 +520,7 @@ Data formatting based on errors / warnings from BCH upload to REDCap
   
 # write output with patient IDs included
 write.csv(out, '../local_ref/redcap_output_laboratory_values_updated.csv', row.names = FALSE)
-write.csv(out %>% filter(record_id %in% c(120002, 120122)), '../local_ref/TEST_redcap_output_laboratory_values_updated.csv', row.names = FALSE)
+write.csv(out %>% filter(record_id %in% c(120002, 120122, 120006)), '../local_ref/TEST_redcap_output_laboratory_values_updated.csv', row.names = FALSE)
 write.csv(flagged, '../local_ref/flagged_labs_for_manual_review.csv', row.names = FALSE)
 ```
 
