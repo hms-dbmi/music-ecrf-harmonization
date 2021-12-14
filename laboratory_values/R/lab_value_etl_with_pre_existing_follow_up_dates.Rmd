@@ -188,6 +188,16 @@ lab_values_visit
           days_after_discharge >= 63 & days_after_discharge < 365 ~ '6',
           TRUE ~ 'Out of period'))
 
+#######
+# Code to deal with multiple concept codes for lymphocytes and neutrophils
+# We consolidate all concepts to one code
+finalTable <- finalTable %>%
+  mutate(CONCEPT_CD = gsub('LAB:3775664', 'LAB:3775715', CONCEPT_CD),
+         CONCEPT_CD = gsub('LAB:3775663', 'LAB:3775714', CONCEPT_CD))
+
+#######
+
+
 # select which value to report when more than one lab value for the same patient and period 
 finalTable <- finalTable %>%
   filter( period != "Out of period") %>%
@@ -511,7 +521,7 @@ Data formatting based on errors / warnings from BCH upload to REDCap
 # write output with patient IDs included
 write.csv(out, '../local_ref/redcap_output_laboratory_values_updated.csv', row.names = FALSE)
 write.csv(out %>% filter(record_id %in% c(120002, 120122)), '../local_ref/TEST_redcap_output_laboratory_values_updated.csv', row.names = FALSE)
-
+write.csv(flagged, '../local_ref/flagged_labs_for_manual_review.csv', row.names = FALSE)
 ```
 
 
