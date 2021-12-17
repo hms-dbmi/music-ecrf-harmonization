@@ -17,7 +17,7 @@ lab_dictionary <- read.delim("../data/labDictionary_updated.txt", header = TRUE,
 
 Import the lab data from MISC patients. Instead of importing a subset, we import the whole dataset (ag440_music_labs_nov21) and here we filter by the concepts that are in our lab_dictionary and we rename the admission and discharge date colum.  
 ```{r}
-all_labs <- read.delim('../local_ref/ag440_music_labs_nov21.dsv')
+all_labs <- read.csv('../local_ref/ag440_music_labs_nov21.dsv')
 subset_df <- all_labs %>%
   filter( CONCEPT_CD %in% lab_dictionary$concept_cd ) %>%
   rename('ADMISSION_DATE' = ADMISSIONDATE,
@@ -26,8 +26,8 @@ subset_df <- all_labs %>%
 
 Import the follow-up visit dates. The MUSIC_DATA_2021-11-23_0940.csv is the file extracted from REDCap of the data previously entered by BCH experts. From there we will extract the specific follow-up dates for the MUSIC study for the MISC patients. The variable name that contains the date is "visit_date", extracted from the dictionary. The record id is the internal MUSIC identifier, and the redcap_event_name allows us to know which is the specific follow-up period the date is referring to. Because the ID are MUSIC Ids we also need to load the music_mapping_id. 
 ```{r}
-misc_mapping <- read.csv("../../medications_before_and_after/local_ref/music_id_mapping.csv")
-visit_dates  <- read.csv("../local_ref/MUSIC_DATA_2021-11-23_0940.csv")
+misc_mapping <- read.csv("../../local_ref/music_id_mapping.csv")
+visit_dates  <- read.csv("../local_ref/MUSIC_DATA_2021-12-01_1413.csv")
 visit_dates <- visit_dates %>%
   filter( visit_date != "" ) %>%
   select( record_id, redcap_event_name, visit_date )
@@ -77,9 +77,9 @@ finalTable <- finalTable %>%
 
 ```{r}
 qc_dates <- finalTable %>%
-  mutate( two_weeks_daysDiff = abs( ymd( two_weeks) - ymd( ADMISSION_DATE)), 
-          six_weeks_daysDiff = abs( ymd( six_weeks) - ymd( ADMISSION_DATE)), 
-          six_months_daysDiff = abs( ymd( six_months) - ymd( ADMISSION_DATE)), 
+  mutate( two_weeks_daysDiff = abs( ymd( two_weeks) - ymd( DISCHARGE_DATE)), 
+          six_weeks_daysDiff = abs( ymd( six_weeks) - ymd( DISCHARGE_DATE)), 
+          six_months_daysDiff = abs( ymd( six_months) - ymd( DISCHARGE_DATE)), 
           check_two_weeks = ifelse( two_weeks_daysDiff > 21 | two_weeks_daysDiff < 7, "check", "ok"), 
           check_six_weeks = ifelse( six_weeks_daysDiff > 49| six_weeks_daysDiff < 35, "check", "ok") , 
           check_six_months = ifelse( six_months_daysDiff > 214 | six_months_daysDiff < 150, "check", "ok")) %>%
@@ -114,17 +114,20 @@ getLabValue <- function(row) {
   # WBC and platelets 1, x10^3/uL | 2, 10^9/L | 3, Other --> for WBC and platelets is x10^3/uL			
   # triglycerid 1, mg/dL | 2, mmol/L | 3, Other	1	 --> for BCH the values mg/dL		
   # CRP 1, mg/L | 2, mg/dL | 3, Other --> for BCH the value is mg/dL
+  # IgE: Expected unit value: 'mg/dL'; current unit value: 'unit/mL'
   } else if (row['vartype'] == 'unit') {
     if( row['variableName'] == 'crp_unit'){
-      value = 2
+      value = '2'
     }else if( row['variableName'] == 'triglycerid_unit'){
-      value = 1
+      value = '1'
     }else if( row['variableName'] == 'wbc_unit'){
-      value = 1
+      value = '1'
     }else if( row['variableName'] == 'platelet_unit'){
-      value = 1
-    }else{
-      value = -88
+      value = '1'
+    }else if (row['variableName'] == 'ige_unit'){
+      value = 'unit/mL'
+    } else {
+      value = '-88'
     }
     
   # for date variables, use the date column
@@ -159,7 +162,9 @@ finalTable <- finalTable %>%
   # remove entries with no data
   filter(!is.na(NVAL_NUM) | TVAL_CHAR != '') %>%
   # remove duplicated rows
-  distinct
+  distinct %>%
+  # filter out labs where reported value is "Not Reported"
+  filter(TVAL_CHAR != "Not Reported")
          
 finalTable$value <- apply(finalTable, 1, FUN = getLabValue)
 ```
@@ -171,27 +176,54 @@ lab_values_visit
 4, 6 Weeks Post Discharge
 6, 6 Months Post Discharge
 
+
+## Assign period based on the days of diff
 ```{r}
-extractClosestPeriod <- function( row ){
+ finalTable <- finalTable %>%
+   mutate(period = case_when(
+          days_after_admission >= -2 & days_after_admission <=  2 ~ '1',
+          days_after_discharge >= -3 & days_after_discharge <= 0 ~ '2', 
+          days_after_discharge >= 7 & days_after_discharge < 21 ~ '3',
+          days_after_discharge >= 21 & days_after_discharge <  63 ~ '4',
+          days_after_discharge >= 63 & days_after_discharge < 365 ~ '6',
+          TRUE ~ 'Out of period'))
 
-  dateList <- c(ymd(row['ADMISSION_DATE']), ymd(row['DISCHARGE_DATE']),
-                ymd(row['two_weeks']), ymd(row['six_weeks']),
-                ymd(row['six_months']))
-  names(dateList) <- c("1", "2", "3", "4", "6")
-  dateVal <- ymd(row['date'])
-  closestDay <- dateList[ which( abs( dateList - dateVal  ) == min( abs( dateList - dateVal ), na.rm = TRUE))]
-  period <- names(closestDay)
-  daysDiff <- abs( closestDay - dateVal )
-  return( paste0(period, ":", daysDiff, collapse = "*"))
-}
+#######
+# Code to deal with multiple concept codes for lymphocytes and neutrophils
+# We consolidate all concepts to one code
+finalTable <- finalTable %>%
+  mutate(CONCEPT_CD = gsub('LAB:3775664', 'LAB:3775715', CONCEPT_CD),
+         CONCEPT_CD = gsub('LAB:3775663', 'LAB:3775714', CONCEPT_CD))
 
-finalTable$checking <- apply(finalTable, 1, FUN = extractClosestPeriod)
-finalTable <- separate_rows(finalTable, checking, sep = "\\*")
-finalTable <-separate(finalTable, checking, into = c('lab_values_visit', 'daysdiff'), sep = ':') 
+#######
+
+
+# select which value to report when more than one lab value for the same patient and period 
+finalTable <- finalTable %>%
+  filter( period != "Out of period") %>%
+  group_by( PATIENT_NUM, CONCEPT_CD, period ) %>%
+  mutate( two_weeks_ref = if_else( !is.na( ymd(two_weeks) ), ymd(two_weeks), ymd( DISCHARGE_DATE ) + days(14) ), 
+          six_weeks_ref = if_else( !is.na( ymd(six_weeks) ), ymd(six_weeks), ymd( DISCHARGE_DATE ) + days(42) ), 
+          six_months_ref =if_else( !is.na( ymd(six_months)), ymd(six_months), ymd( DISCHARGE_DATE ) + days(182) ), 
+          daysDiff = case_when(  period == 1 ~ as.character( abs(ymd(date) - ymd(ADMISSION_DATE))),
+                                 period == 2 ~ as.character( abs(ymd(date) - ymd(DISCHARGE_DATE))),
+                                 period == 3 ~ as.character( abs(ymd(date) - ymd(two_weeks_ref))),
+                                 period == 4 ~ as.character( abs(ymd(date) - ymd(six_weeks_ref))),
+                                  period == 6 ~ as.character( abs(ymd(date) - ymd(six_months_ref))),
+                                TRUE ~ " "), 
+          daysDiff = as.numeric( daysDiff ) )
 
 finalTableFiltered <- finalTable %>%
- group_by( PATIENT_NUM, CONCEPT_CD, lab_values_visit, vartype ) %>%
-  slice_min( order_by = daysDiff) 
+ group_by( PATIENT_NUM, CONCEPT_CD, period ) %>%
+  slice_min( order_by = daysDiff ) %>%
+  slice_min( order_by = dmy_hms(START_DATE) )
+
+#finalTableFilteredCheck <- finalTableFiltered %>%
+#  filter( vartype == "obtained") %>%
+#  group_by( PATIENT_NUM, CONCEPT_CD, period ) %>%
+#  summarise( n = n())
+
+#toCheck <- finalTableFilteredCheck[ finalTableFilteredCheck$n > 1, ]
 ```
 
 redcap_repeat_instance
@@ -211,13 +243,13 @@ Because we are choosing 1 lab value per time point (the closest to the date), we
 ```{r}
 finalTableFiltered <- finalTableFiltered %>% 
   group_by(PATIENT_NUM) %>%
-  mutate(redcap_repeat_instance = lab_values_visit ) %>%
+  mutate( lab_values_visit = period, 
+    redcap_repeat_instance = lab_values_visit ) %>%
   arrange(redcap_repeat_instance)
 ```
 
 Pivot table wider and make compatible with RedCap formatting
 ```{r}
-
 # for cases where a patient has multiple values for a lab at the exact same date / time, just choose the first one
 out <- finalTableFiltered %>%
   group_by(PATIENT_NUM, formName, lab_values_visit, redcap_repeat_instance, variableName) %>%
@@ -244,27 +276,252 @@ out <- out %>%
   select(-'PATIENT_NUM')
 ```
 
+Fill the blank 'obtained' variables with 0, indicating that this lab was not collected for that time period.
+We cannot fill with 0 the variables that are under a higher category (cytokine_obtained, immunog_obtained, compl_obtained). 
+We exclude those columns of being automatically filled. 
+```{r}
+set_obtained_values <- function(x) {ifelse (x == '', '0', x)}
+
+
+excludedColnames <-c( "tnf_alpha_obtained","il_1_obtained", "il_2_obtained", "il_2_receptor_obtained", "il_4_obtained", "il_5_obtained",
+                      "il_6_obtained", "il_8_obtained", "il_10_obtained", "il_12_obtained", "il_13_obtained", 
+                      "il_17_obtained", "il_19_obtained", "ifn_gamma_obtained", "igg_obtained", "iga_obtained", "igm_obtained", "ige_obtained",
+                      "c3_obtained", "c4_obtained", "cd3_abs_obtained", "cd3_cd4_obtained", "cd3_cd4_abs_obtained", 
+                      "cd3_obtained","cd3_cd8_obtained", "cd3_cd8_abs_obtained", "cd3_cd16_cd56_obtained", "cd19_obtained", 
+                      "cd19_abs_obtained","ac4_cd8_ratio_obtained", "t_sum_obtained")
+colnames_to_fill <- colnames( out )[! colnames( out ) %in% excludedColnames ]
+
+for (col in colnames_to_fill) {
+  
+  if (grepl('obtained',  col)) {out[,eval(col)] = sapply(out[,eval(col)], set_obtained_values)}
+  
+}
+  
+
+```
+
+Replace the BCH values for sars_cov2ntpcr_value with those expected from redcap.
+Our patients have Negative, NEGATIVE, Positive, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate'
+
+Replace the BCH values for total_anti_value with those expected from redcap. 
+Our patients have values ‘Non-reactive’ and ‘Reactive’, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate
+```{r}
+
+# We map "Negative" to 0 (Not detected) and "Positive" to 1 (Detected)
+table(out$sars_cov2ntpcr_value)
+
+reset_sars_cov2ntpcr_values <- function(x){
+  ifelse(x == "Negative", '0', 
+         ifelse(x == "Positive", '1', x))
+}
+
+out <- out %>% mutate(sars_cov2ntpcr_value = reset_sars_cov2ntpcr_values(sars_cov2ntpcr_value))
+
+# we map "Non-reactive" to 0 (Not detected) and "Reactive" to 1 (Detected)
+table(out$total_anti_value)
+
+reset_total_anti_value <- function(x){
+  ifelse(x == "Non-reactive", '0', 
+         ifelse(x == "Reactive", '1', x))
+}
+
+out <- out %>% mutate(total_anti_value = reset_total_anti_value(total_anti_value))
+
+table(out$total_anti_value)
+
+
+
+```
+
+Adding the variables:
+- cytokine_obtained (1 yes, 0 no)
+- immunog_obtained (1 yes, 0 no)
+- compl_obtained (1 yes, 0 no)
+- other_labs ( 1 yes, 0 no)
+```{r}
+out <- out %>% 
+  group_by( record_id , redcap_repeat_instance ) %>%
+  mutate( cytokine_obtained = ifelse( tnf_alpha_obtained == 1 | il_1_obtained == 1 | il_2_obtained == 1 |
+                                        il_2_receptor_obtained == 1 | il_4_obtained == 1 | il_5_obtained == 1 | 
+                                        il_6_obtained == 1 | il_8_obtained == 1 | il_10_obtained == 1 | 
+                                        il_12_obtained == 1 | il_13_obtained == 1 | il_17_obtained == 1  | 
+                                        ifn_gamma_obtained == 1, 1, 0), 
+          immunog_obtained = ifelse( igg_obtained == 1 | iga_obtained == 1 | igm_obtained == 1|  ige_obtained == 1, 1, 0),
+          compl_obtained = ifelse( c3_obtained == 1 | c4_obtained == 1, 1, 0), 
+          lympho_obtained = ifelse( cd3_obtained == 1 | cd3_abs_obtained == 1 | cd3_cd4_obtained == 1 | cd3_cd4_abs_obtained == 1 |
+                                      cd3_cd8_obtained == 1 | cd3_cd8_abs_obtained == 1 | cd3_cd16_cd56_obtained == 1 | 
+                                      cd19_obtained == 1 | ac4_cd8_ratio_obtained == 1, 1, 0), 
+          other_labs = 0
+)
+```
+
+Fill the blank 'obtained' variables with 0, indicating that this lab was not collected for that time period.
+Do this for that are under a higher category (cytokine_obtained, immunog_obtained, compl_obtained) IF the category obtained value is TRUE. 
+```{r}
+
+
+out <- out %>% 
+  mutate(tnf_alpha_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(tnf_alpha_obtained), ''),
+         il_1_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_1_obtained), ''),
+         il_2_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_2_obtained), ''),
+         il_2_receptor_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_2_receptor_obtained), ''),
+         il_4_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_4_obtained), ''),
+         il_5_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_5_obtained), ''),
+         il_6_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_6_obtained), ''),
+         il_8_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_8_obtained), ''),
+         il_10_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_10_obtained), ''),
+         il_12_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_12_obtained), ''),
+         il_13_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_13_obtained), ''),
+         il_17_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_17_obtained), ''),
+         ifn_gamma_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(ifn_gamma_obtained), ''),
+         igg_obtained = ifelse(immunog_obtained == 1, set_obtained_values(igg_obtained), ''),
+         iga_obtained = ifelse(immunog_obtained == 1, set_obtained_values(iga_obtained), ''),
+         igm_obtained = ifelse(immunog_obtained == 1, set_obtained_values(igm_obtained), ''),
+         ige_obtained = ifelse(immunog_obtained == 1, set_obtained_values(ige_obtained), ''),
+         c3_obtained = ifelse(compl_obtained == 1, set_obtained_values(c3_obtained), ''),
+         c4_obtained = ifelse(compl_obtained == 1, set_obtained_values(c4_obtained), ''),
+         cd3_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_obtained), ''),
+         cd3_abs_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_abs_obtained), ''),
+         cd3_cd4_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_cd4_obtained), ''),
+         cd3_cd4_abs_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_cd4_abs_obtained), ''),
+         cd3_cd8_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_cd8_obtained), ''),
+         cd3_cd8_abs_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_cd8_abs_obtained), ''),
+         cd3_cd16_cd56_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd3_cd16_cd56_obtained), ''),
+         cd19_obtained = ifelse(lympho_obtained == 1, set_obtained_values(cd19_obtained), ''),
+         ac4_cd8_ratio_obtained = ifelse(lympho_obtained == 1, set_obtained_values(ac4_cd8_ratio_obtained), ''))
+  
+
+```
+
+There are some variables where we have a concept code for them in our mapping, but they are not present in any BCH MUSIC patients.
+We add them here with the value for obtained being 0 IF there are other labs in their panel... otherwise leave blank
+- troponin I
+- ah50
+- ch50
+- nt-probnp
+- cxcl9
+```{r}
+
+out <- out %>% 
+  mutate(troponin_l_obtained  = 0,
+         ah50_obtained  = ifelse(compl_obtained == 1, yes = '0', no = ''), 
+         ch50_obtained = ifelse(compl_obtained == 1, yes = '0', no = ''),
+         nt_probnp_obtained = 0,
+         cxcl9_obtained = ifelse(cytokine_obtained == 1, yes = '0', no = ''))
+
+
+```
+
+Create a report for BCH of which patients / values require manual review
+```{r}
+flagged <- data.frame('record_id' = '', 
+                      'variable' = '',
+                      'visit' = '',
+                      'value' = '')[-1,]
+
+report_manual_review <- function(r,c){}
+
+value_vars <- grep('_value$', colnames(out))
+unexpected_values = c('SEE IL12', 'See Image', 'Not Reported', 'Footnote', 'SEE IL17')
+
+# for each row in out
+for (r in c(1:nrow(out))){
+  
+  record_id <- as.character(out$record_id[r])
+  visit <- out$lab_values_visit[r]
+
+  # for each value variable
+  for (c in value_vars) {
+    
+    variable <- colnames(out)[c]
+
+    # if value is in our list of weird things
+    if (out[r,c] %in% unexpected_values) {
+    
+      # if value is specifically "Not Reported"
+      ####### NOTE THIS SHOULD NOT HAPPEN ANY MORE
+      #if(out[r,c] == "Not Reported"){
+        
+        # clear all related values and set obtained to 0
+      #  prefix <- gsub('_value', '', colnames(out)[c])
+      #  out[r,which(grepl(prefix, colnames(out)))] <- ''
+      #  out[r,which(grepl(paste0(prefix, '_obtained'), colnames(out)))] <- '0'
+        
+      # else add record, variable, visit, value, to flagged df and just delete weird thing from out
+      #} else {
+        
+        flagged <- flagged %>% 
+        add_row('record_id' = record_id,
+               'variable' = variable,
+               'visit' = visit,
+               'value' = out[r,c] %>% pull)
+      
+        out[r,c] <- ''
+      #}
+      
+
+    }
+    
+  }
+}
+
+
+
+```
+
 
 Data formatting based on errors / warnings from BCH upload to REDCap
 ```{r}
-out <- out %>% 
-  mutate(il_1_value = ifelse(il_1_value == "SEE IL12", '', il_1_value),
-         il_10_value = ifelse(il_10_value == "SEE IL12", '', il_10_value),
-         il_13_value = ifelse(il_13_value == "SEE IL12", '', il_13_value),
-         il_2_value = ifelse(il_2_value == "SEE IL12", '', il_2_value),
-         il_5_value = ifelse(il_5_value == "SEE IL12", '', il_5_value),
-         il_8_value = ifelse(il_8_value == "SEE IL12", '', il_8_value),
-         il_12_value = ifelse(il_12_value == "See Image", '', il_12_value),
-         ast_sgot_value = ifelse(ast_sgot_value == "Not Reported", '', ast_sgot_value),
-         ast_sgpt_value = ifelse(ast_sgpt_value == "Not Reported", '', ast_sgpt_value),
-         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL12", '', il_2_receptor_value),
-         il_4_value = ifelse(il_4_value == "SEE IL12", '', il_4_value),
-         il_6_value = ifelse(il_6_value == "SEE IL12", '', il_6_value),
-         troponin_t_value = ifelse(troponin_t_value == "Not Reported", '', troponin_t_value),
-         direct_bilir_value = ifelse(direct_bilir_value == "Not Reported", '', direct_bilir_value))
+#out <- out %>% 
+#  mutate(il_1_value = ifelse(il_1_value == "SEE IL12", '', il_1_value),
+#         il_10_value = ifelse(il_10_value == "SEE IL12", '', il_10_value),
+#         il_13_value = ifelse(il_13_value == "SEE IL12", '', il_13_value),
+#         il_2_value = ifelse(il_2_value == "SEE IL12", '', il_2_value),
+#         il_5_value = ifelse(il_5_value == "SEE IL12", '', il_5_value),
+#         il_8_value = ifelse(il_8_value == "SEE IL12", '', il_8_value),
+#         il_12_value = ifelse(il_12_value == "See Image", '', il_12_value),
+#         ast_sgot_value = ifelse(ast_sgot_value == "Not Reported", '', ast_sgot_value),
+#         ast_sgpt_value = ifelse(ast_sgpt_value == "Not Reported", '', ast_sgpt_value),
+#         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL12", '', il_2_receptor_value),
+#         il_4_value = ifelse(il_4_value == "SEE IL12", '', il_4_value),
+#         il_6_value = ifelse(il_6_value == "SEE IL12", '', il_6_value),
+#         troponin_t_value = ifelse(troponin_t_value == "Not Reported", '', troponin_t_value),
+#         direct_bilir_value = ifelse(direct_bilir_value == "Not Reported", '', direct_bilir_value),
+#         ige_value = ifelse(ige_value == "Footnote", '', ige_value),
+#         lymphocyt_value = ifelse(lymphocyt_value == "Footnote", '', lymphocyt_value),
+#         neutrophil_value = ifelse(neutrophil_value == "Footnote", '', neutrophil_value),
+#         ifn_gamma_value = ifelse(ifn_gamma_value == "SEE IL17", '', ifn_gamma_value),
+#         il_1_value = ifelse(il_1_value == "SEE IL17", '', il_1_value),
+#         il_10_value = ifelse(il_10_value == "SEE IL17", '', il_10_value),
+#         il_12_value = ifelse(il_12_value == "SEE IL17", '', il_12_value),
+#         il_13_value = ifelse(il_13_value == "SEE IL17", '', il_13_value),
+#         il_17_value = ifelse(il_17_value == "SEE IL17", '', il_17_value),
+#         #il_19_value = ifelse(il_19_value == "SEE IL17", '', il_19_value),
+#         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL17", '', il_2_receptor_value),
+#         il_2_value = ifelse(il_2_value == "SEE IL17", '', il_2_value),
+#         il_4_value = ifelse(il_4_value == "SEE IL17", '', il_4_value),
+#         il_5_value = ifelse(il_5_value == "SEE IL17", '', il_5_value),
+#         il_6_value = ifelse(il_6_value == "SEE IL17", '', il_6_value),
+#         il_8_value = ifelse(il_8_value == "SEE IL17", '', il_8_value),
+#         tnf_alpha_value = ifelse(tnf_alpha_value == "SEE IL17", '', tnf_alpha_value),
+#         ggtp_value = ifelse(ggtp_value == "Not Reported", '', ggtp_value),
+#         ifn_gamma_value = ifelse(ifn_gamma_value == "SEE IL12", '', ifn_gamma_value),
+#         il_12_value = ifelse(il_12_value == "SEE IL12", '', il_12_value),
+#         il_17_value = ifelse(il_17_value == "SEE IL12", '', il_17_value),
+         #il_19_value = ifelse(il_19_value == "SEE IL12", '', il_19_value),
+#         tnf_alpha_value = ifelse(tnf_alpha_value == "SEE IL12", '', tnf_alpha_value),
+#         bicarbonate_value = ifelse(bicarbonate_value == "Not Reported", '', bicarbonate_value),
+#         hematocrit_value = ifelse(hematocrit_value == "Footnote", '', hematocrit_value),
+#         hemoglobin_value = ifelse(hemoglobin_value == "Footnote", '', hemoglobin_value),
+#         platelets_value = ifelse(platelets_value == "Footnote", '', platelets_value),
+#         wbc_value = ifelse(wbc_value == "Footnote", '', wbc_value),
+#         ferritin_value = ifelse(ferritin_value == "Not Reported", '', ferritin_value),
+#         potassium_value = ifelse(potassium_value == "Not Reported", '', potassium_value))
   
 # write output with patient IDs included
 write.csv(out, '../local_ref/redcap_output_laboratory_values_updated.csv', row.names = FALSE)
+write.csv(out %>% filter(record_id %in% c(120002, 120122, 120006)), '../local_ref/TEST_redcap_output_laboratory_values_updated.csv', row.names = FALSE)
+write.csv(flagged, '../local_ref/flagged_labs_for_manual_review.csv', row.names = FALSE)
 ```
 
 
