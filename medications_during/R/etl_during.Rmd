@@ -118,7 +118,8 @@ out3 <- out2 %>%
   pivot_wider(
     names_from = medhospX_type_names,
     values_from = medhospX_type,
-    values_fill = NA)
+    values_fill = NA) %>%
+  select(-med_num)
 
 # map BCH ids to MUSIC IDs for REDCAP
 id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
