@@ -98,14 +98,14 @@ df3 <- df2 %>%
 
 # pivot variable names
 out <- pivot_wider(df3,
-                  id_cols = c(PATIENT_NUM, medhospX_type, medhospX_start_dt, redcap_repeat_instance),   
+                  id_cols = c(PATIENT_NUM, medhospX_type, medhospX_start_dt, redcap_repeat_instance, med_num),   
                   names_from = Variable...Field.Name,
                   values_from = ECRF_CODE,
                   values_fill = NA) 
 
 # pivot medhospX_start_dt
 out2 <- out %>%
-  mutate(medhospX_start_dt_names = str_replace('medhospX_start_dt', 'X', as.character(redcap_repeat_instance))) %>%
+  mutate(medhospX_start_dt_names = str_replace('medhospX_start_dt', 'X', as.character(med_num))) %>%
   pivot_wider(
     names_from = medhospX_start_dt_names,
     values_from = medhospX_start_dt,
@@ -114,7 +114,7 @@ out2 <- out %>%
 
 # pivot medhospX_type
 out3 <- out2 %>%
-  mutate(medhospX_type_names = str_replace('medhospX_type', 'X', as.character(redcap_repeat_instance))) %>%
+  mutate(medhospX_type_names = str_replace('medhospX_type', 'X', as.character(med_num))) %>%
   pivot_wider(
     names_from = medhospX_type_names,
     values_from = medhospX_type,
