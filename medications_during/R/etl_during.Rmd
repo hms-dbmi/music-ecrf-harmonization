@@ -68,23 +68,23 @@ df <- df %>%
 
 # Add additional columns
 - medhospX_type: overall category of medication
-- medhospX_start_dt: start date, mm-dd-yyyy
+- medhospX_start_dt: start date, mm-dd-yyyy *****This does not appear to be needed
 - med_num refers to the 'X' in the variable name. (internal)
 - redcap_repeat_instance refers to the form number. you can have 10 med_nums per form.
 ```{r}
 df2 <- df %>%
-  group_by(PATIENT_NUM, ECRF_CODE, date) %>%
+  group_by(PATIENT_NUM, ECRF_CODE) %>%
   summarise(Variable...Field.Name = first(Variable...Field.Name)) %>%
   ungroup() %>%
   group_by(PATIENT_NUM) %>%
-  arrange(date, ECRF_CODE) %>%
+  arrange(ECRF_CODE) %>%
   mutate(rownum = row_number(),
          med_num = ifelse(rownum %% 10 == 0, 10, rownum %% 10),
          redcap_repeat_instance = (rownum - 1) %/% 10 + 1,
          medhospX_type = as.numeric(str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', ''))) %>%
   ungroup() %>%
-  mutate(medhospX_start_dt = format(date, "%m/%d/%Y")) %>%
-  select(-rownum, -date) 
+  #mutate(medhospX_start_dt = format(date, "%m/%d/%Y")) %>%
+  select(-rownum) 
 
 # rename X in variable name depending on 'med_num'
 
@@ -98,18 +98,18 @@ df3 <- df2 %>%
 
 # pivot variable names
 out <- pivot_wider(df3,
-                  id_cols = c(PATIENT_NUM, medhospX_type, medhospX_start_dt, redcap_repeat_instance, med_num),   
+                  id_cols = c(PATIENT_NUM, medhospX_type, redcap_repeat_instance, med_num),   
                   names_from = Variable...Field.Name,
                   values_from = ECRF_CODE,
                   values_fill = NA) 
 
 # pivot medhospX_start_dt
-out2 <- out %>%
-  mutate(medhospX_start_dt_names = str_replace('medhospX_start_dt', 'X', as.character(med_num))) %>%
-  pivot_wider(
-    names_from = medhospX_start_dt_names,
-    values_from = medhospX_start_dt,
-    values_fill = NA)
+out2 <- out #%>%
+  #mutate(medhospX_start_dt_names = str_replace('medhospX_start_dt', 'X', as.character(med_num))) %>%
+  #pivot_wider(
+    #names_from = medhospX_start_dt_names,
+    #values_from = medhospX_start_dt,
+    #values_fill = NA)
   
 
 # pivot medhospX_type
@@ -139,7 +139,8 @@ out4 <- left_join(out3, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>%
 ### write test output for test patients 120002 and 120003
 write.csv(out4 %>%
             filter(record_id %in% c(120002, 120003)) %>%
-            mutate(record_id = ifelse(record_id == 120002, 888002, 888003)),
+            mutate(record_id = ifelse(record_id == 120002, 888002, 888003)) %>%
+            select(-colnames(out4)[grep('dt', colnames(out4))]),
           '../local_ref/redcap_TEST_output_medications_during.csv',
           row.names = FALSE, 
           na = '')
