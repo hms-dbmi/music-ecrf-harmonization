@@ -131,19 +131,24 @@ out4 <- left_join(out3, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>%
          redcap_repeat_instrument = "additional_medications_during_hospitalization") %>%
   relocate(record_id, redcap_event_name, redcap_repeat_instrument) 
   
+# collapse rows by form
+out5 <- out4 %>%
+  group_by(record_id, redcap_repeat_instance) %>%
+  summarise_each(funs(first(.[!is.na(.)])))
 
 # write output with patient IDs included
 #write.csv(out4, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE, na = '')
 #write.csv(out3 %>% select(-PATIENT_NUM, -redcap_repeat_instance), '../local_ref/redcap_output_medications_during.csv', row.names = FALSE)
 
 ### write test output for test patients 120002 and 120003
-write.csv(out4 %>%
+write.csv(out5 %>%
             filter(record_id %in% c(120002, 120003)) %>%
-            mutate(record_id = ifelse(record_id == 120002, 888002, 888003)) %>%
-            select(-colnames(out4)[grep('dt', colnames(out4))]),
+            mutate(record_id = ifelse(record_id == 120002, 888002, 888003)),
           '../local_ref/redcap_TEST_output_medications_during.csv',
           row.names = FALSE, 
           na = '')
+
+
 ```
 
 
