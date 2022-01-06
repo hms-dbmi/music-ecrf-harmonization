@@ -240,6 +240,7 @@ datadict_labonly <- datadict_labonly %>%
           concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Neutrophil/Band\\LAB:3775663",
           checkUnits = 'Expected and current units match') 
 
+
 ```
 
 
@@ -389,6 +390,10 @@ finalmap <- rbind(finalmap,
             datadict_labonly %>% filter(grepl('ige', Variable...Field.Name)) %>% select(Variable...Field.Name, concept_cd, name_char, concept_path, checkUnits))
 finalmap <- rbind(finalmap, 
             datadict_labonly %>% filter(grepl('cd19_abs', Variable...Field.Name)) %>% select(Variable...Field.Name, concept_cd, name_char, concept_path, checkUnits))
+finalmap <- rbind(finalmap, 
+            datadict_labonly %>% filter(grepl('sars_igg', Variable...Field.Name)) %>% select(Variable...Field.Name, concept_cd, name_char, concept_path, checkUnits))
+finalmap <- rbind(finalmap, 
+            datadict_labonly %>% filter(grepl('sars_igm', Variable...Field.Name)) %>% select(Variable...Field.Name, concept_cd, name_char, concept_path, checkUnits))
 
 ```
 
@@ -424,7 +429,7 @@ labdict <- finalmap %>%
 
 Save labdict as `labdictionary.txt` for use in other notebooks.
 ```{r}
-write.table(labdict, '../data/labDictionary_updated.txt', quote = FALSE, row.name = FALSE)
+write.table(labdict %>% filter(!is.na(concept_cd)), '../data/labDictionary_updated.txt', quote = FALSE, row.name = FALSE)
 
 # for manual SQL query:
 #write.table(labdict$concept_cd, '../local_ref/concepts_for_query_updated.txt', row.names = FALSE, col.names = FALSE, eol = "', '", quote = FALSE)
