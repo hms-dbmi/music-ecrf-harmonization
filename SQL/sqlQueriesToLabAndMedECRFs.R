@@ -78,3 +78,15 @@ query
 #ag440_misc_patients_september pat 
 #where obs.patient_num = pat.patient_num and concept_cd like 'LAB:%';
 
+###########
+## Meds ##
+##########
+### SQL query to have a table with all the meds data in MISC patients
+
+# create table ag440_music_meds_nov21 as 
+# select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, 
+# obs.nval_num, obs.units_cd, pat.ADMISSIONDATE, pat.discharge_date_formatted 
+# from observation_fact obs, 
+# ag440_misc_patients_september pat 
+# where obs.patient_num = pat.patient_num and ( concept_cd like 'HOMEMED:%' or concept_cd like 'ADMINMED:%');
+ 
