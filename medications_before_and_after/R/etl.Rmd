@@ -230,7 +230,7 @@ out3 <- out2 %>%
 ```{r}
 
 #write.csv(out3, '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE)
-write.csv(out3 %>% filter(record_id == 120002) %>% mutate(record_id = 777002),
+write.csv(out3 %>% filter(record_id == 120006) %>% mutate(record_id = 777006),
           '../local_ref/redcap_output_TEST_medications_before_and_after.csv', row.names = FALSE, na = '')
 ```
 
