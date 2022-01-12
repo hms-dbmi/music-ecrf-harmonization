@@ -277,3 +277,9 @@ cd19_abs_obtained LAB:3777235 laboratory_values
 cd19_abs_date LAB:3777235 laboratory_values
 cd19_abs_value LAB:3777235 laboratory_values
 cd19_abs_unit LAB:3777235 laboratory_values
+anti_sars_igg_obtained LAB:1055858179 laboratory_values
+anti_sars_igg_date LAB:1055858179 laboratory_values
+anti_sars_igg_value LAB:1055858179 laboratory_values
+anti_sars_igm_obtained LAB:1055858187 laboratory_values
+anti_sars_igm_date LAB:1055858187 laboratory_values
+anti_sars_igm_value LAB:1055858187 laboratory_values
