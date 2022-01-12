@@ -73,6 +73,7 @@ manual_keywords <- read_csv('../data/manual_keywords_eCRF_to_RXNORM.csv')
 for (code in manual_keywords$Code) {
   meds_auto[ meds_auto$Code == code, "key"] <- manual_keywords %>% filter(Code == code) %>% pull(key)
 }
+meds_auto$key <- gsub("/", "|", meds_auto$key)
 
 # create a blank dataframe for ecrf_to_rxnorm
 ecrf_to_rxnorm <- data.frame('ECRF_CODE' = '', 'ECRF_GENERIC_NAME' = '', 'RXNORM_CODE' = '', 'RXNORM_DESCRIPTION' = '')
