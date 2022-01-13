@@ -21,7 +21,7 @@ library(lubridate)
 Use the same query as medications_before_and_after -- see that pipeline for details
 ```{r}
 
-df <- read.csv('../../medications_before_and_after/local_ref/agg40_music_meds_filtered.csv')
+df <- read.csv('../../medications_before_and_after/local_ref/ag440_music_meds_nov21.csv')
 
 # if the code is formatted like so: '2.00', convert to '02.00'
 fix_code_formatting <- function(x) {
@@ -58,7 +58,7 @@ df <- df %>%
   mutate(date = dmy(sapply(strsplit( as.character(START_DATE), " "), '[', 1)),
          time = sapply(strsplit( as.character(START_DATE), " "), '[', 2),
          DISCHARGE_DATE = dmy(sapply(strsplit( as.character(END_DATE), " "), '[', 1)),
-         ADMISSION_DATE = dmy(ADMISSIONDATE),
+         ADMISSION_DATE = dmy(sapply(strsplit( as.character(ADMISSIONDATE), " "), '[', 1)),
          days_after_admission = date - ADMISSION_DATE,
          days_after_discharge = date - DISCHARGE_DATE) %>%
   filter(days_after_admission >= 0,
