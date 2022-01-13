@@ -64,7 +64,7 @@ We summarise the information of the codes that are present in the MISC patients.
 rxnorm_to_bch <- inner_join( ecrf_to_rxnorm, bchmapping, by="RXNORM_CODE")
 
 # load MISC patient medication data
-misc_meds <- read.delim("../local_ref/music_patients_meds.dsv", sep = ',')
+misc_meds <- read.delim("../local_ref/ag440_music_meds_nov21.csv", sep = ',')
 
 misc_meds <- pivot_wider(misc_meds, 
                          id_cols = c(PATIENT_NUM, CONCEPT_CD, START_DATE, ADMISSIONDATE, END_DATE, LENGTH_OF_STAY),
