@@ -1,0 +1,449 @@
+---
+title: "Extract Info From Data Dictionary"
+author: "Simran Makwana & Alba Gutierrez"
+date: "11/23/2021"
+output: html_document
+---
+
+Goal: Save lab dictonary containing mapping frome eCRF to BCH concept_cd. 
+
+# Begin with Exploring the entire Lab Values Data Dictionary
+```{r setup, include=FALSE}
+library(tidyverse)
+
+
+# for testing
+bch_data <- read.delim('../local_ref/music_labs_observation_withUnits.dsv')
+```
+
+Load data
+```{r}
+datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+checked_vars <- read.csv('../data/MUSIC Laboratory Values Form_ mapping from eCRF numeric variables and BCH variables - eCRF to BCH laboratory numeric variables.csv', skip = 1) 
+```
+
+*Focus on all values possible*
+Focus on values which have passed the checkUnits filters.
+```{r}
+#var_prefixes <- checked_vars %>% 
+#  filter(checkUnits == 'OK') %>%
+#  pull(Variable...Field.Name) 
+
+#var_prefixes <- gsub('_value', '', var_prefixes)
+
+# focusing on these 4 types of variables first
+#our_vars <- c(paste0(var_prefixes, '_obtained'), 
+#              paste0(var_prefixes, '_value'),
+#              paste0(var_prefixes, '_unit'),
+#              paste0(var_prefixes, '_date'))
+
+  
+```
+
+```{r}
+
+
+var_func <- function(variablename){
+  
+  for (prefix in var_prefixes) {
+    if (grepl(paste0('^', prefix, c('_obtained','_value','_unit', '_unit_other', '_obtained', '_date'), collapse = '|'), variablename)) {return(paste0(prefix, '_value'))}
+    
+  }
+  
+  return('')
+  
+}
+
+
+```
+
+
+
+Focus on laboratory values in data dictionary
+- combine the "Choices..." column with the "Field.Note" column, as they contain similar info
+- merge in the data from our manual check with bch (checked_vars)
+```{r}
+datadict_labonly <- datadict %>% 
+  filter(Form.Name == "laboratory_values") %>%
+  mutate(Choices..Calculations..OR.Slider.Labels = paste0(Choices..Calculations..OR.Slider.Labels, Field.Note)) 
+
+value_vars <- datadict_labonly$Variable...Field.Name[grepl('_value$', datadict_labonly$Variable...Field.Name)]
+var_prefixes <- gsub('_value', '', value_vars)
+
+datadict_labonly <- datadict_labonly %>%
+  mutate(var_match = sapply(Variable...Field.Name, var_func)) %>%
+  left_join(checked_vars %>% 
+              select(variable, concept_cd, name_char, concept_path, checkUnits), 
+            by = c('var_match' = 'variable')) %>%
+  select(-Field.Type, -Field.Label, -Form.Name, -Branching.Logic..Show.field.only.if...., 
+         -Required.Field., -Custom.Alignment, -Question.Number..surveys.only., 
+         -Matrix.Group.Name, -Matrix.Ranking., -Field.Annotation) %>%
+  unique()
+
+datadict_labonly
+```
+
+### Fill in missing values
+
+0. We have some labs which we received feedback on but could not find. incorporate those here. 
+```{r}
+datadict_labonly <- datadict_labonly %>%
+  add_row(Variable...Field.Name = 'lactate_obtained',
+          concept_cd = 'LAB:3775554',
+          name_char = 'Lactic Acid, Whole Blood',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Chemistry\\Lactic Acid, Whole Blood\\LAB:3775554\\",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'lactate_date',
+          concept_cd = 'LAB:3775554',
+          name_char = 'Lactic Acid, Whole Blood',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Chemistry\\Lactic Acid, Whole Blood\\LAB:3775554\\",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'lactate_value',
+          concept_cd = 'LAB:3775554',
+          name_char = 'Lactic Acid, Whole Blood',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Chemistry\\Lactic Acid, Whole Blood\\LAB:3775554\\",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'lactate_unit',
+          concept_cd = 'LAB:3775554',
+          name_char = 'Lactic Acid, Whole Blood',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Chemistry\\Lactic Acid, Whole Blood\\LAB:3775554\\",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'urea_obtained',
+          concept_cd = 'LAB:3775158',
+          name_char = 'BUN',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Chemistry\\BUN\\LAB:3775158\\",
+          checkUnits = "Expected and current units match") %>%
+  add_row(Variable...Field.Name = 'urea_date',
+          concept_cd = 'LAB:3775158',
+          name_char = 'BUN',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Chemistry\\BUN\\LAB:3775158\\",
+          checkUnits = "Expected and current units match") %>%
+  add_row(Variable...Field.Name = 'urea_value',
+          concept_cd = 'LAB:3775158',
+          name_char = 'BUN',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Chemistry\\BUN\\LAB:3775158\\",
+          checkUnits = "Expected and current units match") %>%
+  add_row(Variable...Field.Name = 'urea_unit',
+          concept_cd = 'LAB:3775158',
+          name_char = 'BUN',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Chemistry\\BUN\\LAB:3775158\\",
+          checkUnits = "Expected and current units match") %>%
+  add_row(Variable...Field.Name = 'bicarbonate_obtained',
+          concept_cd = 'LAB:3710038',
+          name_char = 'CO2',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Chemistry\\CO2\\LAB:3710038\\",
+          checkUnits = "Expected and current units match") %>%
+  add_row(Variable...Field.Name = 'bicarbonate_date',
+          concept_cd = 'LAB:3710038',
+          name_char = 'CO2',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Chemistry\\CO2\\LAB:3710038\\",
+          checkUnits = "Expected and current units match") %>%
+  add_row(Variable...Field.Name = 'bicarbonate_value',
+          concept_cd = 'LAB:3710038',
+          name_char = 'CO2',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Chemistry\\CO2\\LAB:3710038\\",
+          checkUnits = "Expected and current units match") %>%
+  add_row(Variable...Field.Name = 'bicarbonate_unit',
+          concept_cd = 'LAB:3710038',
+          name_char = 'CO2',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Chemistry\\CO2\\LAB:3710038\\",
+          checkUnits = "Expected and current units match") %>%
+  add_row(Variable...Field.Name = 'sars_cov2ntpcr_obtained',
+          concept_cd = 'LAB:1044704735',
+          name_char = 'SARS CoV-2 (COVID-19) PCR, Resp, QuaL',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'sars_cov2ntpcr_date',
+          concept_cd = 'LAB:1044704735',
+          name_char = 'SARS CoV-2 (COVID-19) PCR, Resp, QuaL',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'sars_cov2ntpcr_value',
+          concept_cd = 'LAB:1044704735',
+          name_char = 'SARS CoV-2 (COVID-19) PCR, Resp, QuaL',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match')  %>%
+  add_row(Variable...Field.Name = 'total_anti_obtained',
+          concept_cd = 'LAB:1062063907',
+          name_char = 'SARS CoV-2 Total Antibody',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'total_anti_date',
+          concept_cd = 'LAB:1062063907',
+          name_char = 'SARS CoV-2 Total Antibody',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'total_anti_value',
+          concept_cd = 'LAB:1062063907',
+          name_char = 'SARS CoV-2 Total Antibody',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'il_17_date',
+          concept_cd = 'LAB:768388111',
+          name_char = 'Interleukin 17',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'il_17_value',
+          concept_cd = 'LAB:768388111',
+          name_char = 'Interleukin 17',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'il_17_obtained',
+          concept_cd = 'LAB:768388111',
+          name_char = 'Interleukin 17',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'il_17_unit',
+          concept_cd = 'LAB:768388111',
+          name_char = 'Interleukin 17',
+          concept_path = NA,
+          checkUnits = 'Expected and current units match') %>%
+  ##### manually adding thes concepts as a 'doubled' concept - we found 2 concept cds for these
+  add_row(Variable...Field.Name = 'lymphocyt_value',
+          concept_cd = 'LAB:3775664',
+          name_char = 'Lymphocyte',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Lymphocyte\\LAB:3775664\\",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'lymphocyt_obtained',
+          concept_cd = 'LAB:3775664',
+          name_char = 'Lymphocyte',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Lymphocyte\\LAB:3775664\\",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'lymphocyt_date',
+          concept_cd = 'LAB:3775664',
+          name_char = 'Lymphocyte',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Lymphocyte\\LAB:3775664\\",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'lymphocyt_unit',
+          concept_cd = 'LAB:3775664',
+          name_char = 'Lymphocyte',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Lymphocyte\\LAB:3775664\\",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'neutrophil_value',
+          concept_cd = 'LAB:3775663',
+          name_char = 'Neutrophil/Band',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Neutrophil/Band\\LAB:3775663",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'neutrophil_date',
+          concept_cd = 'LAB:3775663',
+          name_char = 'Neutrophil/Band',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Neutrophil/Band\\LAB:3775663",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'neutrophil_unit',
+          concept_cd = 'LAB:3775663',
+          name_char = 'Neutrophil/Band',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Neutrophil/Band\\LAB:3775663",
+          checkUnits = 'Expected and current units match') %>%
+  add_row(Variable...Field.Name = 'neutrophil_obtained',
+          concept_cd = 'LAB:3775663',
+          name_char = 'Neutrophil/Band',
+          concept_path = "\\i2b2\\Lab View\\Laboratory\\Hematology\\Neutrophil/Band\\LAB:3775663",
+          checkUnits = 'Expected and current units match') 
+
+
+```
+
+
+1. Variables which are 'good to go'
+  - checkUnits is ok
+  - at least one concept_cd per varname
+```{r}
+finalmap <- datadict_labonly %>% 
+  filter(checkUnits == 'Expected and current units match',
+         concept_cd != '',
+         !is.na(concept_cd)) %>%
+  select(-Choices..Calculations..OR.Slider.Labels, -Field.Note, -Text.Validation.Type.OR.Show.Slider.Number, 
+         -Identifier., -var_match, -Text.Validation.Min, -Text.Validation.Max, -Section.Header)
+
+print(paste0('There are ', length(unique(finalmap$Variable...Field.Name)), " variables which are 'good to go'"))
+
+```
+  
+2. Missing concept_cd
+  - find one manually
+```{r}
+missing_cd <- datadict_labonly %>% 
+  filter(concept_cd == '' | is.na(concept_cd))
+
+print(paste0('There are ', length(unique(missing_cd$Variable...Field.Name)), " variables which are have missing concept_cd"))
+
+missing_cd
+
+# of these, we KNOW we can remove the following:
+remove <- c('lab_values_na', # we cannot know this from auto extraction
+            'lab_values_visit', # we calculate this later
+            'anti_sars_igm_man', # we cannot know this from auto extraction
+            'anti_sars_igg_man', # we cannot know this from auto extraction
+            'total_anti_man', # we cannot know this from auto extraction
+            'anc', # this will be calculated by redcap
+            'alc', # this will be calculated by redcap
+            'nl_ratio', # this will be calculated by redcap
+            'cytokine_obtained', # there is no concept related to this. we COULD determine based on other lab values
+            'other_il1_obtained', # we cannot know this from auto extraction
+            'other_il1_date', # we cannot know this from auto extraction
+            'other_il1_value', # we cannot know this from auto extraction
+            'other_il1_unit', # we cannot know this from auto extraction
+            'other_il2_obtained', # we cannot know this from auto extraction
+            'other_il2_date', # we cannot know this from auto extraction
+            'other_il2_value', # we cannot know this from auto extraction
+            'other_il2_unit', # we cannot know this from auto extraction
+            'other_il3_obtained', # we cannot know this from auto extraction
+            'other_il3_date', # we cannot know this from auto extraction
+            'other_il3_value', # we cannot know this from auto extraction
+            'other_il3_unit', # we cannot know this from auto extraction
+            'other_il4_obtained', # we cannot know this from auto extraction
+            'other_il4_date', # we cannot know this from auto extraction
+            'other_il4_value', # we cannot know this from auto extraction
+            'other_il4_unit', # we cannot know this from auto extraction
+            'other_il5_obtained', # we cannot know this from auto extraction
+            'other_il5_date', # we cannot know this from auto extraction
+            'other_il5_value', # we cannot know this from auto extraction
+            'other_il5_unit', # we cannot know this from auto extraction
+            'other_labs', # we cannot know this from auto extraction
+            'other1_specify', # we cannot know this from auto extraction
+            'other1_date', # we cannot know this from auto extraction
+            'other1_value', # we cannot know this from auto extraction
+            'other1_unit', # we cannot know this from auto extraction 
+            'other2_specify', # we cannot know this from auto extraction
+            'other2_date', # we cannot know this from auto extraction
+            'other2_value',  # we cannot know this from auto extraction
+            'other2_unit', # we cannot know this from auto extraction
+            'other3_specify', # we cannot know this from auto extraction
+            'other3_date',  # we cannot know this from auto extraction
+            'other3_value', # we cannot know this from auto extraction
+            'other3_unit', # we cannot know this from auto extraction
+            'other4_specify', # we cannot know this from auto extraction 
+            'other4_date', # we cannot know this from auto extraction
+            'other4_value',  # we cannot know this from auto extraction
+            'other4_unit', # we cannot know this from auto extraction
+            'other5_specify', # we cannot know this from auto extraction
+            'other5_date', # we cannot know this from auto extraction
+            'other5_value', # we cannot know this from auto extraction
+            'other5_unit' # we cannot know this from auto extraction
+            ) 
+
+missing_cd <- missing_cd %>% filter(!Variable...Field.Name %in% remove)
+missing_cd
+print(paste0('There are now ', length(unique(missing_cd$Variable...Field.Name)), " variables which are have missing concept_cd"))
+
+datadict_labonly <- datadict_labonly %>% filter(!Variable...Field.Name %in% remove)
+
+# we manually review the remaining variables and find the following information (which we add to the final mapping table)
+# we got this information from mohamad as LabCode in the 59 account
+# we want to add this to finalmap once (if) verified
+
+datadict_labonly <- datadict_labonly %>% 
+  add_row(Variable...Field.Name = 'anti_sars_igm_obtained',
+          concept_cd = 'LAB:1055858187',
+          name_char = 'SARS CoV-2 IgM',
+          concept_path = NA,
+          checkUnits = 'Our patients have values TNP and L, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate') %>%
+  add_row(Variable...Field.Name = 'anti_sars_igm_date',
+          concept_cd = 'LAB:1055858187',
+          name_char = 'SARS CoV-2 IgM',
+          concept_path = NA,
+          checkUnits = 'Our patients have values TNP and L, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate') %>%
+  add_row(Variable...Field.Name = 'anti_sars_igm_value',
+          concept_cd = 'LAB:1055858187',
+          name_char = 'SARS CoV-2 IgM',
+          concept_path = NA,
+          checkUnits = 'Our patients have values TNP and L, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate') %>%
+  add_row(Variable...Field.Name = 'anti_sars_igg_obtained',
+          concept_cd = 'LAB:1055858179',
+          name_char = 'SARS CoV-2 IgG',
+          concept_path = NA,
+          checkUnits = 'Our patients have numeric values with NOT DEFINED IN SOURCE units, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate') %>%
+  add_row(Variable...Field.Name = 'anti_sars_igg_date',
+          concept_cd = 'LAB:1055858179',
+          name_char = 'SARS CoV-2 IgG',
+          concept_path = NA,
+          checkUnits = 'Our patients have numeric values with NOT DEFINED IN SOURCE units, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate') %>%
+  add_row(Variable...Field.Name = 'anti_sars_igg_value',
+          concept_cd = 'LAB:1055858179',
+          name_char = 'SARS CoV-2 IgG',
+          concept_path = NA,
+          checkUnits = 'Our patients have numeric values with NOT DEFINED IN SOURCE units, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate') 
+
+
+ 
+  
+
+```
+
+3. Incorrect or missing checkUnits
+- we add IgE to the lab dictionary, as we account for the difference in units in the lab_value_etl_with_pre_existing_follow_up script
+- we add cd19_abs as the unites do indeed match
+```{r}
+test <- datadict_labonly %>%
+  group_by(Variable...Field.Name) %>%
+  summarise(concept = paste0(concept_cd, collapse = '-'),
+            checkUnits = paste0(checkUnits, collapse = '-'))
+
+testgood <- test %>% filter(concept != 'NA' | concept != '', grepl('match', checkUnits))
+testbad <- test %>% filter(concept == 'NA' | concept == '' | !grepl('match', checkUnits))
+
+testbad
+
+######
+# we can still use the variables where the units do not match, but just need to treat it differently in the redcap output (list unit, etc)
+finalmap <- rbind(finalmap, 
+            datadict_labonly %>% filter(grepl('ige', Variable...Field.Name)) %>% select(Variable...Field.Name, concept_cd, name_char, concept_path, checkUnits))
+finalmap <- rbind(finalmap, 
+            datadict_labonly %>% filter(grepl('cd19_abs', Variable...Field.Name)) %>% select(Variable...Field.Name, concept_cd, name_char, concept_path, checkUnits))
+finalmap <- rbind(finalmap, 
+            datadict_labonly %>% filter(grepl('sars_igg', Variable...Field.Name)) %>% select(Variable...Field.Name, concept_cd, name_char, concept_path, checkUnits))
+finalmap <- rbind(finalmap, 
+            datadict_labonly %>% filter(grepl('sars_igm', Variable...Field.Name)) %>% select(Variable...Field.Name, concept_cd, name_char, concept_path, checkUnits))
+
+```
+
+```{r}
+#loinc_bch <- read.csv('../data/BCH_Lab_Loinc_cd_Map_data.csv')
+#ecrf_loinc <- read.csv('../data/eCRF_to_LOINC_forReview.csv')
+```
+
+
+4. checkUnits unverified due to not having MISC patient data
+```{r}
+
+# If there are no data found for these patients in BCH, but we have a concept_cd, we cannot do anything.
+testbad2 <- testbad %>% filter(grepl('no data for MIS-C patients in BCH', checkUnits))
+
+```
+
+There are still some variables we need to remove.
+```{r}
+# We remove crp_unit_other, wbc_unit_other, platelets_unit_other, platelets_unit_other  because our units match the specified ones.
+finalmap <- finalmap %>% filter(!Variable...Field.Name %in% c('crp_unit_other', 'wbc_unit_other', 'platelets_unit_other', 'triglycerid_unit_other') )
+
+```
+
+We now have all the variables which we can map reported value in the EHR to expected value in RedCap.
+```{r}
+labdict <- finalmap %>% 
+  select(Variable...Field.Name, concept_cd) %>%
+  rename('variableName' = Variable...Field.Name) %>%
+  mutate(formName = 'laboratory_values')
+
+```
+
+Save labdict as `labdictionary.txt` for use in other notebooks.
+```{r}
+write.table(labdict %>% filter(!is.na(concept_cd)), '../data/labDictionary_updated.txt', quote = FALSE, row.name = FALSE)
+
+# for manual SQL query:
+#write.table(labdict$concept_cd, '../local_ref/concepts_for_query_updated.txt', row.names = FALSE, col.names = FALSE, eol = "', '", quote = FALSE)
+
+```
+
+```{r}
+sessionInfo()
+```
+
+
+
+
+
+
+
+
