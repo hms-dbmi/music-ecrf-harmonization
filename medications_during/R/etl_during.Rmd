@@ -134,7 +134,20 @@ out4 <- left_join(out3, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>%
 # collapse rows by form
 out5 <- out4 %>%
   group_by(record_id, redcap_repeat_instance) %>%
-  summarise_each(funs(first(.[!is.na(.)])))
+  summarise_all(~first(na.omit(.)))
+#out5 <- out4 %>%
+#  group_by(record_id, redcap_repeat_instance) %>%
+#  summarise_each(funs(first(.[!is.na(.)])))
+
+
+#test2 <- test %>%
+#  group_by(record_id, redcap_repeat_instance) %>%
+#  dplyr::summarise_all(~first(na.omit(.)))
+
+
+
+#library(data.table)
+#setDT(test)[, lapply(.SD, na.omit), by = record_id)]
 
 # write output with patient IDs included
 #write.csv(out4, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE, na = '')
