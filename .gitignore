@@ -2,3 +2,5 @@
 *testoutput.csv*
 **/input_data_extract/**
 **/output_redcap/**
+**/.DS_Store
+**/.Rhistory
