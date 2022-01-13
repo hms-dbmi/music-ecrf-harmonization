@@ -23,36 +23,27 @@ library(lubridate)
 
 Example, in BCH, we create the following query to obtain the data extract for the codes identified in previous steps for MISC patients.
 ```{r}
-bch_med_concept_summary <- read_csv('../data/bch_med_concept_summary_toReview.csv')
-
-query_a <- "select obs.patient_num, obs.concept_cd, obs.start_date, misc.admissiondate, misc.end_date, misc.length_of_stay from observation_fact obs, ag440_misc_patients_may misc where (concept_cd in ('"
-
-query_b <- "')) and obs.patient_num = misc.patient_num;"
-
-bch_codes <- paste0(bch_med_concept_summary$CONCEPT_CD, collapse = "', '")
-
-query <- paste0(query_a, bch_codes, query_b)
-
-query
-
+bch_med_concept_summary <- read_csv('../data/bch_med_concept_summary_toReview_Tuesday.csv')
+#query_a <- "select obs.patient_num, obs.concept_cd, obs.start_date, misc.admissiondate, misc.end_date, misc.length_of_stay from observation_fact obs, ag440_misc_patients_may misc where (concept_cd in ('"
+#query_b <- "')) and obs.patient_num = misc.patient_num;"
+#bch_codes <- paste0(bch_med_concept_summary$CONCEPT_CD, collapse = "', '")
+#query <- paste0(query_a, bch_codes, query_b)
+#query
 ```
 
 The results of the above query have been saved.
 Load data dictionary to acquire variable names and merge with mapping file.
 Load data extract and merge with mapping file to assign eCRF codes to each event.
 ```{r}
-
-df <- read.csv('../local_ref/agg40_music_meds_filtered.csv')
-
+#df <- read.csv('../local_ref/agg40_music_meds_filtered.csv')
+df <- read.csv('../local_ref/ag440_music_meds_nov21.csv')
 datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
   filter(Form.Name == 'medications_before_and_after_hosp') %>%
   select(Variable...Field.Name, Choices..Calculations..OR.Slider.Labels) 
-
 # if the code is formatted like so: '2.00', convert to '02.00'
 fix_code_formatting <- function(x) {
   ifelse(test = !grepl("[[:digit:]]{2}.", x), yes = (paste0('0', x)), no = (x))
 }
-
 datadict <- datadict %>% 
   filter(!Variable...Field.Name %in% c('current_meds_fu_na', 'medcur1_type', 'medcur1_name', 'medcur1_current', 'medcur1_readmit', 'medcur1_ae', 'medcur1_ae_num', 'medcalc')) %>%
   separate_rows(Choices..Calculations..OR.Slider.Labels, sep = '\\|') %>%
@@ -60,17 +51,55 @@ datadict <- datadict %>%
          ECRF_CODE = str_trim(ECRF_CODE),
          ECRF_CODE = fix_code_formatting(ECRF_CODE)) %>%
   select(-Choices..Calculations..OR.Slider.Labels)
-
 bch_med_concept_summary <- left_join(bch_med_concept_summary, datadict, by = 'ECRF_CODE')
-
 df <- left_join(df, bch_med_concept_summary %>% select(ECRF_CODE, CONCEPT_CD, Variable...Field.Name), by = 'CONCEPT_CD')
-
 ```
 
 
 # 3. Calculate medcur1_current column
 
 *currently, readmission is not calculated - will need patient timeline* 
+
+### Using similar approach as lab etl with preexisting follow up dates
+Import the follow-up visit dates. The MUSIC_DATA_2021-11-23_0940.csv is the file extracted from REDCap of the data previously entered by BCH experts. From there we will extract the specific follow-up dates for the MUSIC study for the MISC patients. The variable name that contains the date is "visit_date", extracted from the dictionary. The record id is the internal MUSIC identifier, and the redcap_event_name allows us to know which is the specific follow-up period the date is referring to. Because the ID are MUSIC Ids we also need to load the music_mapping_id. 
+```{r}
+misc_mapping <- read.csv("../../local_ref/music_id_mapping.csv")
+visit_dates  <- read.csv("../../laboratory_values/local_ref/MUSIC_DATA_2021-12-01_1413.csv")
+visit_dates <- visit_dates %>%
+  filter( visit_date != "" ) %>%
+  select( record_id, redcap_event_name, visit_date )
+### let's put together in a table all the information, combining the patient timeline with first admission and discharge date with the rest of follow-up dates when available
+misc_followUp <- visit_dates %>%
+  spread( redcap_event_name, visit_date ) %>%
+  left_join( misc_mapping, by = c("record_id"="MUSIC_ID") ) %>%
+  select( PATIENT_NUM, two_weeks = "2_weeks_postdischa_arm_1", 
+          six_weeks = "6_weeks_postdischa_arm_1", six_months = "6_months_postdisch_arm_1")
+head(misc_followUp)
+```
+
+
+Data transformation
+- split `START_DATE` field into `date` and `time`
+- perform a left join to combine extracted data with variables in lab dictionary
+- reformat `ADMISSION_DATE` and `DISCHARGE_DATE` as dates
+- calculate `days_after_admission` and `days_after_discharge`
+And we join this information with the follow-up information. 
+```{r}
+df$date <- sapply(strsplit( as.character(df$START_DATE), " "), '[', 1)
+df$time <- sapply(strsplit( as.character(df$START_DATE), " "), '[', 2)
+df$ADMISSIONDATE <- sapply(strsplit(as.character(df$ADMISSIONDATE), ' '), '[', 1)
+df$END_DATE <- sapply(strsplit(as.character(df$END_DATE), ' '), '[', 1)
+finalTable <- df
+finalTable <- finalTable %>%
+  mutate(date = dmy(date),
+         ADMISSIONDATE = dmy(ADMISSIONDATE),
+         END_DATE = dmy(END_DATE),
+         days_after_admission = date - ADMISSIONDATE,
+         days_after_discharge = date - END_DATE) %>%
+  left_join( misc_followUp )
+```
+
+## Assign period based on the days of diff
 
 The variable medcur1_current is a checkbox variable where sites check off which time points the medication was taken.  Each follow up visit, if the participant is still on the medication, the site can return to the same form already entered for that medication, and check off the box saying they are still on it.  In the data dictionary, it’s codelist is: 
 - 0: Before hospitalization for MIS-C (for pre-existing conditions)
@@ -96,110 +125,94 @@ The variable medcur1_current is a checkbox variable where sites check off which 
 - 19: Medication given during a readmission to the hospital (only readmissions related to MIS-C/COVID-19 symptoms/complications that occurred within 6 months of the initial hospitalization for MIS-C)
 
 ```{r}
-
-calculate_medcur1_current <- function(days_after_admission, days_after_discharge){
-  # no need to wrap statements in ifelse loop because they are mutually exclusive
-  if (days_after_admission < 0) {return(0)} # 0: Before hospitalization for MIS-C (for pre-existing conditions)
-  if (days_after_discharge > 0 & days_after_discharge < 14) {return(1)} # 1: Between hospital discharge and 2 Week visit
-  if (days_after_discharge == 14) {return(2)} # 2: 2 Weeks Post-Discharge
-  if (days_after_discharge > 14 & days_after_discharge < 42) {return(3)} # 3: Between the 2 Week and 6 Week visit
-  if (days_after_discharge == 42) {return(4)} # 4: 6 Weeks Post-Discharge
-  if (days_after_discharge > 42 & days_after_discharge < 90) {return(5)} # 5: Between the 6 Week and 3 Month visit
-  if (days_after_discharge == 90) {return(6)} # 6: 3 Months Post-Discharge
-  if (days_after_discharge > 90 & days_after_discharge < 180) {return(7)} # 7: Between the 3 Month and 6 Month visit
-  if (days_after_discharge == 180) {return(8)} # 8: 6 Months Post-Discharge
-  if (days_after_discharge > 180 & days_after_discharge < 365) {return(9)} # 9: Between the 6 Month and 1 Year visit
-  if (days_after_discharge == 365) {return(10)} # 10: 1 Year Post-Discharge
-  
-  if (days_after_discharge > 365 & days_after_discharge < 720) {return(11)} # 11: Between the 1 Year and 2 Year visit
-  if (days_after_discharge == 720) {return(12)} # 12: 2 Years Post-Discharge
-  if (days_after_discharge > 720 & days_after_discharge < 1095) {return(13)} # 13: Between the 2 Year and 3 Year visit
-  if (days_after_discharge == 1095) {return(14)} # 14: 3 Years Post-Discharge
-  if (days_after_discharge > 1095 & days_after_discharge < 1460) {return(15)} # 15: Between the 3 Year and 4 Year visit
-  if (days_after_discharge == 1460) {return(16)} # 16: 4 Years Post-Discharge
-  if (days_after_discharge > 1460 & days_after_discharge < 1825) {return(17)} # 17: Between the 4 Year and 5 Year visit
-  if (days_after_discharge == 1825) {return(18)} # 18: 5 Years Post-Discharge
-  # 19: Medication given during a readmission to the hospital (only readmissions related to MIS-C/COVID-19 symptoms/complications that occurred within 6 months of the initial hospitalization for MIS-C)
-  # 20: At the time of readmission to the hospital (only readmissions related to MIS-C/COVID-19 symptoms/complications that occurred within 6 months of the initial hospitalization for MIS-C)
-  
-  if (days_after_admission >= 0 & days_after_discharge <= 0) {return(-88)} # this means that the code happens during hospitalization -- should not be reported here - made up number
-  if (days_after_discharge > 1825) {return(100)} # this means the code happens later than defined in the scope of study -- use a made up number to report
-}
-
-df <- df %>%
-  mutate(date = dmy(sapply(strsplit( as.character(START_DATE), " "), '[', 1)),
-         time = sapply(strsplit( as.character(START_DATE), " "), '[', 2),
-         DISCHARGE_DATE = dmy(sapply(strsplit( as.character(END_DATE), " "), '[', 1)),
-         ADMISSION_DATE = dmy(ADMISSIONDATE),
-         days_after_admission = date - ADMISSION_DATE,
-         days_after_discharge = date - DISCHARGE_DATE) %>%
-  rowwise %>%
-  mutate(medcur1_current = calculate_medcur1_current(days_after_admission, days_after_discharge))
-
-# remove any entries with medcur1_current value of -88 (happened during hospitalization) or 100 (happened after scope of study)
-df <- df %>% filter(!medcur1_current %in% c(-88, 100))
-
-## add in redcap_repeat_instance 
-# "This is a repeating form, with only one medication per form"
-df2 <- df %>%
-  group_by(PATIENT_NUM) %>%
-  select(-START_DATE, -END_DATE, -date, -time, -days_after_admission, -days_after_discharge) %>%
-  unique() %>%
+### NOTE THAT THIS WILL NEED TO BE ADDED TO
+## AS ADDITIONAL FOLLOW UP VISITS BEYOND SIX MONTHS ARE ADDED
+ft2 <- finalTable %>%
+  filter(!is.na(ECRF_CODE)) %>%
+  #group_by( PATIENT_NUM, ECRF_CODE ) %>%
+  mutate( two_weeks_ref = if_else( !is.na( ymd(two_weeks) ), ymd(two_weeks), ymd( END_DATE ) + days(14) ), 
+          six_weeks_ref = if_else( !is.na( ymd(six_weeks) ), ymd(six_weeks), ymd( END_DATE ) + days(42) ), 
+          six_months_ref =if_else( !is.na( ymd(six_months)), ymd(six_months), ymd( END_DATE ) + days(182) )) 
+ ft3 <- ft2 %>%
+   mutate(medcur1_current = case_when(
+          date < ADMISSIONDATE ~ '0',
+          date > END_DATE & date < two_weeks_ref ~ '1', 
+          date == two_weeks_ref ~ '2',
+          date > two_weeks_ref & date < six_weeks_ref ~ '3',
+          date == six_weeks_ref ~ '4',
+          date > six_weeks_ref & days_after_discharge < 90 ~ '5',
+          days_after_discharge == 90 ~ '6', # 3 Months Post-Discharge
+          days_after_discharge > 90 & date < six_months_ref ~ '7',
+          date == six_months_ref ~ '8', # 6 Months Post-Discharge
+          date > six_months_ref & days_after_discharge < 365 ~ '9',
+          days_after_discharge == 365 ~ '10', # Between the 6 Month and 1 Year visit
+          days_after_discharge > 365 & days_after_discharge < 720 ~ '11',
+          days_after_discharge == 720 ~ '12',
+          days_after_discharge > 720 & days_after_discharge < 1095 ~ '13',
+          days_after_discharge == 1095 ~ '14', 
+          days_after_discharge > 1095 & days_after_discharge < 1460 ~ '15',
+          days_after_discharge == 1460 ~ '16',
+          days_after_discharge > 1460 & days_after_discharge < 1825 ~ '17',
+          days_after_discharge == 1825 ~ '18',
+          days_after_admission >= 0 & days_after_discharge <= 0 ~ '-88', # this means that the code happens during hospitalization -- should not be reported here 
+          days_after_discharge > 1825 ~ '100', # this means the code happens later than defined in the scope of study
+          TRUE ~ 'Out of period'))
+ 
+ft4 <- ft3 %>% 
+  filter(medcur1_current != '-88') %>%
+  select(PATIENT_NUM, ECRF_CODE, medcur1_current, Variable...Field.Name) %>%
+  unique() %>% 
+  left_join(misc_mapping) %>%
+  select(-c(PATIENT_NUM, MRN))
+ft5 <- ft4 %>% 
+  #*Note the following criteria: "If this is the Week 2 - Month 6 Follow-Up visit, please exclude aspirin."
+  filter(!(medcur1_current %in% c(2:8) & ECRF_CODE == '07.02')) %>%
+  ## add in redcap_repeat_instance 
+  # "This is a repeating form, with only one medication per form"
+  group_by(MUSIC_ID) %>%
   arrange(medcur1_current) %>%
-  mutate(redcap_repeat_instance = row_number()) 
-
-
+  mutate(redcap_repeat_instance = row_number()) %>%
+  # investigating the data export, we find that the medcur1_current column is actually a series of columns with format medcur1_current___XX
+  mutate(medcur1_current = paste0('medcur1_current___', medcur1_current),
+         medcur1_current_val = 1) %>%
+  mutate(medcur1_type = as.numeric(gsub('\\..*', '', ECRF_CODE)))
+ft5
 ```
 
-
 4. Transform and format
-
-*Note the following criteria: "If this is the Week 2 - Month 6 Follow-Up visit, please exclude aspirin."*
 
 Desired columns:
 - record_id (patient_num)	
 - redcap_event_name	(repeating_forms_arm_1) ??
 - redcap_repeat_instrument (medications_before_and_after)
 - redcap_repeat_instance	
-- current_meds_fu_na (acknowledgement of participant eligibility - ignore / mark as 1 (acknowledged for all))
+- current_meds_fu_na (acknowledgement of participant eligibility - ignore / mark as 1 (acknowledged for all)) (?)
 - medcur1_current (detailed in healthcore question document, but not in eCRF or in example redcap output)
+  - investigating the data export, we find that the medcur1_current column is actually a series of columns with format medcur1_current___XX
 - medcur1_type
 - eCRF variables (with expected value)
 
+
 ```{r}
-
-df2 <- df2 %>% 
-  mutate(medcur1_type = str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', ''))
-
-# *Note the following criteria: "If this is the Week 2 - Month 6 Follow-Up visit, please exclude aspirin."*
-# week 2 - month 6 follow ups are characterized by medcur1_current in (3,4,5,6,7)
-# aspirin is characterized by ECRF_CODE = 07.02
-df2 <- df2 %>%
-  filter(!(medcur1_current %in% c(3,4,5,6,7) & ECRF_CODE == '07.02'))
-
-
-out <- pivot_wider(df2,
-                    id_cols = c(PATIENT_NUM, medcur1_current, redcap_repeat_instance, medcur1_type),   
-                    names_from = Variable...Field.Name,
-                    values_from = ECRF_CODE,
-                    values_fill = NA) 
-
-# map BCH ids to MUSIC IDs for REDCAP
-id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
-out <- left_join(out, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>% 
-  ungroup() %>% 
-  select(-PATIENT_NUM, -medcur1_current) %>%   ### redcap gives the following error: The following fields were not found in the project as real data fields: medcur1_current
+out <- pivot_wider(ft5, 
+                   id_cols = c(MUSIC_ID, redcap_repeat_instance, medcur1_current, medcur1_current_val, medcur1_type),
+                   names_from = Variable...Field.Name,
+                   values_from = ECRF_CODE, 
+                   values_fill = '')
+out2 <- pivot_wider(out,
+                    names_from = medcur1_current,
+                    values_from = medcur1_current_val,
+                    values_fill = 0) 
+out3 <- out2 %>%
   rename(record_id = MUSIC_ID) %>%
   mutate(redcap_event_name = "repeating_forms_arm_1",
          redcap_repeat_instrument = "medications_before_and_after_hosp") %>%
-  relocate(record_id, redcap_event_name, redcap_repeat_instrument)
-
-# write output with patient IDs included
-write.csv(out, '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE, na = '')
-#write.csv(out[,-1], '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE)
-  
+  relocate(record_id, redcap_event_name, redcap_repeat_instrument, medcur1_type)
 ```
 
 
-
-
+```{r}
+#write.csv(out3, '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE)
+write.csv(out3 %>% filter(record_id == 120006) %>% mutate(record_id = 777006),
+          '../local_ref/redcap_output_TEST_medications_before_and_after.csv', row.names = FALSE, na = '')
+```
