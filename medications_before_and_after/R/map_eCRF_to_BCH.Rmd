@@ -226,6 +226,10 @@ bch_med_concept_summary <- bch_med_concept_summary %>% ungroup() %>% select(-BCH
 
 bch_med_concept_summary <- bch_med_concept_summary %>% distinct()
 
+### remove BCH concepts that are not specific enough
+bch_concepts_to_remove <- read.csv('../data/bch_concepts_to_remove.csv')
+bch_med_concept_summary <- bch_med_concept_summary[ ! bch_med_concept_summary$CONCEPT_CD %in% bch_concepts_to_remove$CONCEPT_CD, ]
+
 write.csv(bch_med_concept_summary %>% select(-pat_ids), '../data/bch_med_concept_summary_toReview.csv', row.names = FALSE)
 
 ```
