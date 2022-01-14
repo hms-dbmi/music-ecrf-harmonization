@@ -23,7 +23,7 @@ library(lubridate)
 
 Example, in BCH, we create the following query to obtain the data extract for the codes identified in previous steps for MISC patients.
 ```{r}
-bch_med_concept_summary <- read_csv('../data/bch_med_concept_summary_toReview_Tuesday.csv')
+bch_med_concept_summary <- read_csv('../data/bch_med_concept_summary_toReview.csv')
 #query_a <- "select obs.patient_num, obs.concept_cd, obs.start_date, misc.admissiondate, misc.end_date, misc.length_of_stay from observation_fact obs, ag440_misc_patients_may misc where (concept_cd in ('"
 #query_b <- "')) and obs.patient_num = misc.patient_num;"
 #bch_codes <- paste0(bch_med_concept_summary$CONCEPT_CD, collapse = "', '")
@@ -216,3 +216,7 @@ out3 <- out2 %>%
 write.csv(out3 %>% filter(record_id == 120006) %>% mutate(record_id = 777006),
           '../local_ref/redcap_output_TEST_medications_before_and_after.csv', row.names = FALSE, na = '')
 ```
+
+
+
+
