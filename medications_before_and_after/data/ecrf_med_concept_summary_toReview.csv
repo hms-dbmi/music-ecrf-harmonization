@@ -221,6 +221,7 @@
 "medications_before_and_after_hosp","26.08","Cyclophosphamide",NA,"ICU-IV","Intensive care unit intravenous",2021-04-24,2021-04-24,1,2,1
 "medications_before_and_after_hosp","26.08","Cyclophosphamide",NA,"IV","intravenous",2021-04-25,2021-04-25,1,13,1
 "medications_before_and_after_hosp","26.09","Canakinumab",NA,"Subcutaneous","subcutaneous",2020-05-28,2020-11-26,2,2,1
+"medications_before_and_after_hosp","27.01","Remdesivir",NA,"IV","intravenous",2020-04-23,2020-05-22,5,33,1
 "medications_before_and_after_hosp","27.02","Oseltamivir","Tamiflu","PO","oral",2009-06-09,2019-12-20,4,13,1
 "medications_before_and_after_hosp","27.02","Oseltamivir","Tamiflu",NA,NA,2018-01-12,2020-03-06,4,7,3
 "medications_before_and_after_hosp","01.01","Eprosartan","Teveten",NA,NA,NA,NA,NA,NA,NA
@@ -425,7 +426,6 @@
 "medications_before_and_after_hosp","26.13","Upadacitinib (JAK inhibitor)",NA,NA,NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","26.14","Emapalumab (IFN gamma antibody)",NA,NA,NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","26.15","Chloroquine",NA,NA,NA,NA,NA,NA,NA,NA
-"medications_before_and_after_hosp","27.01","Remdesivir",NA,NA,NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","27.03","Lopinavir/ritonavir","Kaletra",NA,NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","27.04","Favipiravir","Avigan",NA,NA,NA,NA,NA,NA,NA
 "medications_before_and_after_hosp","28.01","Plasma exchange",NA,NA,NA,NA,NA,NA,NA,NA

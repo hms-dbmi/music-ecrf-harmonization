@@ -394,6 +394,7 @@
 "medcations_before_and_after","26.08","Cyclophosphamide",NA,"Immunomodulatory","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2798974","dextrose 10% in water","ICU-IV","Intensive care unit intravenous",2021-04-24,2021-04-24,1,2
 "medcations_before_and_after","26.08","Cyclophosphamide",NA,"Immunomodulatory","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2798974","dextrose 10% in water","IV","intravenous",2021-04-25,2021-04-25,1,13
 "medcations_before_and_after","26.09","Canakinumab",NA,"Immunomodulatory","853491","canakinumab","ADMINMED:177596825","canakinumab","Subcutaneous","subcutaneous",2020-05-28,2020-11-26,2,2
+"medcations_before_and_after","27.01","Remdesivir",NA,"Antiviral","2284718","remdesivir","ADMINMED:1048621881","remdesivir","IV","intravenous",2020-04-23,2020-05-22,5,33
 "medcations_before_and_after","27.02","Oseltamivir","Tamiflu","Antiviral","260101","oseltamivir","ADMINMED:2798381","oseltamivir","PO","oral",2009-06-09,2019-12-20,4,13
 "medcations_before_and_after","27.02","Oseltamivir","Tamiflu","Antiviral","260101","oseltamivir","HOMEMED:130953836","oseltamivir",NA,NA,2018-03-06,2018-03-06,1,2
 "medcations_before_and_after","27.02","Oseltamivir","Tamiflu","Antiviral","260101","oseltamivir","HOMEMED:323172560","oseltamivir",NA,NA,2018-01-12,2020-03-06,3,4

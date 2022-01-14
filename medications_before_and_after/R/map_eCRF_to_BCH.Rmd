@@ -39,6 +39,13 @@ ecrf_to_rxnorm <- read_csv('../data/ecrf_to_rxnorm_mapping.csv', col_types = col
 ))
 
 bchmapping <- read.csv("../data/MedicationsMapBCH.csv")
+### we manually add the concept_cd for remdesivir. we found this in the file from mohamad: P00000159_EVENT_CATALOG_SYN_RXNORM_CODES.csv
+bchmapping <- bchmapping %>% add_row(ACT_CONCEPT_CD = 'RXNORM:2284718', 
+                                     BCH_CONCEPT_CD = 'ADMINMED:1048621881', 
+                                     BCH_CONCEPT_PATH = '', 
+                                     BCH_NAME_CHAR = 'remdesivir')
+
+###
 length(unique(bchmapping$ACT_CONCEPT_CD))
 length(unique(bchmapping$BCH_CONCEPT_CD))
 
