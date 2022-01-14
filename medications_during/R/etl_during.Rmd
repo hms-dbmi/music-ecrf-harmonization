@@ -148,7 +148,7 @@ out5 <- out4 %>%
 ### write test output for test patients 120002 and 120003
 write.csv(out5 %>%
             filter(record_id %in% c(120006)) %>%
-            mutate(record_id = 888666),
+            mutate(record_id = 888006),
           '../local_ref/redcap_TEST_output_medications_during.csv',
           row.names = FALSE, 
           na = '')
