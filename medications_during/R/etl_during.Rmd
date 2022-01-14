@@ -21,11 +21,7 @@ library(lubridate)
 Use the same query as medications_before_and_after -- see that pipeline for details
 ```{r}
 
-<<<<<<< HEAD
 df <- read.csv('../../medications_before_and_after/local_ref/ag440_music_meds_nov21.csv')
-=======
-df <- read.delim('../../medications_before_and_after/local_ref/ag440_music_meds_nov21.dsv')
->>>>>>> main
 
 # if the code is formatted like so: '2.00', convert to '02.00'
 fix_code_formatting <- function(x) {
@@ -46,7 +42,7 @@ datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final vers
          ECRF_CODE = fix_code_formatting(ECRF_CODE)) %>%
   select(-Choices..Calculations..OR.Slider.Labels)
 
-bch_med_concept_summary <- read_csv('../../medications_before_and_after/data/bch_med_concept_summary_toReview_Tuesday.csv')
+bch_med_concept_summary <- read_csv('../../medications_before_and_after/data/bch_med_concept_summary_toReview.csv')
 
 bch_med_concept_summary <- left_join(bch_med_concept_summary, datadict, by = 'ECRF_CODE')
 
@@ -78,13 +74,6 @@ df <- df %>%
 - redcap_repeat_instance refers to the form number. you can have 10 med_nums per form.
 ```{r}
 df2 <- df %>%
-<<<<<<< HEAD
-=======
-  group_by(PATIENT_NUM) %>%
-  mutate( time = hms(sapply(strsplit( as.character(START_DATE), " "), '[', 2)),
-          datetime = paste0(date, '-', time),
-          datetime = ymd_hms(datetime)) %>%
->>>>>>> main
   group_by(PATIENT_NUM, ECRF_CODE) %>%
   summarise(Variable...Field.Name = first(Variable...Field.Name)) %>%
   ungroup() %>%
@@ -134,7 +123,7 @@ out3 <- out2 %>%
   select(-med_num)
 
 # map BCH ids to MUSIC IDs for REDCAP
-id_mapping <- read.csv('../../medications_before_and_after/local_ref/music_id_mapping.csv')
+id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
 out4 <- left_join(out3, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>% 
   ungroup() %>% 
   select(-PATIENT_NUM) %>%
@@ -152,15 +141,6 @@ out5 <- out4 %>%
 #  summarise_each(funs(first(.[!is.na(.)])))
 
 
-#test2 <- test %>%
-#  group_by(record_id, redcap_repeat_instance) %>%
-#  dplyr::summarise_all(~first(na.omit(.)))
-
-
-
-#library(data.table)
-#setDT(test)[, lapply(.SD, na.omit), by = record_id)]
-
 # write output with patient IDs included
 #write.csv(out4, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE, na = '')
 #write.csv(out3 %>% select(-PATIENT_NUM, -redcap_repeat_instance), '../local_ref/redcap_output_medications_during.csv', row.names = FALSE)
@@ -168,12 +148,14 @@ out5 <- out4 %>%
 ### write test output for test patients 120002 and 120003
 write.csv(out5 %>%
             filter(record_id %in% c(120006)) %>%
-            mutate(record_id = 888006),
+            mutate(record_id = 888666),
           '../local_ref/redcap_TEST_output_medications_during.csv',
           row.names = FALSE, 
           na = '')
 
 
 ```
+
+
 
 
