@@ -115,15 +115,20 @@ df <- df %>%
 ```{r}
 
 # only report the dates for the specified medications. for all other medications, medhosp_start_dt should be blank
+# for medications where we are reporting the date, only report the 'start date', or the earliest date.
 df2 <- df %>% 
   mutate(medhospX_start_dt = format(date, "%m/%d/%Y")) %>%
-  mutate(medhospX_start_dt = ifelse(grepl(report_dates, ECRF_CODE),
-                                    medhospX_start_dt,
-                                    ''))
-df3 <- df2 %>%
-  group_by(PATIENT_NUM, ECRF_CODE, medhospX_name, medhospX_start_dt) %>%
-  summarise(Variable...Field.Name = first(Variable...Field.Name)) %>%
+  group_by(PATIENT_NUM, ECRF_CODE, medhospX_name) %>%
+  summarise(medhospX_start_dt = ifelse(grepl(report_dates, ECRF_CODE),
+                                    first(medhospX_start_dt),
+                                    ''),
+            Variable...Field.Name = first(Variable...Field.Name)) %>%
   ungroup() %>%
+  unique()
+
+
+
+df3 <- df2 %>%
   group_by(PATIENT_NUM) %>%
   arrange(ECRF_CODE) %>%
   mutate(rownum = row_number(),
