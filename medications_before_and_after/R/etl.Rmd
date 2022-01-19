@@ -63,8 +63,8 @@ df <- left_join(df, bch_med_concept_summary %>% select(ECRF_CODE, CONCEPT_CD, Va
 ### Using similar approach as lab etl with preexisting follow up dates
 Import the follow-up visit dates. The MUSIC_DATA_2021-11-23_0940.csv is the file extracted from REDCap of the data previously entered by BCH experts. From there we will extract the specific follow-up dates for the MUSIC study for the MISC patients. The variable name that contains the date is "visit_date", extracted from the dictionary. The record id is the internal MUSIC identifier, and the redcap_event_name allows us to know which is the specific follow-up period the date is referring to. Because the ID are MUSIC Ids we also need to load the music_mapping_id. 
 ```{r}
-misc_mapping <- read.csv("../../local_ref/music_id_mapping.csv")
-visit_dates  <- read.csv("../../laboratory_values/local_ref/MUSIC_DATA_2021-12-01_1413.csv")
+misc_mapping <- read.csv("../local_ref/music_id_mapping.csv")
+visit_dates  <- read.csv("../../laboratory_values/local_ref/MUSIC_DATA_2022-01-12_0911.csv")
 visit_dates <- visit_dates %>%
   filter( visit_date != "" ) %>%
   select( record_id, redcap_event_name, visit_date )
@@ -132,11 +132,13 @@ ft2 <- finalTable %>%
   #group_by( PATIENT_NUM, ECRF_CODE ) %>%
   mutate( two_weeks_ref = if_else( !is.na( ymd(two_weeks) ), ymd(two_weeks), ymd( END_DATE ) + days(14) ), 
           six_weeks_ref = if_else( !is.na( ymd(six_weeks) ), ymd(six_weeks), ymd( END_DATE ) + days(42) ), 
-          six_months_ref =if_else( !is.na( ymd(six_months)), ymd(six_months), ymd( END_DATE ) + days(182) )) 
- ft3 <- ft2 %>%
+          six_months_ref =if_else( !is.na( ymd(six_months)), ymd(six_months), ymd( END_DATE ) + days(182) ), 
+          medType = sapply(strsplit( as.character( CONCEPT_CD ), "[:]"), '[', 1)) 
+ 
+ft3 <- ft2 %>%
    mutate(medcur1_current = case_when(
           date < ADMISSIONDATE ~ '0',
-          date > END_DATE & date < two_weeks_ref ~ '1', 
+          date > END_DATE & date < two_weeks_ref | date == END_DATE & medType == 'HOMEMED' ~ '1',
           date == two_weeks_ref ~ '2',
           date > two_weeks_ref & date < six_weeks_ref ~ '3',
           date == six_weeks_ref ~ '4',
