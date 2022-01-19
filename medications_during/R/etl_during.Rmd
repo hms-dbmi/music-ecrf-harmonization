@@ -87,8 +87,14 @@ df <- df %>%
 - med_num refers to the 'X' in the variable name. (internal)
 - redcap_repeat_instance refers to the form number. you can have 10 med_nums per form.
 ```{r}
-df2 <- df %>%
+
+# only report the dates for the specified medications. for all other medications, medhosp_start_dt should be blank
+df2 <- df %>% 
   mutate(medhospX_start_dt = format(date, "%m/%d/%Y")) %>%
+  mutate(medhospX_start_dt = ifelse(grepl(report_dates, ECRF_CODE),
+                                    medhospX_start_dt,
+                                    ''))
+df3 <- df2 %>%
   group_by(PATIENT_NUM, ECRF_CODE, medhospX_start_dt) %>%
   summarise(Variable...Field.Name = first(Variable...Field.Name)) %>%
   ungroup() %>%
@@ -103,14 +109,10 @@ df2 <- df %>%
 
 # rename X in variable name depending on 'med_num'
 
-df3 <- df2 %>%
+df4 <- df3 %>%
   mutate(Variable...Field.Name = str_replace(Variable...Field.Name, 'X', as.character(med_num)))
 
-# only report the dates for the specified medications. for all other medications, medhosp_start_dt should be blank
-df4 <- df3 %>% 
-  mutate(medhospX_start_dt = ifelse(grepl(report_dates, ECRF_CODE),
-                                    medhospX_start_dt,
-                                    ''))
+
 
 ```
 
