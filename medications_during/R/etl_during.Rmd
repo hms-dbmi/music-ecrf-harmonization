@@ -84,7 +84,7 @@ df2 <- df %>%
          redcap_repeat_instance = (rownum - 1) %/% 10 + 1,
          medhospX_type = as.numeric(str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', ''))) %>%
   ungroup() %>%
-  #mutate(medhospX_start_dt = format(date, "%m/%d/%Y")) %>%
+  mutate(medhospX_start_dt = format(date, "%m/%d/%Y")) %>%
   select(-rownum) 
 
 # rename X in variable name depending on 'med_num'
@@ -144,7 +144,10 @@ out5 <- out4 %>%
 # write output with patient IDs included
 #write.csv(out4, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE, na = '')
 #write.csv(out3 %>% select(-PATIENT_NUM, -redcap_repeat_instance), '../local_ref/redcap_output_medications_during.csv', row.names = FALSE)
+```
 
+
+```{r}
 ### write test output for test patients 120002 and 120003
 write.csv(out5 %>%
             filter(record_id %in% c(120006)) %>%
