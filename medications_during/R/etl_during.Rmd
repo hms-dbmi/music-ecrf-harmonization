@@ -54,6 +54,20 @@ df <- df %>%
   filter( ! is.na( ECRF_CODE ) )
 ```
 
+
+```{r}
+# which medications do we report dates for?
+report_dates <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
+  filter(Form.Name == 'additional_medications_during_hospitalization', 
+         Variable...Field.Name == 'medhosp1_start_dt') %>%
+  pull(Branching.Logic..Show.field.only.if....)
+
+report_dates
+
+# we write the following regular expression to capture all of these codes:
+report_dates <- '26.|28.|99.99|09.99|09.03|09.09|18.03|18.04|18.06|18.09|18.10'
+```
+
 # 2. Filter to medication values during hospitalization
 
 ```{r}
@@ -74,7 +88,8 @@ df <- df %>%
 - redcap_repeat_instance refers to the form number. you can have 10 med_nums per form.
 ```{r}
 df2 <- df %>%
-  group_by(PATIENT_NUM, ECRF_CODE) %>%
+  mutate(medhospX_start_dt = format(date, "%m/%d/%Y")) %>%
+  group_by(PATIENT_NUM, ECRF_CODE, medhospX_start_dt) %>%
   summarise(Variable...Field.Name = first(Variable...Field.Name)) %>%
   ungroup() %>%
   group_by(PATIENT_NUM) %>%
@@ -84,33 +99,38 @@ df2 <- df %>%
          redcap_repeat_instance = (rownum - 1) %/% 10 + 1,
          medhospX_type = as.numeric(str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', ''))) %>%
   ungroup() %>%
-  mutate(medhospX_start_dt = format(date, "%m/%d/%Y")) %>%
   select(-rownum) 
 
 # rename X in variable name depending on 'med_num'
 
 df3 <- df2 %>%
   mutate(Variable...Field.Name = str_replace(Variable...Field.Name, 'X', as.character(med_num)))
-  
+
+# only report the dates for the specified medications. for all other medications, medhosp_start_dt should be blank
+df4 <- df3 %>% 
+  mutate(medhospX_start_dt = ifelse(grepl(report_dates, ECRF_CODE),
+                                    medhospX_start_dt,
+                                    ''))
+
 ```
 
 # Pivot into final format
 ```{r}
 
 # pivot variable names
-out <- pivot_wider(df3,
-                  id_cols = c(PATIENT_NUM, medhospX_type, redcap_repeat_instance, med_num),   
+out <- pivot_wider(df4,
+                  id_cols = c(PATIENT_NUM, medhospX_type, redcap_repeat_instance, med_num, medhospX_start_dt),   
                   names_from = Variable...Field.Name,
                   values_from = ECRF_CODE,
                   values_fill = NA) 
 
 # pivot medhospX_start_dt
-out2 <- out #%>%
-  #mutate(medhospX_start_dt_names = str_replace('medhospX_start_dt', 'X', as.character(med_num))) %>%
-  #pivot_wider(
-    #names_from = medhospX_start_dt_names,
-    #values_from = medhospX_start_dt,
-    #values_fill = NA)
+out2 <- out %>%
+  mutate(medhospX_start_dt_names = str_replace('medhospX_start_dt', 'X', as.character(med_num))) %>%
+  pivot_wider(
+    names_from = medhospX_start_dt_names,
+    values_from = medhospX_start_dt,
+    values_fill = NA)
   
 
 # pivot medhospX_type
