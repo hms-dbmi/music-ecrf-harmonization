@@ -49,9 +49,12 @@ bch_med_concept_summary <- left_join(bch_med_concept_summary, datadict, by = 'EC
 df <- left_join(df, bch_med_concept_summary %>% 
                   select(ECRF_CODE, CONCEPT_CD, Variable...Field.Name), by = 'CONCEPT_CD') 
 
-# remove NAs that appear because as input we are using now all misc and all medications
+# NAs that appear are not present in our mapping / are not requested by the ECRF
+# we assign them the 99.99 code for 'other'
 df <- df %>%
-  filter( ! is.na( ECRF_CODE ) )
+  mutate(ECRF_CODE = ifelse(is.na( ECRF_CODE ),
+                            '99.99',
+                            ECRF_CODE))
 ```
 
 
@@ -103,7 +106,9 @@ df3 <- df2 %>%
   mutate(rownum = row_number(),
          med_num = ifelse(rownum %% 10 == 0, 10, rownum %% 10),
          redcap_repeat_instance = (rownum - 1) %/% 10 + 1,
-         medhospX_type = as.numeric(str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', ''))) %>%
+         medhospX_type = ifelse(ECRF_CODE == '99.99',
+                                '99.99',
+                                as.numeric(str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', '')))) %>%
   ungroup() %>%
   select(-rownum) 
 
@@ -162,6 +167,8 @@ out5 <- out4 %>%
 #  group_by(record_id, redcap_repeat_instance) %>%
 #  summarise_each(funs(first(.[!is.na(.)])))
 
+# remove NA column introduced by 'other' variables
+out6 <- out5 %>% select(-grep('NA', colnames(out5)))
 
 # write output with patient IDs included
 #write.csv(out4, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE, na = '')
@@ -171,7 +178,7 @@ out5 <- out4 %>%
 
 ```{r}
 ### write test output for test patients 120002 and 120003
-write.csv(out5 %>%
+write.csv(out6 %>%
             filter(record_id %in% c(120006)) %>%
             mutate(record_id = 888006),
           '../local_ref/redcap_TEST_output_medications_during.csv',
