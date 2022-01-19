@@ -59,6 +59,28 @@ df <- df %>%
 
 
 ```{r}
+# for 'other' medications, load in bch concept_dimension table for medications.
+# we onlyh report the names for unknown medications.
+bch_concept_dim <- read.delim('../../medications_before_and_after/data/concept_dimensionMeds.dsv') %>%
+  select(CONCEPT_CD, NAME_CHAR) %>%
+  unique %>%
+  group_by(CONCEPT_CD) %>% 
+  summarise(NAME_CHAR = paste0(NAME_CHAR, collapse = ', '))
+
+
+df <- df %>% 
+  left_join(bch_concept_dim, by = 'CONCEPT_CD') %>%
+  mutate(medhospX_name = ifelse(ECRF_CODE == '99.99',
+                                NAME_CHAR,
+                                ''),
+         medhospX_name = ifelse(is.na(medhospX_name), 
+                                'Medication name not recorded in EHR',
+                                medhospX_name))
+
+```
+
+
+```{r}
 # which medications do we report dates for?
 report_dates <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
   filter(Form.Name == 'additional_medications_during_hospitalization', 
@@ -87,6 +109,7 @@ df <- df %>%
 # Add additional columns
 - medhospX_type: overall category of medication
 - medhospX_start_dt: start date, mm-dd-yyyy *****This does not appear to be needed
+- medhospX_name: name of medication, only include for 'other' medications
 - med_num refers to the 'X' in the variable name. (internal)
 - redcap_repeat_instance refers to the form number. you can have 10 med_nums per form.
 ```{r}
@@ -98,7 +121,7 @@ df2 <- df %>%
                                     medhospX_start_dt,
                                     ''))
 df3 <- df2 %>%
-  group_by(PATIENT_NUM, ECRF_CODE, medhospX_start_dt) %>%
+  group_by(PATIENT_NUM, ECRF_CODE, medhospX_name, medhospX_start_dt) %>%
   summarise(Variable...Field.Name = first(Variable...Field.Name)) %>%
   ungroup() %>%
   group_by(PATIENT_NUM) %>%
@@ -126,7 +149,7 @@ df4 <- df3 %>%
 
 # pivot variable names
 out <- pivot_wider(df4,
-                  id_cols = c(PATIENT_NUM, medhospX_type, redcap_repeat_instance, med_num, medhospX_start_dt),   
+                  id_cols = c(PATIENT_NUM, medhospX_type, medhospX_name, redcap_repeat_instance, med_num, medhospX_start_dt),   
                   names_from = Variable...Field.Name,
                   values_from = ECRF_CODE,
                   values_fill = NA) 
@@ -146,12 +169,21 @@ out3 <- out2 %>%
   pivot_wider(
     names_from = medhospX_type_names,
     values_from = medhospX_type,
+    values_fill = NA)
+
+# pivot medhospX_name
+out4 <- out3 %>%
+  mutate(medhospX_name_names = str_replace('medhospX_name', 'X', as.character(med_num))) %>%
+  pivot_wider(
+    names_from = medhospX_name_names,
+    values_from = medhospX_name,
     values_fill = NA) %>%
   select(-med_num)
 
+
 # map BCH ids to MUSIC IDs for REDCAP
 id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
-out4 <- left_join(out3, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>% 
+out5 <- left_join(out4, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>% 
   ungroup() %>% 
   select(-PATIENT_NUM) %>%
   rename(record_id = MUSIC_ID) %>%
@@ -160,7 +192,7 @@ out4 <- left_join(out3, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>%
   relocate(record_id, redcap_event_name, redcap_repeat_instrument) 
   
 # collapse rows by form
-out5 <- out4 %>%
+out6 <- out5 %>%
   group_by(record_id, redcap_repeat_instance) %>%
   summarise_all(~first(na.omit(.)))
 #out5 <- out4 %>%
@@ -168,7 +200,7 @@ out5 <- out4 %>%
 #  summarise_each(funs(first(.[!is.na(.)])))
 
 # remove NA column introduced by 'other' variables
-out6 <- out5 %>% select(-grep('NA', colnames(out5)))
+out7 <- out6 %>% select(-grep('NA', colnames(out5)))
 
 # write output with patient IDs included
 #write.csv(out4, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE, na = '')
@@ -178,7 +210,7 @@ out6 <- out5 %>% select(-grep('NA', colnames(out5)))
 
 ```{r}
 ### write test output for test patients 120002 and 120003
-write.csv(out6 %>%
+write.csv(out7 %>%
             filter(record_id %in% c(120006)) %>%
             mutate(record_id = 888006),
           '../local_ref/redcap_TEST_output_medications_during.csv',
