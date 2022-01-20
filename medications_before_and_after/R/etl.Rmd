@@ -63,8 +63,8 @@ df <- left_join(df, bch_med_concept_summary %>% select(ECRF_CODE, CONCEPT_CD, Va
 ### Using similar approach as lab etl with preexisting follow up dates
 Import the follow-up visit dates. The MUSIC_DATA_2021-11-23_0940.csv is the file extracted from REDCap of the data previously entered by BCH experts. From there we will extract the specific follow-up dates for the MUSIC study for the MISC patients. The variable name that contains the date is "visit_date", extracted from the dictionary. The record id is the internal MUSIC identifier, and the redcap_event_name allows us to know which is the specific follow-up period the date is referring to. Because the ID are MUSIC Ids we also need to load the music_mapping_id. 
 ```{r}
-misc_mapping <- read.csv("../local_ref/music_id_mapping.csv")
-visit_dates  <- read.csv("../../laboratory_values/local_ref/MUSIC_DATA_2022-01-12_0911.csv")
+misc_mapping <- read.csv("../../local_ref/music_id_mapping.csv")
+visit_dates  <- read.csv("../../laboratory_values/local_ref/MUSIC_DATA_2021-12-01_1413.csv")
 visit_dates <- visit_dates %>%
   filter( visit_date != "" ) %>%
   select( record_id, redcap_event_name, visit_date )
@@ -172,8 +172,8 @@ ft5 <- ft4 %>%
   ## add in redcap_repeat_instance 
   # "This is a repeating form, with only one medication per form"
   group_by(MUSIC_ID) %>%
-  arrange(medcur1_current) %>%
-  mutate(redcap_repeat_instance = row_number()) %>%
+  arrange(ECRF_CODE) %>%
+  mutate(redcap_repeat_instance = match(ECRF_CODE, unique(ECRF_CODE))) %>%
   # investigating the data export, we find that the medcur1_current column is actually a series of columns with format medcur1_current___XX
   mutate(medcur1_current = paste0('medcur1_current___', medcur1_current),
          medcur1_current_val = 1) %>%
@@ -205,6 +205,7 @@ out2 <- pivot_wider(out,
                     names_from = medcur1_current,
                     values_from = medcur1_current_val,
                     values_fill = 0) 
+
 out3 <- out2 %>%
   rename(record_id = MUSIC_ID) %>%
   mutate(redcap_event_name = "repeating_forms_arm_1",
