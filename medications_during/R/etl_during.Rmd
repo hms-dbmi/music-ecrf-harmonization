@@ -61,6 +61,7 @@ df <- df %>%
 ```{r}
 # for 'other' medications, load in bch concept_dimension table for medications.
 # we onlyh report the names for unknown medications.
+# even though we are reporting all 'other' medications, we will remove the general sodium chloride concepts as they are not informative.
 bch_concept_dim <- read.delim('../../medications_before_and_after/data/concept_dimensionMeds.dsv') %>%
   select(CONCEPT_CD, NAME_CHAR) %>%
   unique %>%
@@ -71,7 +72,7 @@ bch_concept_dim <- read.delim('../../medications_before_and_after/data/concept_d
 df <- df %>% 
   left_join(bch_concept_dim, by = 'CONCEPT_CD') %>%
   mutate(medhospX_name = ifelse(ECRF_CODE == '99.99',
-                                NAME_CHAR,
+                                tolower(NAME_CHAR),
                                 ''),
          medhospX_name = ifelse(is.na(medhospX_name), 
                                 'Medication name not recorded in EHR',
@@ -216,8 +217,10 @@ out7 <- out6 %>% select(-grep('NA', colnames(out5)))
 ```{r}
 ### write test output for test patients 120002 and 120003
 write.csv(out7 %>%
-            filter(record_id %in% c(120006)) %>%
-            mutate(record_id = 888006),
+            filter(record_id %in% c(120006, 120002)) %>%
+            mutate(record_id = ifelse(record_id == 120006,
+                                      888006,
+                                      888002)),
           '../local_ref/redcap_TEST_output_medications_during.csv',
           row.names = FALSE, 
           na = '')
