@@ -217,18 +217,18 @@ head(out3)
 # we assume that if a patient was taking a medication at timepoint 1 and 3 but we do not find it explicitly in the ehr for 2, we will still mark it. 
 # (applied to all timepoints)
 out4 <- out3 %>%
-  mutate(medcur1_current___1 = ifelse(medcur1_current___0 & medcur1_current___2, 1, 0),
-         medcur1_current___2 = ifelse(medcur1_current___1 & medcur1_current___3, 1, 0),
-         medcur1_current___3 = ifelse(medcur1_current___2 & medcur1_current___4, 1, 0),
-         medcur1_current___4 = ifelse(medcur1_current___3 & medcur1_current___5, 1, 0),
-         medcur1_current___5 = ifelse(medcur1_current___4 & medcur1_current___6, 1, 0))
+  mutate(medcur1_current___1 = ifelse(medcur1_current___0 & medcur1_current___2, 1, medcur1_current___1),
+         medcur1_current___2 = ifelse(medcur1_current___1 & medcur1_current___3, 1, medcur1_current___2),
+         medcur1_current___3 = ifelse(medcur1_current___2 & medcur1_current___4, 1, medcur1_current___3),
+         medcur1_current___4 = ifelse(medcur1_current___3 & medcur1_current___5, 1, medcur1_current___4),
+         medcur1_current___5 = ifelse(medcur1_current___4 & medcur1_current___6, 1, medcur1_current___5))
 
 ```
 
 
 ```{r}
-write.csv(out3, '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE)
-write.csv(out3 %>% 
+write.csv(out4, '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE)
+write.csv(out4 %>% 
             filter(record_id %in% c(120006, 120002)) %>% 
             mutate(record_id = ifelse(record_id == 120006,
                                       777006, 
