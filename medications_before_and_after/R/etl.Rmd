@@ -205,7 +205,7 @@ ft5 <- ft4 %>%
   # "This is a repeating form, with only one medication per form"
   group_by(MUSIC_ID) %>%
   arrange(ECRF_CODE) %>%
-  mutate(redcap_repeat_instance = match(ECRF_CODE, unique(ECRF_CODE))) %>%
+  mutate(redcap_repeat_instance = match(paste0(ECRF_CODE, medcur1_name), unique(paste0(ECRF_CODE, medcur1_name)))) %>%
   # investigating the data export, we find that the medcur1_current column is actually a series of columns with format medcur1_current___XX
   mutate(medcur1_current = paste0('medcur1_current___', medcur1_current),
          medcur1_current_val = 1) %>%
