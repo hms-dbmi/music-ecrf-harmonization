@@ -78,12 +78,12 @@ bch_concept_dim <- read.delim('../../medications_before_and_after/data/concept_d
 
 df <- df %>% 
   left_join(bch_concept_dim, by = 'CONCEPT_CD') %>%
-  mutate(medhosp1_name = ifelse(ECRF_CODE == '99.99',
+  mutate(medcur1_name = ifelse(ECRF_CODE == '99.99',
                                 tolower(NAME_CHAR),
                                 ''),
-         medhosp1_name = ifelse(is.na(medhosp1_name), 
+         medcur1_name = ifelse(is.na(medcur1_name), 
                                 'Medication name not recorded in EHR',
-                                medhosp1_name))
+                                medcur1_name))
 
 ```
 
@@ -194,7 +194,7 @@ ft3 <- ft2 %>%
  
 ft4 <- ft3 %>% 
   filter(medcur1_current != '-88') %>%
-  select(PATIENT_NUM, ECRF_CODE, medcur1_current, Variable...Field.Name, medhosp1_name) %>%
+  select(PATIENT_NUM, ECRF_CODE, medcur1_current, Variable...Field.Name, medcur1_name) %>%
   unique() %>% 
   left_join(misc_mapping) %>%
   select(-c(PATIENT_NUM, MRN))
@@ -209,7 +209,9 @@ ft5 <- ft4 %>%
   # investigating the data export, we find that the medcur1_current column is actually a series of columns with format medcur1_current___XX
   mutate(medcur1_current = paste0('medcur1_current___', medcur1_current),
          medcur1_current_val = 1) %>%
-  mutate(medcur1_type = as.numeric(gsub('\\..*', '', ECRF_CODE)))
+  mutate(medcur1_type = ifelse(ECRF_CODE == '99.99',
+                                '99.99',
+                                str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', '')))
 ft5
 ```
 
@@ -225,16 +227,17 @@ Desired columns:
   - investigating the data export, we find that the medcur1_current column is actually a series of columns with format medcur1_current___XX
 - medcur1_type
 - eCRF variables (with expected value)
-- medhosp1_name: name of medication, only include for 'other' medications
+- medcur1_name: name of medication, only include for 'other' medications
 
 
 
 ```{r}
 out <- pivot_wider(ft5, 
-                   id_cols = c(MUSIC_ID, redcap_repeat_instance, medcur1_current, medcur1_current_val, medcur1_type, medhosp1_name),
+                   id_cols = c(MUSIC_ID, redcap_repeat_instance, medcur1_current, medcur1_current_val, medcur1_type, medcur1_name),
                    names_from = Variable...Field.Name,
                    values_from = ECRF_CODE, 
                    values_fill = '')
+
 out2 <- pivot_wider(out,
                     names_from = medcur1_current,
                     values_from = medcur1_current_val,
@@ -256,6 +259,9 @@ out4 <- out3 %>%
          medcur1_current___3 = ifelse(medcur1_current___2 & medcur1_current___4, 1, medcur1_current___3),
          medcur1_current___4 = ifelse(medcur1_current___3 & medcur1_current___5, 1, medcur1_current___4),
          medcur1_current___5 = ifelse(medcur1_current___4 & medcur1_current___6, 1, medcur1_current___5))
+
+# remove NA column introduced by 'other' variables
+out5 <- out4 %>% select(-grep('NA', colnames(out4)))
 
 ```
 
