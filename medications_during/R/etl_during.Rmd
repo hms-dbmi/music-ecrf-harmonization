@@ -43,7 +43,7 @@ datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final vers
   select(-Choices..Calculations..OR.Slider.Labels)
 
 bch_med_concept_summary <- read_csv('../../medications_before_and_after/data/bch_med_concept_summary_toReview.csv') %>%
-  filter(RXNORM_DESCS != 'greater than 5 RXNORM codes mapped to BCH code')
+  filter(RXNORM_DESCS != 'greater than 5 RXNORM codes mapped to BCH code' | (CONCEPT_CD == 'ADMINMED:2797919' & ECRF_CODE == '07.08'))
 
 bch_med_concept_summary <- left_join(bch_med_concept_summary, datadict, by = 'ECRF_CODE')
 
