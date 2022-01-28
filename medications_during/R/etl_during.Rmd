@@ -88,7 +88,6 @@ df <- df %>%
 
 
 
-
 ```
 
 
@@ -148,7 +147,7 @@ df3 <- df2 %>%
          redcap_repeat_instance = (rownum - 1) %/% 10 + 1,
          medhospX_type = ifelse(ECRF_CODE == '99.99',
                                 '99.99',
-                                as.numeric(str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', '')))) %>%
+                                (str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', '')))) %>%
   ungroup() %>%
   select(-rownum) 
 
