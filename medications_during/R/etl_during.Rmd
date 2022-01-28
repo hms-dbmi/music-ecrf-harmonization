@@ -42,7 +42,8 @@ datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final vers
          ECRF_CODE = fix_code_formatting(ECRF_CODE)) %>%
   select(-Choices..Calculations..OR.Slider.Labels)
 
-bch_med_concept_summary <- read_csv('../../medications_before_and_after/data/bch_med_concept_summary_toReview.csv')
+bch_med_concept_summary <- read_csv('../../medications_before_and_after/data/bch_med_concept_summary_toReview.csv') %>%
+  filter(RXNORM_DESCS != 'greater than 5 RXNORM codes mapped to BCH code')
 
 bch_med_concept_summary <- left_join(bch_med_concept_summary, datadict, by = 'ECRF_CODE')
 
@@ -121,7 +122,7 @@ df2 <- df %>%
   mutate(medhospX_start_dt = format(date, "%m/%d/%Y")) %>%
   group_by(PATIENT_NUM, ECRF_CODE, medhospX_name) %>%
   summarise(medhospX_start_dt = ifelse(grepl(report_dates, ECRF_CODE),
-                                    first(medhospX_start_dt),
+                                    min(medhospX_start_dt),
                                     ''),
             Variable...Field.Name = first(Variable...Field.Name)) %>%
   ungroup() %>%
@@ -219,8 +220,8 @@ out7 <- out6 %>% select(-grep('NA', colnames(out6)))
 write.csv(out7 %>%
             filter(record_id %in% c(120006, 120002)) %>%
             mutate(record_id = ifelse(record_id == 120006,
-                                      888006,
-                                      888002)),
+                                      889006,
+                                      889002)),
           '../local_ref/redcap_TEST_output_medications_during.csv',
           row.names = FALSE, 
           na = '')
