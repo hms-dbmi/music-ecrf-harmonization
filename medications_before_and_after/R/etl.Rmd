@@ -80,10 +80,8 @@ df <- df %>%
   left_join(bch_concept_dim, by = 'CONCEPT_CD') %>%
   mutate(medcur1_name = ifelse(ECRF_CODE == '99.99',
                                 tolower(NAME_CHAR),
-                                ''),
-         medcur1_name = ifelse(is.na(medcur1_name), 
-                                'Medication name not recorded in EHR',
-                                medcur1_name))
+                                '')) %>%
+  filter(!is.na(medcur1_name))
 
 ```
 
@@ -272,7 +270,11 @@ write.csv(out5 %>%
             filter(record_id %in% c(120006, 120002)) %>% 
             mutate(record_id = ifelse(record_id == 120006,
                                       777006, 
-                                      777002)),
+                                      ifelse(record_id == 120002,
+                                             777002,
+                                             ifelse(record_id == 120095,
+                                                    777095,
+                                                    777123)))),
           '../local_ref/redcap_output_TEST_medications_before_and_after.csv', row.names = FALSE, na = '')
 ```
 
