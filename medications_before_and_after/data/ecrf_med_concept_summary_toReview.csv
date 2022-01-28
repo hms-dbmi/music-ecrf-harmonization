@@ -29,7 +29,7 @@
 "medications_before_and_after_hosp","03.32","Penicillin",NA,"PO","oral",2013-04-29,2013-04-29,1,1,1
 "medications_before_and_after_hosp","03.32","Penicillin",NA,NA,NA,2012-02-17,2014-12-30,1,5,1
 "medications_before_and_after_hosp","03.34","Piperacillin/Tazobactam","Zosyn","IV","intravenous",2020-04-23,2021-01-29,4,375,1
-"medications_before_and_after_hosp","03.37","Vancomycin",NA,"IV","intravenous",2007-07-02,2021-04-27,7,49,2
+"medications_before_and_after_hosp","03.37","Vancomycin",NA,"IV","intravenous",2007-07-02,2021-04-27,7,41,1
 "medications_before_and_after_hosp","03.37","Vancomycin",NA,NA,NA,2021-02-20,2021-02-20,1,1,1
 "medications_before_and_after_hosp","06.01","Clonidine","Catapres, Duraclon","PO","oral",2020-02-02,2021-02-04,2,8,1
 "medications_before_and_after_hosp","06.01","Clonidine","Catapres, Duraclon",NA,NA,2020-02-05,2020-02-05,1,1,1
@@ -40,7 +40,7 @@
 "medications_before_and_after_hosp","07.02","Aspirin",NA,NA,NA,2019-07-20,2021-05-25,47,64,2
 "medications_before_and_after_hosp","07.06","Enoxaparin","Lovenox","Subcutaneous","subcutaneous",2020-05-05,2021-05-04,32,346,1
 "medications_before_and_after_hosp","07.06","Enoxaparin","Lovenox",NA,NA,2020-05-24,2020-08-21,3,5,2
-"medications_before_and_after_hosp","07.08","Heparin",NA,"IV","intravenous",2020-04-23,2021-04-27,5,383,2
+"medications_before_and_after_hosp","07.08","Heparin",NA,"IV","intravenous",2020-04-23,2021-01-29,4,375,1
 "medications_before_and_after_hosp","07.13","Apixaban","Eliquis","PO","oral",2020-04-28,2021-05-08,10,61,1
 "medications_before_and_after_hosp","07.13","Apixaban","Eliquis",NA,NA,2020-05-09,2021-05-07,10,19,4
 "medications_before_and_after_hosp","08.03","Amlodipine","Norvasc","PO","oral",2021-01-12,2021-01-18,1,12,1

@@ -43,7 +43,6 @@
 "medcations_before_and_after","03.32","Penicillin",NA,"Antibiotics","7984","penicillin v | phenoxymethylpenicillin","ADMINMED:288807609","penicillin v potassium","PO","oral",2013-04-29,2013-04-29,1,1
 "medcations_before_and_after","03.32","Penicillin",NA,"Antibiotics","7984","penicillin v | phenoxymethylpenicillin","HOMEMED:288807616","penicillin v potassium",NA,NA,2012-02-17,2014-12-30,1,5
 "medcations_before_and_after","03.34","Piperacillin/Tazobactam","Zosyn","Antibiotics","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2797919","heparin","IV","intravenous",2020-04-23,2021-01-29,4,375
-"medcations_before_and_after","03.37","Vancomycin",NA,"Antibiotics","20481, 11124, 5224","cefepime, vancomycin, heparin","ADMINMED:2797223","cefepime","IV","intravenous",2021-04-24,2021-04-27,1,8
 "medcations_before_and_after","03.37","Vancomycin",NA,"Antibiotics","20481, 2191, 1596450, 11124, 5224","cefepime, ceftazidime | ceftazidime, gentamicin, vancomycin, heparin","ADMINMED:2798880","vancomycin","IV","intravenous",2007-07-02,2021-04-27,7,41
 "medcations_before_and_after","03.37","Vancomycin",NA,"Antibiotics","11124","vancomycin","HOMEMED:3671214","vancomycin",NA,NA,2021-02-20,2021-02-20,1,1
 "medcations_before_and_after","06.01","Clonidine","Catapres, Duraclon","Antihypertensives","2599","clonidine | clonidine","ADMINMED:2797449","clonidine","PO","oral",2020-02-02,2021-02-04,2,8
@@ -57,7 +56,6 @@
 "medcations_before_and_after","07.06","Enoxaparin","Lovenox","Antithrombotics","67108","enoxaparin","ADMINMED:2797686","enoxaparin","Subcutaneous","subcutaneous",2020-05-05,2021-05-04,32,346
 "medcations_before_and_after","07.06","Enoxaparin","Lovenox","Antithrombotics","67108","enoxaparin","HOMEMED:10697071","enoxaparin",NA,NA,2020-05-24,2020-05-27,2,3
 "medcations_before_and_after","07.06","Enoxaparin","Lovenox","Antithrombotics","67108","enoxaparin","HOMEMED:3676238","enoxaparin",NA,NA,2020-08-21,2020-08-21,1,2
-"medcations_before_and_after","07.08","Heparin",NA,"Antithrombotics","20481, 11124, 5224","cefepime, vancomycin, heparin","ADMINMED:2797223","cefepime","IV","intravenous",2021-04-24,2021-04-27,1,8
 "medcations_before_and_after","07.08","Heparin",NA,"Antithrombotics","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2797919","heparin","IV","intravenous",2020-04-23,2021-01-29,4,375
 "medcations_before_and_after","07.13","Apixaban","Eliquis","Antithrombotic","1364430","apixaban","ADMINMED:467428629","apixaban","PO","oral",2020-04-28,2021-05-08,10,61
 "medcations_before_and_after","07.13","Apixaban","Eliquis","Antithrombotic","1364430","apixaban","HOMEMED:467428636","apixaban",NA,NA,2020-11-25,2021-01-21,1,3
