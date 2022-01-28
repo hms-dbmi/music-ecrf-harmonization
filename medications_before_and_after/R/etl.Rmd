@@ -23,7 +23,8 @@ library(lubridate)
 
 Example, in BCH, we create the following query to obtain the data extract for the codes identified in previous steps for MISC patients.
 ```{r}
-bch_med_concept_summary <- read_csv('../data/bch_med_concept_summary_toReview.csv')
+bch_med_concept_summary <- read_csv('../../medications_before_and_after/data/bch_med_concept_summary_toReview.csv') %>%
+  filter(RXNORM_DESCS != 'greater than 5 RXNORM codes mapped to BCH code' | (CONCEPT_CD == 'ADMINMED:2797919' & ECRF_CODE == '07.08'))
 #query_a <- "select obs.patient_num, obs.concept_cd, obs.start_date, misc.admissiondate, misc.end_date, misc.length_of_stay from observation_fact obs, ag440_misc_patients_may misc where (concept_cd in ('"
 #query_b <- "')) and obs.patient_num = misc.patient_num;"
 #bch_codes <- paste0(bch_med_concept_summary$CONCEPT_CD, collapse = "', '")
