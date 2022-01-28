@@ -58,6 +58,9 @@ df <- left_join(df, bch_med_concept_summary %>% select(ECRF_CODE, CONCEPT_CD, Va
 ```
 
 ```{r}
+# we have some concepts which we want to remove, even from the 'other' mappings
+concepts_toremove <- read.csv('../../medications_before_and_after/data/bch_concepts_to_remove.csv') %>% pull(CONCEPT_CD)
+
 
 # NAs that appear are not present in our mapping / are not requested by the ECRF
 # we assign them the 99.99 code for 'other'
@@ -71,6 +74,7 @@ df <- df %>%
 # we onlyh report the names for unknown medications.
 # even though we are reporting all 'other' medications, we will remove the general sodium chloride concepts as they are not informative.
 bch_concept_dim <- read.delim('../../medications_before_and_after/data/concept_dimensionMeds.dsv') %>%
+  filter(!CONCEPT_CD %in% concepts_toremove) %>%
   select(CONCEPT_CD, NAME_CHAR) %>%
   unique %>%
   group_by(CONCEPT_CD) %>% 
