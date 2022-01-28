@@ -81,10 +81,9 @@ df <- df %>%
   left_join(bch_concept_dim, by = 'CONCEPT_CD') %>%
   mutate(medhospX_name = ifelse(ECRF_CODE == '99.99',
                                 tolower(NAME_CHAR),
-                                ''),
-         medhospX_name = ifelse(is.na(medhospX_name), 
-                                'Medication name not recorded in EHR',
-                                medhospX_name))
+                                '')) %>%
+  filter(!is.na(medhospX_name))
+
 
 
 
