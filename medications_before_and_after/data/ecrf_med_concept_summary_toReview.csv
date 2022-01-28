@@ -50,7 +50,7 @@
 "medications_before_and_after_hosp","08.14","Metoprolol","Lopressor, Toprol","PO","oral",2020-08-17,2021-04-15,2,3,1
 "medications_before_and_after_hosp","09.07","Vitamin K",NA,NA,NA,2017-12-07,2017-12-07,1,1,1
 "medications_before_and_after_hosp","09.10","Vitamin C",NA,"PO","oral",2017-11-03,2021-02-25,5,33,3
-"medications_before_and_after_hosp","09.10","Vitamin C",NA,NA,NA,2011-08-17,2020-08-16,8,8,7
+"medications_before_and_after_hosp","09.10","Vitamin C",NA,NA,NA,2011-08-17,2020-08-16,9,9,8
 "medications_before_and_after_hosp","09.11","Thiamine",NA,NA,NA,2017-12-07,2017-12-07,1,1,1
 "medications_before_and_after_hosp","10.01","Albuterol","Ventolin, Xopenex, Preventil","INH","inhalation",2016-03-09,2021-05-25,3,24,1
 "medications_before_and_after_hosp","10.01","Albuterol","Ventolin, Xopenex, Preventil","MDI","metered-dose inhaler",2009-10-19,2009-10-19,1,1,1
@@ -82,7 +82,7 @@
 "medications_before_and_after_hosp","16.01","Aluminum/Magnesium Hydroxide","Maalox","PO","oral",2017-05-23,2021-01-22,4,5,2
 "medications_before_and_after_hosp","16.01","Aluminum/Magnesium Hydroxide","Maalox",NA,NA,2016-03-16,2021-02-05,2,2,1
 "medications_before_and_after_hosp","16.04","Mylanta",NA,"PO","oral",2020-05-01,2021-02-25,3,10,2
-"medications_before_and_after_hosp","16.04","Mylanta",NA,NA,NA,2016-03-16,2021-02-05,3,3,2
+"medications_before_and_after_hosp","16.04","Mylanta",NA,NA,NA,2016-03-16,2021-02-05,4,4,3
 "medications_before_and_after_hosp","16.05","Ondansetron HCL","Zofran","IV","intravenous",2009-06-09,2021-04-30,18,48,1
 "medications_before_and_after_hosp","16.05","Ondansetron HCL","Zofran","PO","oral",2015-02-21,2021-05-19,14,17,1
 "medications_before_and_after_hosp","16.05","Ondansetron HCL","Zofran",NA,NA,2016-05-09,2021-05-19,7,7,5
@@ -108,7 +108,9 @@
 "medications_before_and_after_hosp","18.07","Insulin",NA,NA,NA,2018-12-18,2021-01-14,3,16,7
 "medications_before_and_after_hosp","18.08","Levothyroxine","Synthroid","PO","oral",2021-01-26,2021-01-29,1,4,1
 "medications_before_and_after_hosp","18.08","Levothyroxine","Synthroid",NA,NA,2021-01-26,2021-01-29,1,7,3
-"medications_before_and_after_hosp","18.09","Methylprednisolone/Prednisolone","Solumedrol, Prelone","PO","oral",2016-03-09,2021-05-25,27,93,1
+"medications_before_and_after_hosp","18.09","Methylprednisolone/Prednisolone","Solumedrol, Prelone","ICU-IV","Intensive care unit intravenous",2020-05-02,2020-05-23,2,10,1
+"medications_before_and_after_hosp","18.09","Methylprednisolone/Prednisolone","Solumedrol, Prelone","IV","intravenous",2020-04-23,2021-05-24,42,332,1
+"medications_before_and_after_hosp","18.09","Methylprednisolone/Prednisolone","Solumedrol, Prelone","PO","oral",2016-03-09,2021-05-25,28,94,2
 "medications_before_and_after_hosp","18.09","Methylprednisolone/Prednisolone","Solumedrol, Prelone",NA,NA,2016-03-10,2021-05-25,29,63,11
 "medications_before_and_after_hosp","18.10","Prednisone","Bronkosol","PO","oral",2017-01-24,2021-03-18,17,80,1
 "medications_before_and_after_hosp","18.10","Prednisone","Bronkosol",NA,NA,2017-01-24,2021-04-22,19,40,4

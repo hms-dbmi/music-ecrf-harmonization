@@ -79,6 +79,7 @@
 "medcations_before_and_after","09.10","Vitamin C",NA,"Biologics","1151","ascorbic acid","HOMEMED:3654651","ascorbic acid",NA,NA,2020-05-05,2020-05-05,1,1
 "medcations_before_and_after","09.10","Vitamin C",NA,"Biologics","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","HOMEMED:3683128","multivitamin",NA,NA,2018-02-08,2018-02-08,1,1
 "medcations_before_and_after","09.10","Vitamin C",NA,"Biologics","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","HOMEMED:3683129","multivitamin",NA,NA,2011-08-17,2017-08-10,2,2
+"medcations_before_and_after","09.10","Vitamin C",NA,"Biologics","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","HOMEMED:3683385","multivitamin with iron",NA,NA,2017-03-07,2017-03-07,1,1
 "medcations_before_and_after","09.10","Vitamin C",NA,"Biologics","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","HOMEMED:3683523","multivitamin with minerals",NA,NA,2020-05-02,2020-05-02,1,1
 "medcations_before_and_after","09.11","Thiamine",NA,"Biologics","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","HOMEMED:10698316","multivitamin",NA,NA,2017-12-07,2017-12-07,1,1
 "medcations_before_and_after","10.01","Albuterol","Ventolin, Xopenex, Preventil","Bronchodilators","435","albuterol","ADMINMED:2797322","albuterol","INH","inhalation",2016-03-09,2021-05-25,3,24
@@ -131,6 +132,7 @@
 "medcations_before_and_after","16.04","Mylanta",NA,"Gastrointestinal","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","ADMINMED:2798289","multivitamin with minerals","PO","oral",2020-05-01,2021-02-25,2,9
 "medcations_before_and_after","16.04","Mylanta",NA,"Gastrointestinal","greater than 5 RXNORM codes mapped to BCH code","greater than 5 RXNORM codes mapped to BCH code","HOMEMED:3683523","multivitamin with minerals",NA,NA,2020-05-02,2020-05-02,1,1
 "medcations_before_and_after","16.04","Mylanta",NA,"Gastrointestinal","466588","aluminum hydroxide / magnesium hydroxide / simethicone","HOMEMED:395571686","al hydroxide/mg hydroxide/simethicone",NA,NA,2016-03-16,2021-02-05,2,2
+"medcations_before_and_after","16.04","Mylanta",NA,"Gastrointestinal","608343","calcium carbonate / cholecalciferol","HOMEMED:650068869","calcium-vitamin d",NA,NA,2016-05-06,2016-05-06,1,1
 "medcations_before_and_after","16.05","Ondansetron HCL","Zofran","Gastrointestinal","26225","ondansetron","ADMINMED:2798374","ondansetron","IV","intravenous",2009-06-09,2021-04-30,18,48
 "medcations_before_and_after","16.05","Ondansetron HCL","Zofran","Gastrointestinal","26225","ondansetron","ADMINMED:2798374","ondansetron","PO","oral",2015-02-21,2021-05-19,14,17
 "medcations_before_and_after","16.05","Ondansetron HCL","Zofran","Gastrointestinal","26225","ondansetron","HOMEMED:130953817","ondansetron",NA,NA,2016-05-09,2016-05-09,1,1
@@ -185,6 +187,9 @@
 "medcations_before_and_after","18.08","Levothyroxine","Synthroid","Hormonal agents","10582","levothyroxine","HOMEMED:219219211","levothyroxine",NA,NA,2021-01-26,2021-01-26,1,1
 "medcations_before_and_after","18.08","Levothyroxine","Synthroid","Hormonal agents","10582","levothyroxine","HOMEMED:3681121","levothyroxine",NA,NA,2021-01-29,2021-01-29,1,3
 "medcations_before_and_after","18.08","Levothyroxine","Synthroid","Hormonal agents","10582","levothyroxine","HOMEMED:3681122","levothyroxine",NA,NA,2021-01-26,2021-01-29,1,3
+"medcations_before_and_after","18.09","Methylprednisolone/Prednisolone","Solumedrol, Prelone","Hormonal agents","6902","methylprednisolone | methylprednisolone","ADMINMED:2798242","methylprednisolone","ICU-IV","Intensive care unit intravenous",2020-05-02,2020-05-23,2,10
+"medcations_before_and_after","18.09","Methylprednisolone/Prednisolone","Solumedrol, Prelone","Hormonal agents","6902","methylprednisolone | methylprednisolone","ADMINMED:2798242","methylprednisolone","IV","intravenous",2020-04-23,2021-05-24,42,332
+"medcations_before_and_after","18.09","Methylprednisolone/Prednisolone","Solumedrol, Prelone","Hormonal agents","6902","methylprednisolone | methylprednisolone","ADMINMED:2798242","methylprednisolone","PO","oral",2020-05-25,2020-05-25,1,1
 "medcations_before_and_after","18.09","Methylprednisolone/Prednisolone","Solumedrol, Prelone","Hormonal agents","8638","prednisolone | prednisolone","ADMINMED:2798538","prednisolone","PO","oral",2016-03-09,2021-05-25,27,93
 "medcations_before_and_after","18.09","Methylprednisolone/Prednisolone","Solumedrol, Prelone","Hormonal agents","8638","prednisolone | prednisolone","HOMEMED:199222798","prednisolone",NA,NA,2020-08-15,2020-08-26,1,3
 "medcations_before_and_after","18.09","Methylprednisolone/Prednisolone","Solumedrol, Prelone","Hormonal agents","8638","prednisolone | prednisolone","HOMEMED:199222800","prednisolone",NA,NA,2021-03-04,2021-04-29,2,2
