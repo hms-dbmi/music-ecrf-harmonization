@@ -227,10 +227,14 @@ out7 <- out6 %>% select(-grep('NA', colnames(out6)))
 ```{r}
 ### write test output for test patients 120002 and 120003
 write.csv(out7 %>%
-            filter(record_id %in% c(120006, 120002)) %>%
+            filter(record_id %in% c(120006, 120002, 120095, 120123)) %>%
             mutate(record_id = ifelse(record_id == 120006,
-                                      889006,
-                                      889002)),
+                                      888006, 
+                                      ifelse(record_id == 120002,
+                                             888002,
+                                             ifelse(record_id == 120095,
+                                                    888095,
+                                                    888123)))),
           '../local_ref/redcap_TEST_output_medications_during.csv',
           row.names = FALSE, 
           na = '')
