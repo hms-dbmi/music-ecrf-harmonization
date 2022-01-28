@@ -272,7 +272,7 @@ out5 <- out4 %>% select(-grep('NA', colnames(out4)))
 ```{r}
 write.csv(out5, '../local_ref/redcap_output_medications_before_and_after.csv', row.names = FALSE)
 write.csv(out5 %>% 
-            filter(record_id %in% c(120006, 120002)) %>% 
+            filter(record_id %in% c(120006, 120002, 120095, 120123)) %>% 
             mutate(record_id = ifelse(record_id == 120006,
                                       777006, 
                                       ifelse(record_id == 120002,
