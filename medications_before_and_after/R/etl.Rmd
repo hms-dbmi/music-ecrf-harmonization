@@ -76,6 +76,8 @@ df <- df %>%
 bch_concept_dim <- read.delim('../../medications_before_and_after/data/concept_dimensionMeds.dsv') %>%
   filter(!CONCEPT_CD %in% concepts_toremove) %>%
   select(CONCEPT_CD, NAME_CHAR) %>%
+  # we have to manually add the concept for 'albumin human', based on clinician review with Simran Mahanta and Audery Dionne
+  add_row(CONCEPT_CD = 'ADMINMED:2797321', NAME_CHAR = 'albumin human') %>%
   unique %>%
   group_by(CONCEPT_CD) %>% 
   summarise(NAME_CHAR = paste0(NAME_CHAR, collapse = ', '))
