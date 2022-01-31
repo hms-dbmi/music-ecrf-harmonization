@@ -172,7 +172,7 @@ ft2 <- finalTable %>%
  
 ft3 <- ft2 %>%
    mutate(medcur1_current = case_when(
-          date < ADMISSIONDATE ~ '0',
+          date < ADMISSIONDATE & date > ADMISSIONDATE - 90 ~ '0',
           date > END_DATE & date < two_weeks_ref | date == END_DATE & medType == 'HOMEMED' ~ '1',
           date == two_weeks_ref ~ '2',
           date > two_weeks_ref & date < six_weeks_ref ~ '3',
@@ -196,7 +196,7 @@ ft3 <- ft2 %>%
           TRUE ~ 'Out of period'))
  
 ft4 <- ft3 %>% 
-  filter(medcur1_current != '-88') %>%
+  filter(!medcur1_current %in% c('-88', 'Out of period')) %>%
   select(PATIENT_NUM, ECRF_CODE, medcur1_current, Variable...Field.Name, medcur1_name) %>%
   unique() %>% 
   left_join(misc_mapping) %>%
