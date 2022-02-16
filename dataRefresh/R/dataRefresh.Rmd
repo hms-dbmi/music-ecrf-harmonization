@@ -17,13 +17,13 @@ library(readxl)
 This table is the equivalent to MUSIC_PATIENTSLIST_SEPTEMBER) that contains the MUSIC ID, the MRN, and start and discharge dates. 
 Because we are not getting the data in one file we need to read the mapping file from BCH (MUSIC Id and MRN) and the file from REDCap to extract the admission and discharge date. We will also use the old file, to just add the information from the new patients enrolled.
 ```{r}
-old_music_patients <- read.csv("../medications_before_and_after/local_ref/music_id_mapping.csv")
+old_music_patients <- read.csv("../../medications_before_and_after/local_ref/music_id_mapping.csv")
 head(old_music_patients)
 
-latest_music_patients <- read_xlsx("local_ref/MUSIC MRNs and study IDs 2.11.2022.xlsx")
+latest_music_patients <- read_xlsx("../local_ref/MUSIC MRNs and study IDs 2.11.2022.xlsx")
 head(previous_music_patients)
 
-visit_dates_redcap  <- read.csv("local_ref/MUSIC_DATA_2022-02-16_0900.csv")
+visit_dates_redcap  <- read.csv("../local_ref/MUSIC_DATA_2022-02-16_0900.csv")
 visit_dates_redcap <- visit_dates_redcap %>%
   filter( record_id %in% latest_music_patients$`MUSIC ID` ) %>%
   filter( study_hosp_admit_date != "" |  hosp_discharge_date != "") %>%
@@ -88,10 +88,10 @@ concept_cd like 'LAB:%';
 
 # Check if there are new labs and meds concepts in the dabase
 ```{r}
-previous_med_concepts <- read.delim("../medications_before_and_after/data/concept_dimensionMeds.dsv") %>%
+previous_med_concepts <- read.delim("../../medications_before_and_after/data/concept_dimensionMeds.dsv") %>%
   mutate( medType = sapply(strsplit( CONCEPT_CD, "[:]"), '[', 1)) %>%
   filter( medType %in% c("HOMEMED", "ADMINMED"))
-latest_med_concepts <- read.delim("local_ref/concept_dimensionMeds_feb22.dsv")
+latest_med_concepts <- read.delim("../local_ref/concept_dimensionMeds_feb22.dsv")
 nowAndNoBefore <- unique( latest_med_concepts[! latest_med_concepts$CONCEPT_CD %in% previous_med_concepts$CONCEPT_CD, ] )
 nrow(nowAndNoBefore)
 
