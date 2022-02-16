@@ -1,0 +1,102 @@
+---
+title: 'Data Refresh'
+author: "Simran Makwana & Alba Gutierrez"
+date: "02/16/2022"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(readxl)
+```
+
+
+# Create the MUSIC_PATIENTSLIST_FEB22 
+This table is the equivalent to MUSIC_PATIENTSLIST_SEPTEMBER) that contains the MUSIC ID, the MRN, and start and discharge dates. 
+Because we are not getting the data in one file we need to read the mapping file from BCH (MUSIC Id and MRN) and the file from REDCap to extract the admission and discharge date. We will also use the old file, to just add the information from the new patients enrolled.
+```{r}
+old_music_patients <- read.csv("../medications_before_and_after/local_ref/music_id_mapping.csv")
+head(old_music_patients)
+
+latest_music_patients <- read_xlsx("local_ref/MUSIC MRNs and study IDs 2.11.2022.xlsx")
+head(previous_music_patients)
+
+visit_dates_redcap  <- read.csv("local_ref/MUSIC_DATA_2022-02-16_0900.csv")
+visit_dates_redcap <- visit_dates_redcap %>%
+  filter( record_id %in% latest_music_patients$`MUSIC ID` ) %>%
+  filter( study_hosp_admit_date != "" |  hosp_discharge_date != "") %>%
+  select( record_id, study_hosp_admit_date,  hosp_discharge_date) %>%
+  group_by(record_id ) %>%
+  summarise_all(max)
+
+#for todays test I directly imported simran file 
+# db table: MUSIC_PATIENTLIST_FEB22;
+```
+
+# Check how many of the listed patients are in the BCH db
+In SQL we run the next query:
+select distinct( MRN ) from MUSIC_PATIENTLIST_FEB22 where MRN not in ( select MRN from MRN_PATUUID_PATNUM) ;
+
+
+# Create the tables for all the patients that we have a mapping
+
+-- SQL query to generate the patient's table information ##
+create table ag440_misc_patients_feb22 as 
+select m.mrn, mp.PAT_NUM as PATIENT_NUM, m.ADMISSION_DATE as ADMISSIONDATE, m.DISCHARGE_DATE, v.START_DATE, v.END_DATE, 
+m.ADMISSION_DATE -1 as datemin,  m.ADMISSION_DATE + 1 as datemax, v.inout_cd, v.length_of_stay 
+from MUSIC_PATIENTLIST_FEB22 m, MRN_PATUUID_PATNUM mp, visit_dimension v where m.MRN =  mp.MRN and mp.PAT_NUM =  v.patient_num and 
+v.start_date >= m.ADMISSION_DATE -1  and v.start_date <= m.ADMISSION_DATE +1 and 
+v.END_DATE >= m.DISCHARGE_DATE -1  and v.END_DATE <= m.DISCHARGE_DATE +1 and 
+v.inout_cd = 'Inpatient';
+
+-- SQL query to generate the patient's timeline table ##
+create table misc_patient_timeline_feb22 as
+select mp.PAT_NUM as PATIENT_NUM, m.ADMISSION_DATE as ADMISSIONDATE, v.START_DATE, v.END_DATE,  
+m.ADMISSION_DATE -1 as datemin,  m.ADMISSION_DATE + 1 as datemax, 
+v.inout_cd, v.length_of_stay, v.location_path 
+from MUSIC_PATIENTLIST_FEB22 m, MRN_PATUUID_PATNUM mp, visit_dimension v 
+where m.MRN =  mp.MRN and mp.PAT_NUM =  v.patient_num 
+and v.start_date >= m.ADMISSION_DATE -1 order by mp.PAT_NUM, v.START_DATE;  
+
+
+-- SQL query to have a table with all the lab data in MISC patients
+create table ag440_music_labs_feb22 as 
+select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, 
+obs.nval_num, obs.units_cd, pat.ADMISSIONDATE, pat.discharge_date 
+from observation_fact obs, 
+ag440_misc_patients_feb22 pat 
+where obs.patient_num = pat.patient_num and concept_cd like 'LAB:%';
+
+-- SQL query to have a table with all the meds data in MISC patients
+create table ag440_music_meds_feb22 as 
+select obs.patient_num, obs.concept_cd, obs.start_date, obs.tval_char, 
+obs.nval_num, obs.units_cd, pat.ADMISSIONDATE, pat.discharge_date 
+from observation_fact obs, 
+ag440_misc_patients_feb22 pat 
+where obs.patient_num = pat.patient_num and ( concept_cd like 'HOMEMED:%' or concept_cd like 'ADMINMED:%');
+
+-- Check meds and labs concept_dim
+create table meds_concept_dim_feb22 as 
+select * from concept_dimension where 
+concept_cd like 'HOMEMED:%' or concept_cd like 'ADMINMED:%'; 
+
+create table labs_concept_dim_feb22 as 
+select * from concept_dimension where 
+concept_cd like 'LAB:%'; 
+
+# Check if there are new labs and meds concepts in the dabase
+```{r}
+previous_med_concepts <- read.delim("../medications_before_and_after/data/concept_dimensionMeds.dsv") %>%
+  mutate( medType = sapply(strsplit( CONCEPT_CD, "[:]"), '[', 1)) %>%
+  filter( medType %in% c("HOMEMED", "ADMINMED"))
+latest_med_concepts <- read.delim("local_ref/concept_dimensionMeds_feb22.dsv")
+nowAndNoBefore <- unique( latest_med_concepts[! latest_med_concepts$CONCEPT_CD %in% previous_med_concepts$CONCEPT_CD, ] )
+nrow(nowAndNoBefore)
+
+```
+
+
+
+
