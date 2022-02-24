@@ -1,0 +1,55 @@
+---
+title: 'Data refresh: internal QC'
+author: "Simran Makwana & Alba Gutierrez"
+date: "02/24/2022"
+output: html_document
+---
+
+
+# Aim
+To compare the latest data extract with the previous extraction to make sure the data is consistent. 
+
+# Library Installation
+```{r}
+library(tidyverse)
+library(lubridate)
+library(generics)
+```
+
+# Labs data: QC
+
+
+Import the lab data from MISC patients. Instead of importing a subset, we import the whole dataset (ag440_music_labs_nov21) and here we filter by the concepts that are in our lab_dictionary and we rename the admission and discharge date colum.  
+```{r}
+##all data
+misc_mapping <- read.csv("..//local_ref/music_id_mapping_feb22.csv")
+
+all_labs_latest_update <- read.delim('../local_ref/ag440_music_labs_feb22.dsv') %>%
+  mutate( DATE = sapply(strsplit( as.character(START_DATE), " "), '[', 1), 
+          combData = paste( PATIENT_NUM, CONCEPT_CD, START_DATE, TVAL_CHAR, NVAL_NUM, UNITS_CD, sep = "**")) %>%
+  unique()
+
+all_labs_previous_extract <- read.delim('../../laboratory_values/local_ref/ag440_music_labs_nov21.dsv') %>%
+    filter( PATIENT_NUM %in% all_labs_latest_update$PATIENT_NUM ) %>%
+  mutate( DATE = sapply(strsplit( as.character(START_DATE), " "), '[', 1), 
+          combData = paste( PATIENT_NUM, CONCEPT_CD, START_DATE, TVAL_CHAR, NVAL_NUM, UNITS_CD, sep = "**"))%>%
+  filter( dmy(DATE) <= "2021-05-30") %>%
+  unique()
+  
+all_labs_latest_update <- all_labs_latest_update %>%
+  filter( dmy(DATE) <= "2021-05-30" & 
+            PATIENT_NUM %in% all_labs_previous_extract$PATIENT_NUM )
+
+# look for same exact rows
+dim( all_labs_previous_extract )
+dim( all_labs_latest_update)
+
+#if any distinct data use this 
+xx <- all_labs_latest_update[ ! all_labs_latest_update$combData %in% all_labs_previous_extract$combData, ]
+yy <- all_labs_previous_extract[ ! all_labs_previous_extract$combData %in% all_labs_latest_update$combData, ]
+
+nrow(xx)
+nrow(yy)
+```
+
+
