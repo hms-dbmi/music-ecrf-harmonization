@@ -16,7 +16,7 @@ lab_dictionary <- read.delim("../../laboratory_values/data/labDictionary_updated
 # Run the pipeline until the finalTableFiltered is created with the latest data update and save it as an RData file
 Import the lab data from MISC patients. Instead of importing a subset, we import the whole dataset (ag440_music_labs_nov21) and here we filter by the concepts that are in our lab_dictionary and we rename the admission and discharge date colum.  
 ```{r}
-all_labs <- read.delim('../local_ref/ag440_music_labs_feb22.dsv')
+all_labs <- read.csv('../../local_ref/AG440_MUSIC_MEDS_FEB22.csv')
 subset_df <- all_labs %>%
   filter( CONCEPT_CD %in% lab_dictionary$concept_cd ) %>%
   rename('ADMISSION_DATE' = ADMISSIONDATE,
@@ -30,8 +30,8 @@ create table music_id_mapping_feb22 as
 select m.MRN, m.MUSIC_ID, p.PAT_NUM from MUSIC_PATIENTLIST_FEB22 m, MRN_PATUUID_PATNUM p where m.MRN = p.MRN; 
 
 ```{r}
-misc_mapping <- read.csv("..//local_ref/music_id_mapping_feb22.csv")
-visit_dates  <- read.csv("../local_ref/MUSIC_DATA_2022-02-16_0900.csv")
+misc_mapping <- read.csv("../../local_ref/music_id_mapping.csv")
+visit_dates  <- read.csv("../../local_ref/")
 visit_dates <- visit_dates %>%
   filter( visit_date != "" ) %>%
   select( record_id, redcap_event_name, visit_date )
@@ -519,6 +519,53 @@ rm(list=ls())
 ## Load the two files saved for the data extracts to compare 
 
 ```{r}
+### Simran approach
+
+load("../local_ref/finalTableFilteredPreviousData.RData" )
+load("../local_ref/finalTableFilteredLatestUpdateData.RData" )
+
+
+p1 <- previousDataUpdate %>%
+  select(PATIENT_NUM, variableName, period, value)
+
+l1 <- latestDataUpdate %>%
+  select(PATIENT_NUM, variableName, period, value)
+
+combined <- full_join(p1, l1,
+                      by = c('PATIENT_NUM', 'variableName', 'period'),
+                      suffix = c('.prev', '.latest'))
+
+na_prev <- combined %>% filter(is.na(value.prev))
+na_latest <- combined %>% filter(is.na(value.latest))
+
+combined2 <- combined %>%
+  filter(!is.na(value.prev) & !is.na(value.latest)) %>%
+  mutate(check = value.prev == value.latest)
+
+# do the same count thing alba did before to account for multiple values
+tocheck <- combined2 %>% filter(!check) %>%
+  group_by(PATIENT_NUM, variableName, period) %>%
+  mutate(count = n()) %>%
+  filter( count < 2 )
+
+# look at values only
+tocheck_values <- tocheck %>%
+  filter(grepl('value', variableName))
+
+table(tocheck$PATIENT_NUM)
+table(tocheck$period)
+
+# the values which changed for patient 106495209 are the admission ones (MUSIC ID 120018) this one was admitted may 18 2020
+# the values which changed for patient 114915319 are the 6 month ones (MUSIC ID 120051) this makes sense
+
+patlist_may <- read.csv('../../local_ref/misc_patients_may.dsv')
+patlist_feb <- read.csv('../../local_ref/music_patients_feb2022.csv')
+
+```
+
+
+
+```{r}
 load("../local_ref/finalTableFilteredPreviousData.RData" )
 load("../local_ref/finalTableFilteredLatestUpdateData.RData" )
 
@@ -532,6 +579,7 @@ previous <- previousDataUpdate %>%
   filter( vartype == "value") %>%
   select( PATIENT_NUM, CONCEPT_CD, period, previous_value = value) %>%
   unique()
+
 
 
 overwrite <- full_join( previous, latest,  by=c("PATIENT_NUM", "CONCEPT_CD", "period"))
@@ -564,42 +612,43 @@ length(unique(nasCases$PATIENT_NUM))
 
 
 ### trying to understand why we have multiple values for the same period... need to work more on it and review the previous estimation
-latest <- latestDataUpdate %>%
+latest2 <- latestDataUpdate %>%
   filter( vartype == "value") %>%
   select( PATIENT_NUM, CONCEPT_CD, period, START_DATE, latest_value = value) %>%
   unique()
 
-previous <- previousDataUpdate %>%
+previous2 <- previousDataUpdate %>%
   filter( vartype == "value") %>%
   select( PATIENT_NUM, CONCEPT_CD, period, START_DATE, previous_value = value) %>%
   unique()
 
 
-overwrite <- full_join( previous, latest,  by=c("PATIENT_NUM", "CONCEPT_CD", "period", "START_DATE"))
+overwrite2 <- full_join( previous2, latest2,  by=c("PATIENT_NUM", "CONCEPT_CD", "period", "START_DATE"))
 
-dataPreviouslyEntered <- overwrite %>%
+dataPreviouslyEntered2 <- overwrite2 %>%
   filter( ! is.na( previous_value ) )
 
 
-dataPreviouslyEntered <- dataPreviouslyEntered %>%
+dataPreviouslyEntered2 <- dataPreviouslyEntered2 %>%
   mutate( comparison = ifelse( previous_value == latest_value, "OK", "Overwrite"))
 
-needToOverWrite <- dataPreviouslyEntered %>%
+needToOverWrite2 <- dataPreviouslyEntered2 %>%
   filter( comparison == "Overwrite") %>%
-  group_by( PATIENT_NUM, CONCEPT_CD, period, START_DATE )
+  group_by( PATIENT_NUM, CONCEPT_CD, period, START_DATE ) %>%
+  mutate(count = n()) %>%
+  filter( count < 2 )
 
-
-summary(as.factor( needToOverWrite$period )) # 32 in period 1 and 6
-length(unique( needToOverWrite$PATIENT_NUM )) # 2 patients
+summary(as.factor( needToOverWrite2$period )) # 32 in period 1 and 6
+length(unique( needToOverWrite2$PATIENT_NUM )) # 2 patients
 
 #percentage
-round( nrow( needToOverWrite )/nrow( dataPreviouslyEntered )*100, 2)
+round( nrow( needToOverWrite2 )/nrow( dataPreviouslyEntered2 )*100, 2)
 
 
-nasCases <- dataPreviouslyEntered %>%
-  filter( is.na(comparison))
+nasCases2 <- dataPreviouslyEntered2 %>%
+  filter( is.na(comparison2))
 
-length(unique(nasCases$PATIENT_NUM))
+length(unique(nasCases2$PATIENT_NUM))
 
 ```
 
