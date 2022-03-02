@@ -562,5 +562,44 @@ nasCases <- dataPreviouslyEntered %>%
 
 length(unique(nasCases$PATIENT_NUM))
 
+
+### trying to understand why we have multiple values for the same period... need to work more on it and review the previous estimation
+latest <- latestDataUpdate %>%
+  filter( vartype == "value") %>%
+  select( PATIENT_NUM, CONCEPT_CD, period, START_DATE, latest_value = value) %>%
+  unique()
+
+previous <- previousDataUpdate %>%
+  filter( vartype == "value") %>%
+  select( PATIENT_NUM, CONCEPT_CD, period, START_DATE, previous_value = value) %>%
+  unique()
+
+
+overwrite <- full_join( previous, latest,  by=c("PATIENT_NUM", "CONCEPT_CD", "period", "START_DATE"))
+
+dataPreviouslyEntered <- overwrite %>%
+  filter( ! is.na( previous_value ) )
+
+
+dataPreviouslyEntered <- dataPreviouslyEntered %>%
+  mutate( comparison = ifelse( previous_value == latest_value, "OK", "Overwrite"))
+
+needToOverWrite <- dataPreviouslyEntered %>%
+  filter( comparison == "Overwrite") %>%
+  group_by( PATIENT_NUM, CONCEPT_CD, period, START_DATE )
+
+
+summary(as.factor( needToOverWrite$period )) # 32 in period 1 and 6
+length(unique( needToOverWrite$PATIENT_NUM )) # 2 patients
+
+#percentage
+round( nrow( needToOverWrite )/nrow( dataPreviouslyEntered )*100, 2)
+
+
+nasCases <- dataPreviouslyEntered %>%
+  filter( is.na(comparison))
+
+length(unique(nasCases$PATIENT_NUM))
+
 ```
 
