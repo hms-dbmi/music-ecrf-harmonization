@@ -16,18 +16,45 @@ lab_dictionary <- read.delim("../data/labDictionary_updated.txt", header = TRUE,
 
 
 Import the lab data from MISC patients. Instead of importing a subset, we import the whole dataset (ag440_music_labs_nov21) and here we filter by the concepts that are in our lab_dictionary and we rename the admission and discharge date colum.  
+
+Here we specify for which patients we want to run the pipeline for.
 ```{r}
-all_labs <- read.csv('../local_ref/ag440_music_labs_nov21.dsv')
+music_patients_admission_after_nov21 <- read.csv("../../dataRefresh/local_ref/music_patients_feb2022_manually_updated.csv")
+
+redcap <- read.csv("../../laboratory_values/local_ref/redcap_output_laboratory_values_updated.csv") %>%
+  pull( record_id ) %>%
+  unique()
+
+newPatients <- music_patients_admission_after_nov21 %>%
+  filter( ! MUSIC.ID %in% redcap )
+
+
+# now we have our list of new poatient IDs we want to run the pipeline on.
+
+```
+
+
+```{r}
+all_labs <- read.csv('../../dataRefresh/local_ref/AG440_MUSIC_LABS_FEB22')
+misc_mapping <- read.csv("../../dataRefresh/local_ref/MUSIC_ID_MAPPING") %>%
+  rename(PATIENT_NUM = PAT_NUM) %>%
+  filter( MUSIC_ID %in% newPatients$MUSIC.ID )
+
 subset_df <- all_labs %>%
   filter( CONCEPT_CD %in% lab_dictionary$concept_cd ) %>%
   rename('ADMISSION_DATE' = ADMISSIONDATE,
-         'DISCHARGE_DATE' = DISCHARGE_DATE_FORMATTED)
+         'DISCHARGE_DATE' = DISCHARGE_DATE) %>%
+  filter(PATIENT_NUM %in% misc_mapping$PATIENT_NUM) #####
+
+# we flter the subset df to only include the patients of interest
+
+
 ```
+
 
 Import the follow-up visit dates. The MUSIC_DATA_2021-11-23_0940.csv is the file extracted from REDCap of the data previously entered by BCH experts. From there we will extract the specific follow-up dates for the MUSIC study for the MISC patients. The variable name that contains the date is "visit_date", extracted from the dictionary. The record id is the internal MUSIC identifier, and the redcap_event_name allows us to know which is the specific follow-up period the date is referring to. Because the ID are MUSIC Ids we also need to load the music_mapping_id. 
 ```{r}
-misc_mapping <- read.csv("../../local_ref/music_id_mapping.csv")
-visit_dates  <- read.csv("../local_ref/MUSIC_DATA_2021-12-01_1413.csv")
+visit_dates  <- read.csv("../../dataRefresh/local_ref/MUSIC_DATA_2022-03-10_1345.csv")
 visit_dates <- visit_dates %>%
   filter( visit_date != "" ) %>%
   select( record_id, redcap_event_name, visit_date )
@@ -71,6 +98,8 @@ finalTable <- finalTable %>%
          days_after_admission = date - ADMISSION_DATE,
          days_after_discharge = date - DISCHARGE_DATE) %>%
   left_join( misc_followUp )
+
+
 ```
 
 #### Check the quality of the follow up dates
@@ -355,6 +384,25 @@ Adding the variables:
 - compl_obtained (1 yes, 0 no)
 - other_labs ( 1 yes, 0 no)
 ```{r}
+
+### If there is not a column, make a blank one
+out$immunog_obtained <- NA
+out$igg_obtained <- NA
+out$igm_obtained <- NA
+out$ige_obtained <- NA
+out$c3_obtained <- NA
+out$c4_obtained <- NA
+out$cd3_obtained <- NA
+out$cd3_abs_obtained <- NA
+out$cd3_cd4_obtained <- NA
+out$cd3_cd4_abs_obtained <- NA
+out$cd3_cd8_obtained <- NA
+out$lympho_obtained <- NA
+out$cd3_cd8_abs_obtained <- NA
+out$cd19_obtained <- NA
+out$cd3_cd16_cd56_obtained <- NA
+out$ac4_cd8_ratio_obtained <- NA
+
 out <- out %>% 
   group_by( record_id , redcap_repeat_instance ) %>%
   mutate( cytokine_obtained = ifelse( tnf_alpha_obtained == 1 | il_1_obtained == 1 | il_2_obtained == 1 |
@@ -537,9 +585,10 @@ Data formatting based on errors / warnings from BCH upload to REDCap
 #         potassium_value = ifelse(potassium_value == "Not Reported", '', potassium_value))
   
 # write output with patient IDs included
-write.csv(out, '../local_ref/redcap_output_laboratory_values_updated.csv', row.names = FALSE)
-write.csv(out %>% filter(record_id %in% c(120002, 120122, 120018, 120006)), '../local_ref/TEST_redcap_output_laboratory_values_updated.csv', row.names = FALSE)
-write.csv(flagged, '../local_ref/flagged_labs_for_manual_review.csv', row.names = FALSE)
+write.csv(out, '../local_ref/DATA_REFRESH_MAR22_redcap_output_laboratory_values_updated.csv', row.names = FALSE)
+#write.csv(out, '../local_ref/redcap_output_laboratory_values_updated.csv', row.names = FALSE)
+#write.csv(out %>% filter(record_id %in% c(120002, 120122, 120018, 120006)), '../local_ref/TEST_redcap_output_laboratory_values_updated.csv', row.names = FALSE)
+#write.csv(flagged, '../local_ref/flagged_labs_for_manual_review.csv', row.names = FALSE)
 ```
 
 
