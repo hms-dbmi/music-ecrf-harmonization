@@ -17,11 +17,39 @@ library(tidyverse)
 library(lubridate)
 ```
 
+Here we specify for which patients we want to run the pipeline for.
+```{r}
+music_patients_admission_after_nov21 <- read.csv("../../dataRefresh/local_ref/music_patients_feb2022_manually_updated.csv")
+
+redcap <- read.csv("../local_ref/redcap_output_medications_during.csv") %>%
+  pull( record_id ) %>%
+  unique()
+
+### we must additionally make sure we are not running the pipeline on any patients who were not discharged before the data refresh
+REFRESH_DATE_CUTOFF <- mdy('11-01-2021')
+
+newPatients <- music_patients_admission_after_nov21 %>%
+  filter( ! MUSIC.ID %in% redcap,
+          discharge_date < REFRESH_DATE_CUTOFF)
+
+
+
+
+# now we have our list of new poatient IDs we want to run the pipeline on.
+
+```
+
+
 # 1. Load data extract for the codes of interest
 Use the same query as medications_before_and_after -- see that pipeline for details
 ```{r}
+# we flter the subset df to only include the patients of interest
+misc_mapping <- read.csv("../../dataRefresh/local_ref/MUSIC_ID_MAPPING") %>%
+  rename(PATIENT_NUM = PAT_NUM) %>%
+  filter( MUSIC_ID %in% newPatients$MUSIC.ID )
 
-df <- read.csv('../../medications_before_and_after/local_ref/ag440_music_meds_nov21.csv')
+df <- read.csv('../../dataRefresh/local_ref/AG440_MUSIC_MEDS_FEB22') %>%
+  filter(PATIENT_NUM %in% misc_mapping$PATIENT_NUM) #####
 
 # if the code is formatted like so: '2.00', convert to '02.00'
 fix_code_formatting <- function(x) {
@@ -111,7 +139,8 @@ report_dates <- '26.|28.|99.99|09.99|09.03|09.09|18.03|18.04|18.06|18.09|18.10'
 ```{r}
 df <- df %>%
   mutate(date = dmy(sapply(strsplit( as.character(START_DATE), " "), '[', 1)),
-         DISCHARGE_DATE = dmy(sapply(strsplit( as.character(END_DATE), " "), '[', 1)),
+#         DISCHARGE_DATE = dmy(sapply(strsplit( as.character(END_DATE), " "), '[', 1)),
+         DISCHARGE_DATE = dmy(sapply(strsplit( as.character(DISCHARGE_DATE), " "), '[', 1)),
          ADMISSION_DATE = dmy(sapply(strsplit( as.character(ADMISSIONDATE), " "), '[', 1)),
          days_after_admission = date - ADMISSION_DATE,
          days_after_discharge = date - DISCHARGE_DATE) %>%
@@ -200,7 +229,8 @@ out4 <- out3 %>%
 
 
 # map BCH ids to MUSIC IDs for REDCAP
-id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
+# id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
+id_mapping <- misc_mapping
 out5 <- left_join(out4, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>% 
   ungroup() %>% 
   select(-PATIENT_NUM) %>%
@@ -220,27 +250,28 @@ out6 <- out5 %>%
 # remove NA column introduced by 'other' variables
 out7 <- out6 %>% select(-grep('NA', colnames(out6)))
 
-# write output with patient IDs included
-#write.csv(out4, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE, na = '')
-#write.csv(out3 %>% select(-PATIENT_NUM, -redcap_repeat_instance), '../local_ref/redcap_output_medications_during.csv', row.names = FALSE)
+
 ```
 
 
 ```{r}
 ### write test output for test patients 120002 and 120003
-write.csv(out7 %>%
-            filter(record_id %in% c(120006, 120002, 120095, 120123)) %>%
-            mutate(record_id = ifelse(record_id == 120006,
-                                      888006, 
-                                      ifelse(record_id == 120002,
-                                             888002,
-                                             ifelse(record_id == 120095,
-                                                    888095,
-                                                    888123)))),
-          '../local_ref/redcap_TEST_output_medications_during.csv',
-          row.names = FALSE, 
-          na = '')
+#write.csv(out7 %>%
+#            filter(record_id %in% c(120006, 120002, 120095, 120123)) %>%
+#            mutate(record_id = ifelse(record_id == 120006,
+#                                      888006, 
+#                                      ifelse(record_id == 120002,
+#                                             888002,
+#                                             ifelse(record_id == 120095,
+#                                                    888095,
+#                                                    888123)))),
+#          '../local_ref/redcap_TEST_output_medications_during.csv',
+#          row.names = FALSE, 
+#          na = '')
 
+# write output
+#write.csv(out7, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE, na = '')
+write.csv(out7, '../local_ref/DATA_REFRESH_NEW_PATIENTS_MAR22_redcap_output_medications_during.csv', row.names = FALSE, na = '')
 
 ```
 
