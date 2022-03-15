@@ -619,17 +619,21 @@ load(file = "../local_ref/finalTableFilteredPreviousData.RData")
 
 p1 <- previousDataUpdate %>%
   filter( PATIENT_NUM %in% previous_patients$PAT_NUM) %>%
-  select(PATIENT_NUM, variableName, period, value)
+  mutate( comb = paste( PATIENT_NUM, period, sep = "-")) %>%
+  select(PATIENT_NUM, variableName, period, value, comb)
 
 l1 <- latestDataUpdate %>%
   filter( PATIENT_NUM %in% previous_patients$PAT_NUM) %>%
-  select(PATIENT_NUM, variableName, period, value)
+  mutate( comb = paste( PATIENT_NUM, period, sep = "-")) %>%
+  select(PATIENT_NUM, variableName, period, value, comb)
 
 combined <- full_join(p1, l1,
-                      by = c('PATIENT_NUM', 'variableName', 'period'),
+                      by = c('PATIENT_NUM', 'variableName', 'period', 'comb'),
                       suffix = c('.prev', '.latest'))
 
-na_prev <- combined %>% filter(is.na(value.prev))
+na_prev <- combined %>% 
+  filter(is.na(value.prev) &
+          comb %in% p1$comb )
 
 combined2 <- combined %>%
   filter( !is.na(value.latest)) %>%
