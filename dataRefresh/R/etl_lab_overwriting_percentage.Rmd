@@ -16,7 +16,8 @@ lab_dictionary <- read.delim("../../laboratory_values/data/labDictionary_updated
 # Run the pipeline until the finalTableFiltered is created with the latest data update and save it as an RData file
 Import the lab data from MISC patients. Instead of importing a subset, we import the whole dataset (ag440_music_labs_nov21) and here we filter by the concepts that are in our lab_dictionary and we rename the admission and discharge date colum.  
 ```{r}
-all_labs <- read.csv('../../local_ref/AG440_MUSIC_MEDS_FEB22.csv')
+#all_labs <- read.csv('../../local_ref/AG440_MUSIC_MEDS_FEB22.csv')
+all_labs <- read.delim('../local_ref/ag440_music_labs_feb22.dsv')
 subset_df <- all_labs %>%
   filter( CONCEPT_CD %in% lab_dictionary$concept_cd ) %>%
   rename('ADMISSION_DATE' = ADMISSIONDATE,
@@ -31,7 +32,7 @@ select m.MRN, m.MUSIC_ID, p.PAT_NUM from MUSIC_PATIENTLIST_FEB22 m, MRN_PATUUID_
 
 ```{r}
 misc_mapping <- read.csv("../../local_ref/music_id_mapping.csv")
-visit_dates  <- read.csv("../../local_ref/")
+visit_dates  <- read.csv("../local_ref/MUSIC_DATA_2022-02-16_0900.csv")
 visit_dates <- visit_dates %>%
   filter( visit_date != "" ) %>%
   select( record_id, redcap_event_name, visit_date )
@@ -49,7 +50,7 @@ summary(as.factor( counts$dates_available))
 misc_followUp <- visit_dates %>%
   spread( redcap_event_name, visit_date ) %>%
   left_join( misc_mapping, by = c("record_id"="MUSIC_ID") ) %>%
-  select( PATIENT_NUM = PAT_NUM, two_weeks = "2_weeks_postdischa_arm_1", 
+  select( PATIENT_NUM = PATIENT_NUM, two_weeks = "2_weeks_postdischa_arm_1", 
           six_weeks = "6_weeks_postdischa_arm_1", six_months = "6_months_postdisch_arm_1")
 
 head(misc_followUp)

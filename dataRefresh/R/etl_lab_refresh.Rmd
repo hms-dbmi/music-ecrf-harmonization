@@ -32,7 +32,7 @@ select m.MRN, m.MUSIC_ID, p.PAT_NUM from MUSIC_PATIENTLIST_FEB22 m, MRN_PATUUID_
 
 ```{r}
 misc_mapping <- read.csv("..//local_ref/music_id_mapping_feb22.csv")
-visit_dates  <- read.csv("../local_ref/MUSIC_DATA_2022-02-16_0900.csv")
+visit_dates  <- read.csv("../local_ref/MUSIC_DATA_2022-03-14_1835.csv")
 visit_dates <- visit_dates %>%
   filter( visit_date != "" ) %>%
   select( record_id, redcap_event_name, visit_date )
@@ -55,6 +55,20 @@ misc_followUp <- visit_dates %>%
 
 head(misc_followUp)
 ```
+
+Here we specify for which patients we want to run the pipeline for, the previous patients that we entered data for.
+
+```{r}
+ music_patients_admission_after_nov21 <- read.csv("../../dataRefresh/local_ref/music_patients_feb2022_manually_updated.csv")
+
+ redcap <- read.csv("../../laboratory_values/local_ref/redcap_output_laboratory_values_updated.csv") %>%
+   pull( record_id ) %>%
+   unique()
+
+ previous_patients <- music_patients_admission_after_nov21 %>%
+   filter( MUSIC.ID %in% redcap)
+```
+
 
 
 Data transformation
@@ -238,26 +252,11 @@ finalTableFiltered <- finalTable %>%
  group_by( PATIENT_NUM, CONCEPT_CD, period ) %>%
   slice_min( order_by = daysDiff ) %>%
   slice_min( order_by = dmy_hms(START_DATE) )
-
-#finalTableFilteredCheck <- finalTableFiltered %>%
-#  filter( vartype == "obtained") %>%
-#  group_by( PATIENT_NUM, CONCEPT_CD, period ) %>%
-#  summarise( n = n())
-
-#toCheck <- finalTableFilteredCheck[ finalTableFilteredCheck$n > 1, ]
 ```
 
 redcap_repeat_instance
 - Using dates to determine visit number 
 - note that entries inputted at different times on the same date are NOT considered as separate events / visits
-```{r}
-#finalTableFiltered <- finalTableFiltered %>% 
-#  group_by(PATIENT_NUM) %>%
-#  mutate(datetime = ymd(date)) %>%
-#  arrange(datetime) %>%
-#  mutate(redcap_repeat_instance = match(datetime, sort(unique(datetime)))) %>%
-#  arrange(redcap_repeat_instance)
-```
 
 Because we are choosing 1 lab value per time point (the closest to the date), we should not have more than one value for redcap_repeat_instance. 
 
@@ -268,6 +267,13 @@ finalTableFiltered <- finalTableFiltered %>%
     redcap_repeat_instance = lab_values_visit ) %>%
   arrange(redcap_repeat_instance)
 ```
+
+Save the final table to an RData file to generate later the excel sheet for the data that needs to be overwrite. 
+```{r}
+latestDataUpdate <- finalTableFiltered
+save(latestDataUpdate, file = "../local_ref/finalTableFilteredLatestUpdateData.RData")
+```
+
 
 Pivot table wider and make compatible with RedCap formatting
 ```{r}
@@ -379,8 +385,6 @@ out <- out %>%
 Fill the blank 'obtained' variables with 0, indicating that this lab was not collected for that time period.
 Do this for that are under a higher category (cytokine_obtained, immunog_obtained, compl_obtained) IF the category obtained value is TRUE. 
 ```{r}
-
-
 out <- out %>% 
   mutate(tnf_alpha_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(tnf_alpha_obtained), ''),
          il_1_obtained = ifelse(cytokine_obtained == 1, set_obtained_values(il_1_obtained), ''),
@@ -495,52 +499,52 @@ for (r in c(1:nrow(out))){
 
 Data formatting based on errors / warnings from BCH upload to REDCap
 ```{r}
-#out <- out %>% 
-#  mutate(il_1_value = ifelse(il_1_value == "SEE IL12", '', il_1_value),
-#         il_10_value = ifelse(il_10_value == "SEE IL12", '', il_10_value),
-#         il_13_value = ifelse(il_13_value == "SEE IL12", '', il_13_value),
-#         il_2_value = ifelse(il_2_value == "SEE IL12", '', il_2_value),
-#         il_5_value = ifelse(il_5_value == "SEE IL12", '', il_5_value),
-#         il_8_value = ifelse(il_8_value == "SEE IL12", '', il_8_value),
-#         il_12_value = ifelse(il_12_value == "See Image", '', il_12_value),
-#         ast_sgot_value = ifelse(ast_sgot_value == "Not Reported", '', ast_sgot_value),
-#         ast_sgpt_value = ifelse(ast_sgpt_value == "Not Reported", '', ast_sgpt_value),
-#         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL12", '', il_2_receptor_value),
-#         il_4_value = ifelse(il_4_value == "SEE IL12", '', il_4_value),
-#         il_6_value = ifelse(il_6_value == "SEE IL12", '', il_6_value),
-#         troponin_t_value = ifelse(troponin_t_value == "Not Reported", '', troponin_t_value),
-#         direct_bilir_value = ifelse(direct_bilir_value == "Not Reported", '', direct_bilir_value),
-#         ige_value = ifelse(ige_value == "Footnote", '', ige_value),
-#         lymphocyt_value = ifelse(lymphocyt_value == "Footnote", '', lymphocyt_value),
-#         neutrophil_value = ifelse(neutrophil_value == "Footnote", '', neutrophil_value),
-#         ifn_gamma_value = ifelse(ifn_gamma_value == "SEE IL17", '', ifn_gamma_value),
-#         il_1_value = ifelse(il_1_value == "SEE IL17", '', il_1_value),
-#         il_10_value = ifelse(il_10_value == "SEE IL17", '', il_10_value),
-#         il_12_value = ifelse(il_12_value == "SEE IL17", '', il_12_value),
-#         il_13_value = ifelse(il_13_value == "SEE IL17", '', il_13_value),
-#         il_17_value = ifelse(il_17_value == "SEE IL17", '', il_17_value),
-#         #il_19_value = ifelse(il_19_value == "SEE IL17", '', il_19_value),
-#         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL17", '', il_2_receptor_value),
-#         il_2_value = ifelse(il_2_value == "SEE IL17", '', il_2_value),
-#         il_4_value = ifelse(il_4_value == "SEE IL17", '', il_4_value),
-#         il_5_value = ifelse(il_5_value == "SEE IL17", '', il_5_value),
-#         il_6_value = ifelse(il_6_value == "SEE IL17", '', il_6_value),
-#         il_8_value = ifelse(il_8_value == "SEE IL17", '', il_8_value),
-#         tnf_alpha_value = ifelse(tnf_alpha_value == "SEE IL17", '', tnf_alpha_value),
-#         ggtp_value = ifelse(ggtp_value == "Not Reported", '', ggtp_value),
-#         ifn_gamma_value = ifelse(ifn_gamma_value == "SEE IL12", '', ifn_gamma_value),
-#         il_12_value = ifelse(il_12_value == "SEE IL12", '', il_12_value),
-#         il_17_value = ifelse(il_17_value == "SEE IL12", '', il_17_value),
+out <- out %>%
+  mutate(il_1_value = ifelse(il_1_value == "SEE IL12", '', il_1_value),
+         il_10_value = ifelse(il_10_value == "SEE IL12", '', il_10_value),
+         il_13_value = ifelse(il_13_value == "SEE IL12", '', il_13_value),
+         il_2_value = ifelse(il_2_value == "SEE IL12", '', il_2_value),
+         il_5_value = ifelse(il_5_value == "SEE IL12", '', il_5_value),
+         il_8_value = ifelse(il_8_value == "SEE IL12", '', il_8_value),
+         il_12_value = ifelse(il_12_value == "See Image", '', il_12_value),
+         ast_sgot_value = ifelse(ast_sgot_value == "Not Reported", '', ast_sgot_value),
+         ast_sgpt_value = ifelse(ast_sgpt_value == "Not Reported", '', ast_sgpt_value),
+         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL12", '', il_2_receptor_value),
+         il_4_value = ifelse(il_4_value == "SEE IL12", '', il_4_value),
+         il_6_value = ifelse(il_6_value == "SEE IL12", '', il_6_value),
+         troponin_t_value = ifelse(troponin_t_value == "Not Reported", '', troponin_t_value),
+         direct_bilir_value = ifelse(direct_bilir_value == "Not Reported", '', direct_bilir_value),
+         ige_value = ifelse(ige_value == "Footnote", '', ige_value),
+         lymphocyt_value = ifelse(lymphocyt_value == "Footnote", '', lymphocyt_value),
+         neutrophil_value = ifelse(neutrophil_value == "Footnote", '', neutrophil_value),
+         ifn_gamma_value = ifelse(ifn_gamma_value == "SEE IL17", '', ifn_gamma_value),
+         il_1_value = ifelse(il_1_value == "SEE IL17", '', il_1_value),
+         il_10_value = ifelse(il_10_value == "SEE IL17", '', il_10_value),
+         il_12_value = ifelse(il_12_value == "SEE IL17", '', il_12_value),
+         il_13_value = ifelse(il_13_value == "SEE IL17", '', il_13_value),
+         il_17_value = ifelse(il_17_value == "SEE IL17", '', il_17_value),
+         #il_19_value = ifelse(il_19_value == "SEE IL17", '', il_19_value),
+         il_2_receptor_value = ifelse(il_2_receptor_value == "SEE IL17", '', il_2_receptor_value),
+         il_2_value = ifelse(il_2_value == "SEE IL17", '', il_2_value),
+         il_4_value = ifelse(il_4_value == "SEE IL17", '', il_4_value),
+         il_5_value = ifelse(il_5_value == "SEE IL17", '', il_5_value),
+         il_6_value = ifelse(il_6_value == "SEE IL17", '', il_6_value),
+         il_8_value = ifelse(il_8_value == "SEE IL17", '', il_8_value),
+         tnf_alpha_value = ifelse(tnf_alpha_value == "SEE IL17", '', tnf_alpha_value),
+         ggtp_value = ifelse(ggtp_value == "Not Reported", '', ggtp_value),
+         ifn_gamma_value = ifelse(ifn_gamma_value == "SEE IL12", '', ifn_gamma_value),
+         il_12_value = ifelse(il_12_value == "SEE IL12", '', il_12_value),
+         il_17_value = ifelse(il_17_value == "SEE IL12", '', il_17_value),
          #il_19_value = ifelse(il_19_value == "SEE IL12", '', il_19_value),
-#         tnf_alpha_value = ifelse(tnf_alpha_value == "SEE IL12", '', tnf_alpha_value),
-#         bicarbonate_value = ifelse(bicarbonate_value == "Not Reported", '', bicarbonate_value),
-#         hematocrit_value = ifelse(hematocrit_value == "Footnote", '', hematocrit_value),
-#         hemoglobin_value = ifelse(hemoglobin_value == "Footnote", '', hemoglobin_value),
-#         platelets_value = ifelse(platelets_value == "Footnote", '', platelets_value),
-#         wbc_value = ifelse(wbc_value == "Footnote", '', wbc_value),
-#         ferritin_value = ifelse(ferritin_value == "Not Reported", '', ferritin_value),
-#         potassium_value = ifelse(potassium_value == "Not Reported", '', potassium_value))
-  
+         tnf_alpha_value = ifelse(tnf_alpha_value == "SEE IL12", '', tnf_alpha_value),
+         bicarbonate_value = ifelse(bicarbonate_value == "Not Reported", '', bicarbonate_value),
+         hematocrit_value = ifelse(hematocrit_value == "Footnote", '', hematocrit_value),
+         hemoglobin_value = ifelse(hemoglobin_value == "Footnote", '', hemoglobin_value),
+         platelets_value = ifelse(platelets_value == "Footnote", '', platelets_value),
+         wbc_value = ifelse(wbc_value == "Footnote", '', wbc_value),
+         ferritin_value = ifelse(ferritin_value == "Not Reported", '', ferritin_value),
+         potassium_value = ifelse(potassium_value == "Not Reported", '', potassium_value))
+
 # write output with patient IDs included
 write.csv(out, '../local_ref/redcap_output_laboratory_values_all_updated_feb22.csv', row.names = FALSE)
 write.csv(out %>% filter(record_id %in% c(120002, 120122, 120018, 120006)), '../local_ref/TEST_redcap_output_laboratory_values_updated_feb22.csv', row.names = FALSE)
@@ -548,16 +552,100 @@ write.csv(flagged, '../local_ref/flagged_labs_for_manual_review_feb22.csv', row.
 ```
 
 
-
-# Extract new lab data. 
+# Clean the environment and load the latest redcap output generated and the one pushed to redcap. 
 
 ```{r}
-# read the old lab output pushed to red-cap
+rm(list=ls())
 
-# read this latest output
+#load the lastest generated
+latest <- read.csv( '../local_ref/redcap_output_laboratory_values_all_updated_feb22.csv') %>%
+  mutate( comb = paste( record_id, redcap_repeat_instance, lab_values_visit ))
 
-# look for diff between dataframes (potential look for new patients and new patients+redcap_repeat_instance combined)
+#load the pushed to redcap
+uploaded <- read.csv( '../../laboratory_values/local_ref/redcap_output_laboratory_values_updated.csv') %>%
+    mutate( comb = paste( record_id, redcap_repeat_instance, lab_values_visit ))
+
 ```
+
+# From the latest extract the new time points
+```{r}
+# look for diff between dataframes (potential look for new patients and new patients+redcap_repeat_instance combined)
+new_data_points <- latest %>%
+  filter(! comb %in% uploaded$comb)
+
+write.csv(new_data_points, '../local_ref/new_lab_data_points_to_push.csv', row.names = FALSE)
+```
+
+## Extract two patient to test on REDCap
+```{r}
+not_all_na <- function(x) any(!is.na(x))
+
+test_patients <- new_data_points %>%
+  filter(record_id %in% c("120112", '120124')) %>%
+  select(-comb) %>%
+  select(where(not_all_na))
+
+test_uploaded <- uploaded %>%
+  filter(record_id %in% c("120112", '120124')) %>%
+  select(-comb)%>%
+  select(where(not_all_na)) 
+
+test_patients[is.na(test_patients)] <- ""
+test_uploaded[is.na(test_uploaded)] <- ""
+
+write.csv(test_patients, '../local_ref/new_lab_data_points_to_push_test_patients.csv', row.names = FALSE)
+write.csv(test_uploaded, '../local_ref/previous_lab_data_points_pushed_test_patients.csv', row.names = FALSE)
+```
+
+## Create excel table for data that needs to be overwriten
+This includes:
+- Values for data points previously entered and that changed the value
+- Labs for data points that were empty in the previous pushed and for what we now have a value
+
+We will compare the two final_tables, the previously created and the latest one, and extract the differences, and save it on an table with previous and new values for clinicians to check. 
+```{r}
+rm(list=ls())
+load(file = "../local_ref/finalTableFilteredLatestUpdateData.RData")
+load(file = "../local_ref/finalTableFilteredPreviousData.RData")
+
+p1 <- previousDataUpdate %>%
+  select(PATIENT_NUM, variableName, period, value)
+
+l1 <- latestDataUpdate %>%
+  select(PATIENT_NUM, variableName, period, value)
+
+combined <- full_join(p1, l1,
+                      by = c('PATIENT_NUM', 'variableName', 'period'),
+                      suffix = c('.prev', '.latest'))
+
+na_prev <- combined %>% filter(is.na(value.prev))
+
+combined2 <- combined %>%
+  filter( !is.na(value.latest)) %>%
+  mutate(check = value.prev == value.latest)
+
+# do the same count thing alba did before to account for multiple values
+tocheck <- combined2 %>% filter(!check) %>%
+  group_by(PATIENT_NUM, variableName, period) %>%
+  mutate(count = n()) %>%
+  filter( count < 2 )
+
+table(tocheck$PATIENT_NUM)
+table(tocheck$period)
+
+# the values which changed for patient 114915319 are the 6 month ones (MUSIC ID 120051) this makes sense
+
+#complete the table tocheck  with the music_id
+misc_mapping <- read.csv("../../local_ref/music_id_mapping.csv")
+
+tocheck <- tocheck %>%
+  left_join( misc_mapping) %>%
+  select( MRN, MUSIC_ID, PATIENT_NUM, variableName, period, value.prev, value.latest) 
+
+write.csv( tocheck, file = '../local_ref/lab_values_to_check_manually.csv', row.names = FALSE)
+```
+
+
 
 
 
