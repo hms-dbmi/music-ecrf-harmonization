@@ -605,13 +605,24 @@ This includes:
 We will compare the two final_tables, the previously created and the latest one, and extract the differences, and save it on an table with previous and new values for clinicians to check. 
 ```{r}
 rm(list=ls())
+misc_mapping <- read.csv("..//local_ref/music_id_mapping_feb22.csv")
+
+redcap <- read.csv("../../laboratory_values/local_ref/redcap_output_laboratory_values_updated.csv") %>%
+   pull( record_id ) %>%
+   unique()
+
+previous_patients <- misc_mapping %>%
+   filter( MUSIC_ID %in% redcap)
+
 load(file = "../local_ref/finalTableFilteredLatestUpdateData.RData")
 load(file = "../local_ref/finalTableFilteredPreviousData.RData")
 
 p1 <- previousDataUpdate %>%
+  filter( PATIENT_NUM %in% previous_patients$PAT_NUM) %>%
   select(PATIENT_NUM, variableName, period, value)
 
 l1 <- latestDataUpdate %>%
+  filter( PATIENT_NUM %in% previous_patients$PAT_NUM) %>%
   select(PATIENT_NUM, variableName, period, value)
 
 combined <- full_join(p1, l1,
@@ -643,6 +654,13 @@ tocheck <- tocheck %>%
   select( MRN, MUSIC_ID, PATIENT_NUM, variableName, period, value.prev, value.latest) 
 
 write.csv( tocheck, file = '../local_ref/lab_values_to_check_manually.csv', row.names = FALSE)
+
+before_na_now_data <- na_prev %>%
+  left_join( misc_mapping) %>%
+  select( MRN, MUSIC_ID, PATIENT_NUM, variableName, period, value.prev, value.latest) 
+
+write.csv( before_na_now_data, file = '../local_ref/lab_values_to_check_manually_before_na.csv', row.names = FALSE)
+
 ```
 
 
