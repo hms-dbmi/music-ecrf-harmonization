@@ -30,7 +30,7 @@ REFRESH_DATE_CUTOFF <- mdy('11-01-2021')
 
 newPatients <- music_patients_admission_after_nov21 %>%
   filter( ! MUSIC.ID %in% redcap,
-          discharge_date < REFRESH_DATE_CUTOFF)
+          mdy(discharge_date) < REFRESH_DATE_CUTOFF)
 
 
 
@@ -48,7 +48,7 @@ misc_mapping <- read.csv("../../dataRefresh/local_ref/MUSIC_ID_MAPPING") %>%
   rename(PATIENT_NUM = PAT_NUM) %>%
   filter( MUSIC_ID %in% newPatients$MUSIC.ID )
 
-df <- read.csv('../../dataRefresh/local_ref/AG440_MUSIC_MEDS_FEB22') %>%
+df <- read.delim('../../dataRefresh/local_ref/ag440_music_meds_feb22.dsv') %>%
   filter(PATIENT_NUM %in% misc_mapping$PATIENT_NUM) #####
 
 # if the code is formatted like so: '2.00', convert to '02.00'
@@ -272,6 +272,9 @@ out7 <- out6 %>% select(-grep('NA', colnames(out6)))
 # write output
 #write.csv(out7, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE, na = '')
 write.csv(out7, '../local_ref/DATA_REFRESH_NEW_PATIENTS_MAR22_redcap_output_medications_during.csv', row.names = FALSE, na = '')
+write.csv(out7 %>% filter(record_id %in% c(120122, 120123, 120124)),
+          '../local_ref/TEST_DATA_REFRESH_NEW_PATIENTS_MAR22_redcap_output_medications_during.csv',
+          row.names = FALSE, na = '')
 
 ```
 
