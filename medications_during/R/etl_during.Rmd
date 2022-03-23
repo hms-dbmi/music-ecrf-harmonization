@@ -145,7 +145,10 @@ df <- df %>%
          days_after_admission = date - ADMISSION_DATE,
          days_after_discharge = date - DISCHARGE_DATE) %>%
   filter(days_after_admission >= 0,
-         days_after_discharge <= 0)
+         days_after_discharge <= 0) %>%
+  # here we also remove lidocaine concepts that are not IV.
+  filter(!(CONCEPT_CD == 'ADMINMED:4103284' & TVAL_CHAR != 'ID'))
+
 ```
 
 # Add additional columns
