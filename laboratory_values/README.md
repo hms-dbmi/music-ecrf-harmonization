@@ -1,6 +1,6 @@
 # music-ecrf-harmonization
 
-![Workflow](data/workflow.png)
+![Workflow](workflow.png)
 
 This repository contains:
 

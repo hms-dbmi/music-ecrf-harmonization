@@ -19,6 +19,7 @@ bch_data <- read.delim('../local_ref/music_labs_observation_withUnits.dsv')
 Load data
 ```{r}
 datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+# The file below is created from manually reviewing the summary output from qc_labs_summary.csv
 checked_vars <- read.csv('../data/MUSIC Laboratory Values Form_ mapping from eCRF numeric variables and BCH variables - eCRF to BCH laboratory numeric variables.csv', skip = 1) 
 ```
 
