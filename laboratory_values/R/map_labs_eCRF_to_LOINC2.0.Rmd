@@ -1,0 +1,141 @@
+---
+title: "Generate Potential eCRF to LOINC Mapping: refinement after checking UTAH mapping"
+author: "Simran Makwana & Alba Gutierrez"
+date: "5/13/2022"
+output: html_document
+---
+
+# Load Packages
+```{r}
+library(dplyr)
+library(lubridate)
+library(readxl)
+```
+
+# Load UMLS database subset (all LOINCs which are clinical attributes)
+The following SQL was used to generate the subset:
+create table ag440_loinc_clinicalAttributes as
+select conso.cui, conso.lat, conso.sab, conso.tty, conso.code, conso.str, sty.sty 
+from mrconso conso, mrsty sty 
+where conso.cui = sty.cui and
+conso.sab = 'LNC' and conso.tty = 'LN' and sty.sty = 'Clinical Attribute';
+
+```{r}
+umls_subset <- read.delim("../local_ref/loinc_clinicalAttributes.dsv")
+```
+
+# Load the manually generated keywords
+The full list of keywords can be viewed in the GitHub repository at this link.
+Same keywords have been modified compared to the lab_keywords first version. 
+- Creatinine keyword was before Creatine:, now is creatinine:
+- for uera, we have make it more general, from Urea: to Urea.
+- LDH did not have any keyword, added Lactate dehydrogenase:
+Set the 'cutOff' value. Keyword queries which exceed the cutoff will have the additional 'Ser/Plas' and 'Pt:Bld' filters applied.
+```{r}
+lab_keywords <- read.delim("../data/lab_keywords2.0.tsv" )
+lab_keywords <- lab_keywords %>%
+  dplyr::filter( Position %in% c('beginning', 'anywhere'))
+cutOff <- 10
+```
+
+# Extract the list of potential LOINC codes
+Search through the UMLS subset for the keywords associated with the eCRF terms.
+```{r}
+
+for( i in 1:nrow(lab_keywords)){
+  position <- lab_keywords$Position[i]
+  if( position == "anywhere"){
+    generalQ<- umls_subset %>% 
+      dplyr::filter( grepl( lab_keywords$Keyword[i], STR))
+    }else if(position == "beginning"){
+      generalQ<- umls_subset %>% 
+        dplyr::filter( grepl( paste0("^", lab_keywords$Keyword[i]), STR))
+  }
+  
+  narrowQ <- generalQ %>% 
+    dplyr::filter( grepl( paste(c("*Ser/Plas:Qn", "*Pt:Bld:Qn"), collapse = "|"), STR))
+  
+  if(i==1){
+    if( nrow(narrowQ) == 0 ){
+      output <- generalQ
+    }else if( nrow( generalQ ) > cutOff ){
+      output <- narrowQ
+    }else if( nrow( generalQ) > 0 ){
+      output <- generalQ
+    }else{
+      print( paste0("No entry found for keyword: ", lab_keywords$Keyword[i]))
+    }
+    print( paste0( nrow( output), " LOINC terms found for eCRF Term: ", lab_keywords$Section.Header[i], " with keyword: ", lab_keywords$Keyword[i]))
+    output$Section.Header <- lab_keywords$Section.Header[i]
+  }else{
+    if( nrow(narrowQ) == 0 ){
+      int_output <- generalQ
+    }else if( nrow( generalQ ) > cutOff ){
+      int_output <- narrowQ
+    }else if( nrow( generalQ) > 0 ){
+      int_output <- generalQ
+    }else{
+      print( paste0("No entry found for keyword: ", lab_keywords$Keyword[i]))
+    }
+    print( paste0( nrow( int_output), " LOINC terms found for eCRF Term: ", lab_keywords$Section.Header[i], " with keyword: ", lab_keywords$Keyword[i]))
+    int_output$Section.Header <- lab_keywords$Section.Header[i]
+    output <- rbind( output, int_output)
+  }
+}
+
+output <- unique(output)
+ranked_list <- output %>% group_by(Section.Header) %>% summarise(n = n_distinct(CODE)) %>% arrange(desc(n)) # testing
+
+
+```
+# Save list of potential LOINC codes for clinician check
+
+```{r}
+out <- output %>%
+  mutate(webpage = paste0("https://loinc.org/",CODE,"/"),
+         clinical_review = '') %>%
+  rename(`LOINC CODE` = CODE,
+         `LOINC DESCRIPTION` = STR,
+         `eCRF TERM DESCRIPTION` = Section.Header,
+         `CLINICIAN REVIEW: DO THE DESCRIPTIONS MATCH?` = clinical_review,
+         `LOINC WEBPAGE - EXTENDED DESCRIPTION` = webpage)
+
+write.csv(out, '../data/eCRF_to_LOINC_forReview2.0.csv', row.names = FALSE)
+
+```
+
+# Site - Specific Steps
+
+## UTAH
+
+## Add manually some loincs
+```{r}
+ptt <- c("C0798152", "ENG", "LNC", "LN", "14979-9", "Coagulation surface induced:Time:Pt:PPP:Qn:Coag", " Clinical Attribute", "APTT or PTT (seconds)") # 61 music patients
+pt <- c("C0482694", "ENG", "LNC", "LN", "5902-2", "Coagulation tissue factor induced:Time:Pt:PPP:Qn:Coag", "Clinical Attribute", "PT (seconds)") # 60 music patients
+lactate <- c("C1147817", "ENG", "LNC", "LN", "32133-1", "Lactate:SCnc:Pt:PlasV:Qn", "Clinical Attribute", "Lactate (mmol/L)") # 32 patients
+dimer <- c("C1953449", "ENG", "LNC", "LN", "48065-7", "Fibrin D-dimer FEU:MCnc:Pt:PPP:Qn", "Clinical Attribute","D-dimer (mcg/mL FEU)") #66 patients
+directBilirrubin <- c("C0364101", "ENG", "LNC", "LN", "1968-7", "Bilirubin.glucuronidated+Bilirubin.albumin bound:MCnc:Pt:Ser/Plas:Qn", "Clinical Attribute", "Direct bilirubin (mg/dL)") #(only present in 3 music patients)
+totalBilirrubin <- c("C0364108", "ENG", "LNC", "LN", "1975-2", "Bilirubin:MCnc:Pt:Ser/Plas:Qn", "Clinical Attribute", "Total bilirubin (mg/dL)") #66 music patients
+output <- rbind( output, ptt, pt, lactate, dimer, directBilirrubin, totalBilirrubin)
+```
+
+
+### Which of the identified potential LOINC codes are present in the site-specific concept mapping?
+```{r}
+utah_loinc_map <- read_xlsx("../local_ref/MUSIC lab tests for potential mapping.xlsx")
+
+mappingToUtah <- utah_loinc_map %>%
+  dplyr::filter(LOINC_CD %in% output$CODE)
+
+labecrfCategoryInUtah <- output %>%
+  dplyr::filter( CODE %in% utah_loinc_map$LOINC_CD) %>%
+  select( Section.Header) %>%
+  unique()
+
+tocheck <- output %>%
+  dplyr::filter(! Section.Header %in% labecrfCategoryInUtah$Section.Header) %>%
+  select( Section.Header) %>%
+  unique()
+```
+
+
