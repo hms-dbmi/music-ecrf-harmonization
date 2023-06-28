@@ -11,7 +11,17 @@ output: html_document
 ```{r}
 library(tidyverse)
 library(lubridate)
-lab_dictionary <- read.delim("../data/labDictionary_updated.txt", header = TRUE, sep = ' ')
+#lab_dictionary <- read.delim("../data/labDictionary_updated.txt", header = TRUE, sep = ' ')
+lab_dictionary <- read.csv('../data/eCRF_to_LOINC_forReview2.0.csv') 
+
+ecrf <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
+  filter(Form.Name == 'laboratory_values') %>%
+  select(variableName = Variable...Field.Name, Section.Header, formName = Form.Name) %>%
+  mutate(Section.Header = ifelse(Section.Header == '', NA, Section.Header)) %>%
+  tidyr::fill(Section.Header) 
+
+lab_dictionary <- right_join(lab_dictionary, ecrf, by = c('eCRF.TERM.DESCRIPTION' = 'Section.Header')) 
+
 ```
 
 
@@ -19,32 +29,46 @@ Import the lab data from MISC patients. Instead of importing a subset, we import
 
 Here we specify for which patients we want to run the pipeline for.
 ```{r}
-music_patients_admission_after_nov21 <- read.csv("../../dataRefresh/local_ref/music_patients_feb2022_manually_updated.csv")
+#music_patients_admission_after_nov21 <- read.csv("../../dataRefresh/local_ref/music_patients_feb2022_manually_updated.csv")
 
-redcap <- read.csv("../../laboratory_values/local_ref/redcap_output_laboratory_values_updated.csv") %>%
-  pull( record_id ) %>%
-  unique()
+#redcap <- read.csv("../../laboratory_values/local_ref/redcap_output_laboratory_values_updated.csv") %>%
+#  pull( record_id ) %>%
+#  unique()
 
-newPatients <- music_patients_admission_after_nov21 %>%
-  filter( ! MUSIC.ID %in% redcap )
+#newPatients <- music_patients_admission_after_nov21 %>%
+#  filter( ! MUSIC.ID %in% redcap )
 
 
 # now we have our list of new poatient IDs we want to run the pipeline on.
+
+newPatients <- read.csv('../../../TCH MUSIC DATA/misc_patient.csv') %>% pull(MUSIC.Patient.ID)
 
 ```
 
 
 ```{r}
-all_labs <- read.csv('../../dataRefresh/local_ref/AG440_MUSIC_LABS_FEB22')
-misc_mapping <- read.csv("../../dataRefresh/local_ref/MUSIC_ID_MAPPING") %>%
-  rename(PATIENT_NUM = PAT_NUM) %>%
-  filter( MUSIC_ID %in% newPatients$MUSIC.ID )
+#all_labs <- read.csv('../../dataRefresh/local_ref/AG440_MUSIC_LABS_FEB22')
+all_labs <- read.csv('../../../TCH MUSIC DATA/misc_observations.csv') %>%
+  rename(CONCEPT_CD = Concept.code, 
+         START_DATE = Date,
+         TVAL_CHAR = Categorical.Value,
+         NVAL_NUM = Numeric.Value,
+         UNITS_CD = Lab.Units) %>%
+  left_join(read.csv('../../../TCH MUSIC DATA/misc_patient.csv')) %>%
+  rename(ADMISSIONDATE = Admission.Date,
+         DISCHARGE_DATE = Discharge.Date, 
+         MUSIC.ID = MUSIC.Patient.ID) %>% 
+  filter(Patient.Setting == 'INPATIENT')
+
+#misc_mapping <- read.csv("../../dataRefresh/local_ref/MUSIC_ID_MAPPING") %>%
+#  rename(PATIENT_NUM = PAT_NUM) %>%
+#  filter( MUSIC_ID %in% newPatients$MUSIC.ID )
 
 subset_df <- all_labs %>%
-  filter( CONCEPT_CD %in% lab_dictionary$concept_cd ) %>%
+  filter( CONCEPT_CD %in% lab_dictionary$LOINC.CODE ) %>%
   rename('ADMISSION_DATE' = ADMISSIONDATE,
-         'DISCHARGE_DATE' = DISCHARGE_DATE) %>%
-  filter(PATIENT_NUM %in% misc_mapping$PATIENT_NUM) #####
+         'DISCHARGE_DATE' = DISCHARGE_DATE) #%>%
+  #filter(PATIENT_NUM %in% misc_mapping$PATIENT_NUM) #####
 
 # we flter the subset df to only include the patients of interest
 
@@ -55,6 +79,7 @@ subset_df <- all_labs %>%
 Import the follow-up visit dates. The MUSIC_DATA_2021-11-23_0940.csv is the file extracted from REDCap of the data previously entered by BCH experts. From there we will extract the specific follow-up dates for the MUSIC study for the MISC patients. The variable name that contains the date is "visit_date", extracted from the dictionary. The record id is the internal MUSIC identifier, and the redcap_event_name allows us to know which is the specific follow-up period the date is referring to. Because the ID are MUSIC Ids we also need to load the music_mapping_id. 
 ```{r}
 visit_dates  <- read.csv("../../dataRefresh/local_ref/MUSIC_DATA_2022-03-10_1345.csv")
+
 visit_dates <- visit_dates %>%
   filter( visit_date != "" ) %>%
   select( record_id, redcap_event_name, visit_date )
@@ -69,13 +94,13 @@ counts <- visit_dates %>%
 summary(as.factor( counts$dates_available))
 
 ### let's put together in a table all the information, combining the patient timeline with first admission and discharge date with the rest of follow-up dates when available
-misc_followUp <- visit_dates %>%
-  spread( redcap_event_name, visit_date ) %>%
-  left_join( misc_mapping, by = c("record_id"="MUSIC_ID") ) %>%
-  select( PATIENT_NUM, two_weeks = "2_weeks_postdischa_arm_1", 
-          six_weeks = "6_weeks_postdischa_arm_1", six_months = "6_months_postdisch_arm_1")
+#misc_followUp <- visit_dates %>%
+#  spread( redcap_event_name, visit_date ) %>%
+#  left_join( misc_mapping, by = c("record_id"="MUSIC_ID") ) %>%
+#  select( PATIENT_NUM, two_weeks = "2_weeks_postdischa_arm_1", 
+#          six_weeks = "6_weeks_postdischa_arm_1", six_months = "6_months_postdisch_arm_1")
 
-head(misc_followUp)
+#head(misc_followUp)
 ```
 
 
@@ -89,15 +114,15 @@ And we join this information with the follow-up information.
 subset_df$date <- sapply(strsplit( as.character(subset_df$START_DATE), " "), '[', 1)
 subset_df$time <- sapply(strsplit( as.character(subset_df$START_DATE), " "), '[', 2)
 
-finalTable <- left_join( subset_df, lab_dictionary, by = c("CONCEPT_CD" = "concept_cd") )
+finalTable <- left_join( subset_df, lab_dictionary, by = c("CONCEPT_CD" = "LOINC.CODE") )
 
 finalTable <- finalTable %>%
-  mutate(date = dmy(date),
-         ADMISSION_DATE = dmy(ADMISSION_DATE),
-         DISCHARGE_DATE = dmy(DISCHARGE_DATE),
+  mutate(date = mdy(date),
+         ADMISSION_DATE = mdy(ADMISSION_DATE),
+         DISCHARGE_DATE = mdy(DISCHARGE_DATE),
          days_after_admission = date - ADMISSION_DATE,
-         days_after_discharge = date - DISCHARGE_DATE) %>%
-  left_join( misc_followUp )
+         days_after_discharge = date - DISCHARGE_DATE) #%>%
+  #left_join( misc_followUp )
 
 
 ```
@@ -105,17 +130,18 @@ finalTable <- finalTable %>%
 #### Check the quality of the follow up dates
 
 ```{r}
-qc_dates <- finalTable %>%
-  mutate( two_weeks_daysDiff = abs( ymd( two_weeks) - ymd( DISCHARGE_DATE)), 
-          six_weeks_daysDiff = abs( ymd( six_weeks) - ymd( DISCHARGE_DATE)), 
-          six_months_daysDiff = abs( ymd( six_months) - ymd( DISCHARGE_DATE)), 
-          check_two_weeks = ifelse( two_weeks_daysDiff > 21 | two_weeks_daysDiff < 7, "check", "ok"), 
-          check_six_weeks = ifelse( six_weeks_daysDiff > 49| six_weeks_daysDiff < 35, "check", "ok") , 
-          check_six_months = ifelse( six_months_daysDiff > 214 | six_months_daysDiff < 150, "check", "ok")) %>%
-  select( PATIENT_NUM, ADMISSION_DATE, DISCHARGE_DATE, two_weeks, six_weeks, 
-          six_months, two_weeks_daysDiff, six_weeks_daysDiff, six_months_daysDiff, 
-          check_two_weeks, check_six_weeks, check_six_months) %>%
-  unique()
+##### SKIP FOR TCH #####
+#qc_dates <- finalTable %>%
+#  mutate( two_weeks_daysDiff = abs( ymd( two_weeks) - ymd( DISCHARGE_DATE)), 
+#          six_weeks_daysDiff = abs( ymd( six_weeks) - ymd( DISCHARGE_DATE)), 
+#          six_months_daysDiff = abs( ymd( six_months) - ymd( DISCHARGE_DATE)), 
+#          check_two_weeks = ifelse( two_weeks_daysDiff > 21 | two_weeks_daysDiff < 7, "check", "ok"), 
+#          check_six_weeks = ifelse( six_weeks_daysDiff > 49| six_weeks_daysDiff < 35, "check", "ok") , 
+#          check_six_months = ifelse( six_months_daysDiff > 214 | six_months_daysDiff < 150, "check", "ok")) %>%
+#  select( PATIENT_NUM, ADMISSION_DATE, DISCHARGE_DATE, two_weeks, six_weeks, 
+#          six_months, two_weeks_daysDiff, six_weeks_daysDiff, six_months_daysDiff, 
+#          check_two_weeks, check_six_weeks, check_six_months) %>%
+#  unique()
 ```
 
 
@@ -244,24 +270,24 @@ finalTable <- finalTable %>%
 
 
 # select which value to report when more than one lab value for the same patient and period 
-finalTable <- finalTable %>%
-  filter( period != "Out of period") %>%
-  group_by( PATIENT_NUM, CONCEPT_CD, period ) %>%
-  mutate( two_weeks_ref = if_else( !is.na( ymd(two_weeks) ), ymd(two_weeks), ymd( DISCHARGE_DATE ) + days(14) ), 
-          six_weeks_ref = if_else( !is.na( ymd(six_weeks) ), ymd(six_weeks), ymd( DISCHARGE_DATE ) + days(42) ), 
-          six_months_ref =if_else( !is.na( ymd(six_months)), ymd(six_months), ymd( DISCHARGE_DATE ) + days(182) ), 
-          daysDiff = case_when(  period == 1 ~ as.character( abs(ymd(date) - ymd(ADMISSION_DATE))),
-                                 period == 2 ~ as.character( abs(ymd(date) - ymd(DISCHARGE_DATE))),
-                                 period == 3 ~ as.character( abs(ymd(date) - ymd(two_weeks_ref))),
-                                 period == 4 ~ as.character( abs(ymd(date) - ymd(six_weeks_ref))),
-                                  period == 6 ~ as.character( abs(ymd(date) - ymd(six_months_ref))),
-                                TRUE ~ " "), 
-          daysDiff = as.numeric( daysDiff ) )
+# finalTable <- finalTable %>%
+#   filter( period != "Out of period") %>%
+#   group_by( PATIENT_NUM, CONCEPT_CD, period ) %>%
+#   mutate( two_weeks_ref = if_else( !is.na( ymd(two_weeks) ), ymd(two_weeks), ymd( DISCHARGE_DATE ) + days(14) ), 
+#           six_weeks_ref = if_else( !is.na( ymd(six_weeks) ), ymd(six_weeks), ymd( DISCHARGE_DATE ) + days(42) ), 
+#           six_months_ref =if_else( !is.na( ymd(six_months)), ymd(six_months), ymd( DISCHARGE_DATE ) + days(182) ), 
+#           daysDiff = case_when(  period == 1 ~ as.character( abs(ymd(date) - ymd(ADMISSION_DATE))),
+#                                  period == 2 ~ as.character( abs(ymd(date) - ymd(DISCHARGE_DATE))),
+#                                  period == 3 ~ as.character( abs(ymd(date) - ymd(two_weeks_ref))),
+#                                  period == 4 ~ as.character( abs(ymd(date) - ymd(six_weeks_ref))),
+#                                   period == 6 ~ as.character( abs(ymd(date) - ymd(six_months_ref))),
+#                                 TRUE ~ " "), 
+#           daysDiff = as.numeric( daysDiff ) )
 
-finalTableFiltered <- finalTable %>%
- group_by( PATIENT_NUM, CONCEPT_CD, period ) %>%
-  slice_min( order_by = daysDiff ) %>%
-  slice_min( order_by = dmy_hms(START_DATE) )
+#finalTableFiltered <- finalTable %>%
+# group_by( MUSIC.ID, CONCEPT_CD, period ) %>%
+#  slice_min( order_by = daysDiff ) %>%
+#  slice_min( order_by = dmy_hms(START_DATE) )
 
 #finalTableFilteredCheck <- finalTableFiltered %>%
 #  filter( vartype == "obtained") %>%
@@ -286,8 +312,10 @@ redcap_repeat_instance
 Because we are choosing 1 lab value per time point (the closest to the date), we should not have more than one value for redcap_repeat_instance. 
 
 ```{r}
+finalTableFiltered <- finalTable
+
 finalTableFiltered <- finalTableFiltered %>% 
-  group_by(PATIENT_NUM) %>%
+  group_by(MUSIC.ID) %>%
   mutate( lab_values_visit = period, 
     redcap_repeat_instance = lab_values_visit ) %>%
   arrange(redcap_repeat_instance)
@@ -297,9 +325,9 @@ Pivot table wider and make compatible with RedCap formatting
 ```{r}
 # for cases where a patient has multiple values for a lab at the exact same date / time, just choose the first one
 out <- finalTableFiltered %>%
-  group_by(PATIENT_NUM, formName, lab_values_visit, redcap_repeat_instance, variableName) %>%
+  group_by(MUSIC.ID, formName, lab_values_visit, redcap_repeat_instance, variableName) %>%
   summarise(value = first(value)) %>%
-  pivot_wider(id_cols = c(PATIENT_NUM, formName, lab_values_visit, redcap_repeat_instance), 
+  pivot_wider(id_cols = c(MUSIC.ID, formName, lab_values_visit, redcap_repeat_instance), 
                    names_from = variableName, 
                    values_from = value, 
                    values_fill = '')
@@ -308,17 +336,17 @@ out <- finalTableFiltered %>%
 #finalTable %>% filter(is.na(NVAL_NUM), TVAL_CHAR == '')
 
 # map BCH ids to MUSIC IDs for REDCAP
-out <- left_join(out, misc_mapping %>% select(PATIENT_NUM, MUSIC_ID))
+#out <- left_join(out, misc_mapping %>% select(PATIENT_NUM, MUSIC_ID))
 
 # Rename columns for redcap
 out <- out %>%
-  rename('record_id' = 'MUSIC_ID',
+  rename('record_id' = 'MUSIC.ID',
          'redcap_repeat_instrument' = 'formName') %>%
   mutate(redcap_event_name = "repeating_forms_arm_1") %>%
   relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, lab_values_visit) %>%
   arrange(record_id, redcap_repeat_instance, lab_values_visit) %>%
-  ungroup() %>%
-  select(-'PATIENT_NUM')
+  ungroup() #%>%
+  #select(-'PATIENT_NUM')
 ```
 
 Fill the blank 'obtained' variables with 0, indicating that this lab was not collected for that time period.
@@ -352,27 +380,27 @@ Replace the BCH values for total_anti_value with those expected from redcap.
 Our patients have values ‘Non-reactive’ and ‘Reactive’, redcap is expecting 1, Detected | 0, Not detected | 3, Indeterminate
 ```{r}
 
-# We map "Negative" to 0 (Not detected) and "Positive" to 1 (Detected)
-table(out$sars_cov2ntpcr_value)
-
-reset_sars_cov2ntpcr_values <- function(x){
-  ifelse(x == "Negative", '0', 
-         ifelse(x == "Positive", '1', x))
-}
-
-out <- out %>% mutate(sars_cov2ntpcr_value = reset_sars_cov2ntpcr_values(sars_cov2ntpcr_value))
-
-# we map "Non-reactive" to 0 (Not detected) and "Reactive" to 1 (Detected)
-table(out$total_anti_value)
-
-reset_total_anti_value <- function(x){
-  ifelse(x == "Non-reactive", '0', 
-         ifelse(x == "Reactive", '1', x))
-}
-
-out <- out %>% mutate(total_anti_value = reset_total_anti_value(total_anti_value))
-
-table(out$total_anti_value)
+# # We map "Negative" to 0 (Not detected) and "Positive" to 1 (Detected)
+# table(out$sars_cov2ntpcr_value)
+# 
+# reset_sars_cov2ntpcr_values <- function(x){
+#   ifelse(x == "Negative", '0', 
+#          ifelse(x == "Positive", '1', x))
+# }
+# 
+# out <- out %>% mutate(sars_cov2ntpcr_value = reset_sars_cov2ntpcr_values(sars_cov2ntpcr_value))
+# 
+# # we map "Non-reactive" to 0 (Not detected) and "Reactive" to 1 (Detected)
+# table(out$total_anti_value)
+# 
+# reset_total_anti_value <- function(x){
+#   ifelse(x == "Non-reactive", '0', 
+#          ifelse(x == "Reactive", '1', x))
+# }
+# 
+# out <- out %>% mutate(total_anti_value = reset_total_anti_value(total_anti_value))
+# 
+# table(out$total_anti_value)
 
 
 
@@ -386,22 +414,38 @@ Adding the variables:
 ```{r}
 
 ### If there is not a column, make a blank one
-out$immunog_obtained <- NA
-out$igg_obtained <- NA
-out$igm_obtained <- NA
-out$ige_obtained <- NA
-out$c3_obtained <- NA
-out$c4_obtained <- NA
-out$cd3_obtained <- NA
-out$cd3_abs_obtained <- NA
-out$cd3_cd4_obtained <- NA
-out$cd3_cd4_abs_obtained <- NA
-out$cd3_cd8_obtained <- NA
-out$lympho_obtained <- NA
-out$cd3_cd8_abs_obtained <- NA
-out$cd19_obtained <- NA
-out$cd3_cd16_cd56_obtained <- NA
-out$ac4_cd8_ratio_obtained <- NA
+ out$immunog_obtained <- NA
+ out$igg_obtained <- NA
+ out$igm_obtained <- NA
+ out$ige_obtained <- NA
+ out$c3_obtained <- NA
+ out$c4_obtained <- NA
+ out$cd3_obtained <- NA
+ out$cd3_abs_obtained <- NA
+ out$cd3_cd4_obtained <- NA
+ out$cd3_cd4_abs_obtained <- NA
+ out$cd3_cd8_obtained <- NA
+ out$lympho_obtained <- NA
+ out$cd3_cd8_abs_obtained <- NA
+ out$cd19_obtained <- NA
+ out$cd3_cd16_cd56_obtained <- NA
+ out$ac4_cd8_ratio_obtained <- NA
+ out$tnf_alpha_obtained <- NA
+ out$il_1_obtained <- NA
+ out$il_2_obtained <- NA
+ out$il_2_receptor_obtained <- NA
+ out$il_4_obtained <- NA
+ out$il_5_obtained <- NA
+ out$il_6_obtained <- NA
+ out$il_8_obtained <- NA
+ out$il_10_obtained <- NA
+ out$il_12_obtained <- NA
+ out$il_13_obtained <- NA
+ out$il_17_obtained <- NA
+ out$ifn_gamma_obtained <- NA
+ out$igg_obtained <- NA
+ out$iga_obtained <- NA
+ out$cd3_cd8_obtained <- NA
 
 out <- out %>% 
   group_by( record_id , redcap_repeat_instance ) %>%
@@ -457,7 +501,7 @@ out <- out %>%
 
 ```
 
-There are some variables where we have a concept code for them in our mapping, but they are not present in any BCH MUSIC patients.
+There are some variables where we have a concept code for them in our mapping, but they are not present in any TCH MUSIC patients.
 We add them here with the value for obtained being 0 IF there are other labs in their panel... otherwise leave blank
 - troponin I
 - ah50
@@ -585,7 +629,7 @@ Data formatting based on errors / warnings from BCH upload to REDCap
 #         potassium_value = ifelse(potassium_value == "Not Reported", '', potassium_value))
   
 # write output with patient IDs included
-write.csv(out, '../local_ref/DATA_REFRESH_MAR22_redcap_output_laboratory_values_updated.csv', row.names = FALSE)
+write.csv(out, '../local_ref/lab_output_texas.csv', row.names = FALSE)
 #write.csv(out, '../local_ref/redcap_output_laboratory_values_updated.csv', row.names = FALSE)
 #write.csv(out %>% filter(record_id %in% c(120002, 120122, 120018, 120006)), '../local_ref/TEST_redcap_output_laboratory_values_updated.csv', row.names = FALSE)
 #write.csv(flagged, '../local_ref/flagged_labs_for_manual_review.csv', row.names = FALSE)
