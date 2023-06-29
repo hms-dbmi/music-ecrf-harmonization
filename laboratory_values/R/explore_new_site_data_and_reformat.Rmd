@@ -1,0 +1,119 @@
+---
+title: "Explore New Site Data"
+author: "Simran Makwana & Alba Gutierrez"
+date: "6/27/2023"
+output: html_document
+---
+# Load Packages
+```{r}
+library(dplyr)
+library(lubridate)
+```
+
+# Read the file from the site and extract the labs 
+```{r}
+new_site_data <- read.csv("../local_ref/texasChildren/misc_observations.csv")
+
+lab_data <- new_site_data %>%
+  dplyr::filter( is.na(Medication.Specification))
+
+med_data <- new_site_data %>%
+  dplyr::filter( !is.na(Medication.Specification))
+```
+
+# Reformat the files
+Update the columns names to match the expected format. patient_num, concept_cd,start_date, tval_char, nval_num, units_cd
+For the patients information: ADMISSIONDATE,DISCHARGE_DATE and MUSIC.ID
+```{r}
+lab_data <- lab_data %>%
+  dplyr::rename( patient_num = `MUSIC.Patient.ID`, 
+                 concept_cd = `Concept.code`, 
+                 units_cd = `Lab.Units`, 
+                 nval_num = `Numeric.Value`, 
+                 tval_char = `Categorical.Value`, 
+                 inout_cd = `Patient.Setting`) %>%
+  dplyr::mutate( date = sapply(strsplit(Date, "[ ]"), '[', 1), 
+                 time = sapply(strsplit(Date, "[ ]"), '[', 2), 
+                 date = as.Date( date, format =  "%m/%d/%y"), 
+                 start_date = paste( format(as.Date(date), "%d-%b-%y"), 
+                                     " ", time )) %>%
+  dplyr::select( patient_num, concept_cd, start_date, tval_char, nval_num, units_cd, date, inout_cd )
+
+write.table( lab_data, 
+             file ="../local_ref/texasChildren/misc_lab_observations.csv",
+             col.names = TRUE, 
+             row.names = FALSE, 
+             sep       = ",", 
+             quote     = FALSE )
+```
+
+```{r}
+med_data <- med_data %>%
+  dplyr::rename( patient_num = `MUSIC.Patient.ID`, 
+                 concept_cd = `Concept.code`, 
+                 inout_cd = `Patient.Setting`, 
+                 med_route = `Medication.Route`,
+                 med_specification = `Medication.Specification`) %>%
+  dplyr::mutate( date = sapply(strsplit(Date, "[ ]"), '[', 1), 
+                 time = sapply(strsplit(Date, "[ ]"), '[', 2), 
+                 date = as.Date( date, format =  "%m/%d/%y"), 
+                 start_date = paste( format(as.Date(date), "%d-%b-%y"), 
+                                     " ", time )) %>%
+  dplyr::select( patient_num, concept_cd, start_date, med_route,
+                 med_specification,inout_cd, date )
+
+write.table( med_data, 
+             file ="../local_ref/texasChildren/misc_med_data_observations.csv",
+             col.names = TRUE, 
+             row.names = FALSE, 
+             sep       = ",", 
+             quote     = FALSE )
+```
+
+Create a concept_dimension file, even if both columns have the same value. 
+```{r}
+concept_dimension <- new_site_data %>%
+  dplyr::mutate( concept_cd = `Concept.code`, 
+                 concept_descripiton = `Concept.code`) %>%
+  dplyr::select( concept_cd, concept_descripiton ) %>%
+  unique()
+
+write.table( concept_dimension, 
+             file ="../local_ref/texasChildren/concept_dimension.csv",
+             col.names = TRUE, 
+             row.names = FALSE, 
+             sep       = ",", 
+             quote     = FALSE )
+```
+
+
+# For the labs identify how many of the loincs we have from the eCRF are present
+```{r}
+eCRF2loinc <- read.csv('../data/eCRF_to_LOINC_forReview2.0.csv')
+
+present <- eCRF2loinc %>%
+  dplyr::filter( LOINC.CODE %in% lab_data$concept_cd )
+```
+
+
+
+```{r}
+# create the summary for each concept_cd
+subset <- lab_data %>%
+  dplyr::filter( concept_cd %in% present$LOINC.CODE, 
+                 !is.na(nval_num )) %>%
+  dplyr::select( patient_num, concept_cd, nval_num, units_cd, date )
+
+
+check_summary <- subset %>%
+  dplyr::group_by(concept_cd, units_cd) %>%
+  dplyr::summarise( min_val = min(nval_num, na.rm = TRUE), 
+                    max_val = max(nval_num, na.rm = TRUE), 
+                    min_date = min( ymd( date) ), 
+                    max_date = max( ymd( date ) ), 
+                    distinct_patients = length(unique(patient_num)), 
+                    distinct_observations = length(patient_num)) %>%
+  dplyr::select( concept_cd, min_date, max_date, 
+                 distinct_patients, distinct_observations, 
+                 min_val, max_val, units_cd)
+```
