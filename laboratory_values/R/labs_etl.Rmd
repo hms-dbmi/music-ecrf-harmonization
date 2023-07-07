@@ -41,57 +41,56 @@ Here we specify for which patients we want to run the pipeline for.
 
 # now we have our list of new poatient IDs we want to run the pipeline on.
 
-newPatients <- read.csv('../../../TCH MUSIC DATA/misc_patient.csv') %>% pull(MUSIC.Patient.ID)
+newPatients <- read.csv('../local_ref/texasChildren/misc_patient.csv') %>% pull(MUSIC.Patient.ID)
 
 ```
 
 
 ```{r}
 #all_labs <- read.csv('../../dataRefresh/local_ref/AG440_MUSIC_LABS_FEB22')
-all_labs <- read.csv('../../../TCH MUSIC DATA/misc_observations.csv') %>%
-  rename(CONCEPT_CD = Concept.code, 
-         START_DATE = Date,
-         TVAL_CHAR = Categorical.Value,
-         NVAL_NUM = Numeric.Value,
-         UNITS_CD = Lab.Units) %>%
-  left_join(read.csv('../../../TCH MUSIC DATA/misc_patient.csv')) %>%
-  rename(ADMISSIONDATE = Admission.Date,
-         DISCHARGE_DATE = Discharge.Date, 
-         MUSIC.ID = MUSIC.Patient.ID) %>% 
-  filter(Patient.Setting == 'INPATIENT')
+all_labs <- read.csv('../local_ref/texasChildren/misc_lab_observations.csv') %>%
+  #rename(CONCEPT_CD = Concept.code, 
+  #       START_DATE = Date,
+  #       TVAL_CHAR = Categorical.Value,
+  #       NVAL_NUM = Numeric.Value,
+  #       UNITS_CD = Lab.Units) %>%
+  left_join(read.csv('../local_ref/texasChildren/misc_patient.csv') %>%
+    mutate(MUSIC.Patient.ID = as.character(MUSIC.Patient.ID))%>%
+    rename(ADMISSIONDATE = Admission.Date,
+           DISCHARGE_DATE = Discharge.Date, 
+           patient_num = MUSIC.Patient.ID)) %>% 
+    filter(inout_cd == 'INPATIENT')
 
 #misc_mapping <- read.csv("../../dataRefresh/local_ref/MUSIC_ID_MAPPING") %>%
 #  rename(PATIENT_NUM = PAT_NUM) %>%
 #  filter( MUSIC_ID %in% newPatients$MUSIC.ID )
 
 subset_df <- all_labs %>%
-  filter( CONCEPT_CD %in% lab_dictionary$LOINC.CODE ) %>%
+  filter( concept_cd %in% lab_dictionary$LOINC.CODE ) %>%
   rename('ADMISSION_DATE' = ADMISSIONDATE,
          'DISCHARGE_DATE' = DISCHARGE_DATE) #%>%
   #filter(PATIENT_NUM %in% misc_mapping$PATIENT_NUM) #####
 
 # we flter the subset df to only include the patients of interest
-
-
 ```
 
 
 Import the follow-up visit dates. The MUSIC_DATA_2021-11-23_0940.csv is the file extracted from REDCap of the data previously entered by BCH experts. From there we will extract the specific follow-up dates for the MUSIC study for the MISC patients. The variable name that contains the date is "visit_date", extracted from the dictionary. The record id is the internal MUSIC identifier, and the redcap_event_name allows us to know which is the specific follow-up period the date is referring to. Because the ID are MUSIC Ids we also need to load the music_mapping_id. 
 ```{r}
-visit_dates  <- read.csv("../../dataRefresh/local_ref/MUSIC_DATA_2022-03-10_1345.csv")
+#visit_dates  <- read.csv("../../dataRefresh/local_ref/MUSIC_DATA_2022-03-10_1345.csv")
 
-visit_dates <- visit_dates %>%
-  filter( visit_date != "" ) %>%
-  select( record_id, redcap_event_name, visit_date )
+#visit_dates <- visit_dates %>%
+#  filter( visit_date != "" ) %>%
+#  select( record_id, redcap_event_name, visit_date )
 
 ### check counts: for how many patients we have all the follow-up dates (2 weeks, 6 weeks and 6 months?)
 ### in this case only for 12 of the patients all the information has been entered
-counts <- visit_dates %>%
-  group_by( record_id ) %>%
-  mutate( dates_available = n( ) ) %>%
-  select( record_id, dates_available ) %>%
-  unique()
-summary(as.factor( counts$dates_available))
+#counts <- visit_dates %>%
+#  group_by( record_id ) %>%
+#  mutate( dates_available = n( ) ) %>%
+#  select( record_id, dates_available ) %>%
+#  unique()
+#summary(as.factor( counts$dates_available))
 
 ### let's put together in a table all the information, combining the patient timeline with first admission and discharge date with the rest of follow-up dates when available
 #misc_followUp <- visit_dates %>%
@@ -111,13 +110,13 @@ Data transformation
 - calculate `days_after_admission` and `days_after_discharge`
 And we join this information with the follow-up information. 
 ```{r}
-subset_df$date <- sapply(strsplit( as.character(subset_df$START_DATE), " "), '[', 1)
-subset_df$time <- sapply(strsplit( as.character(subset_df$START_DATE), " "), '[', 2)
+subset_df$date <- sapply(strsplit( as.character(subset_df$start_date), " "), '[', 1)
+subset_df$time <- sapply(strsplit( as.character(subset_df$start_date), " "), '[', 2)
 
-finalTable <- left_join( subset_df, lab_dictionary, by = c("CONCEPT_CD" = "LOINC.CODE") )
+finalTable <- left_join( subset_df, lab_dictionary, by = c("concept_cd" = "LOINC.CODE") )
 
 finalTable <- finalTable %>%
-  mutate(date = mdy(date),
+  mutate(date = dmy(date),
          ADMISSION_DATE = mdy(ADMISSION_DATE),
          DISCHARGE_DATE = mdy(DISCHARGE_DATE),
          days_after_admission = date - ADMISSION_DATE,
@@ -231,11 +230,11 @@ finalTable <- finalTable %>%
   # categorize the variable types
   mutate(vartype = gsub("^.*_", "", variableName)) %>%
   # remove entries with no data
-  filter(!is.na(NVAL_NUM) | TVAL_CHAR != '') %>%
+  filter(!is.na(nval_num) | tval_char != '') %>%
   # remove duplicated rows
   distinct %>%
   # filter out labs where reported value is "Not Reported" or "TNP"
-  filter(!TVAL_CHAR %in% c("Not Reported", "TNP"))
+  filter(!tval_char %in% c("Not Reported", "TNP"))
          
 finalTable$value <- apply(finalTable, 1, FUN = getLabValue)
 ```
@@ -263,8 +262,8 @@ lab_values_visit
 # Code to deal with multiple concept codes for lymphocytes and neutrophils
 # We consolidate all concepts to one code
 finalTable <- finalTable %>%
-  mutate(CONCEPT_CD = gsub('LAB:3775664', 'LAB:3775715', CONCEPT_CD),
-         CONCEPT_CD = gsub('LAB:3775663', 'LAB:3775714', CONCEPT_CD))
+  mutate(concept_cd = gsub('LAB:3775664', 'LAB:3775715', concept_cd),
+         concept_cd = gsub('LAB:3775663', 'LAB:3775714', concept_cd))
 
 #######
 
@@ -315,7 +314,7 @@ Because we are choosing 1 lab value per time point (the closest to the date), we
 finalTableFiltered <- finalTable
 
 finalTableFiltered <- finalTableFiltered %>% 
-  group_by(MUSIC.ID) %>%
+  group_by(patient_num) %>%
   mutate( lab_values_visit = period, 
     redcap_repeat_instance = lab_values_visit ) %>%
   arrange(redcap_repeat_instance)
@@ -325,9 +324,9 @@ Pivot table wider and make compatible with RedCap formatting
 ```{r}
 # for cases where a patient has multiple values for a lab at the exact same date / time, just choose the first one
 out <- finalTableFiltered %>%
-  group_by(MUSIC.ID, formName, lab_values_visit, redcap_repeat_instance, variableName) %>%
+  group_by(patient_num, formName, lab_values_visit, redcap_repeat_instance, variableName) %>%
   summarise(value = first(value)) %>%
-  pivot_wider(id_cols = c(MUSIC.ID, formName, lab_values_visit, redcap_repeat_instance), 
+  pivot_wider(id_cols = c(patient_num, formName, lab_values_visit, redcap_repeat_instance), 
                    names_from = variableName, 
                    values_from = value, 
                    values_fill = '')
@@ -340,7 +339,7 @@ out <- finalTableFiltered %>%
 
 # Rename columns for redcap
 out <- out %>%
-  rename('record_id' = 'MUSIC.ID',
+  rename('record_id' = 'patient_num',
          'redcap_repeat_instrument' = 'formName') %>%
   mutate(redcap_event_name = "repeating_forms_arm_1") %>%
   relocate(record_id, redcap_event_name, redcap_repeat_instrument, redcap_repeat_instance, lab_values_visit) %>%
