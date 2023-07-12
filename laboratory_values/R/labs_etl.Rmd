@@ -196,22 +196,22 @@ getLabValue <- function(row) {
   # for igg and igm: return 1 Positive (detected) if >11, 3 Indeterminate if 9-11, 0 Not detected if <9
     
   } else if (row['vartype'] == 'value') {
-    if(!is.na(row['NVAL_NUM'])){
+    if(!is.na(row['nval_num'])){
       
       if(row['variableName'] %in% c('anti_sars_igg_value', 'anti_sars_igm_value')){
-        if(as.numeric(row['NVAL_NUM']) > 11){
+        if(as.numeric(row['nval_num']) > 11){
           value = '1'
-        } else if(as.numeric(row['NVAL_NUM']) >= 9) {
+        } else if(as.numeric(row['nval_num']) >= 9) {
           value = '3'
         } else {
           value = '0'
         } 
       } else {
-        value = as.character(as.numeric(row['NVAL_NUM']))
+        value = as.character(as.numeric(row['nval_num']))
       }
       
     } else {
-      value = row['TVAL_CHAR']
+      value = row['tval_char']
     }
   }
     
@@ -258,6 +258,7 @@ lab_values_visit
           days_after_discharge >= 63 & days_after_discharge < 365 ~ '6',
           TRUE ~ 'Out of period'))
 
+
 #######
 # Code to deal with multiple concept codes for lymphocytes and neutrophils
 # We consolidate all concepts to one code
@@ -269,8 +270,8 @@ finalTable <- finalTable %>%
 
 
 # select which value to report when more than one lab value for the same patient and period 
-# finalTable <- finalTable %>%
-#   filter( period != "Out of period") %>%
+finalTable <- finalTable %>%
+   filter( period != "Out of period")# %>%
 #   group_by( PATIENT_NUM, CONCEPT_CD, period ) %>%
 #   mutate( two_weeks_ref = if_else( !is.na( ymd(two_weeks) ), ymd(two_weeks), ymd( DISCHARGE_DATE ) + days(14) ), 
 #           six_weeks_ref = if_else( !is.na( ymd(six_weeks) ), ymd(six_weeks), ymd( DISCHARGE_DATE ) + days(42) ), 
@@ -283,17 +284,18 @@ finalTable <- finalTable %>%
 #                                 TRUE ~ " "), 
 #           daysDiff = as.numeric( daysDiff ) )
 
-#finalTableFiltered <- finalTable %>%
-# group_by( MUSIC.ID, CONCEPT_CD, period ) %>%
+# because we do not have the period cutoff dates.. we take the first one if there are multiple
+finalTableFiltered <- finalTable %>%
+ group_by( patient_num, concept_cd, period ) %>%
 #  slice_min( order_by = daysDiff ) %>%
-#  slice_min( order_by = dmy_hms(START_DATE) )
+  slice_min( order_by = dmy_hm(start_date) )
 
-#finalTableFilteredCheck <- finalTableFiltered %>%
-#  filter( vartype == "obtained") %>%
-#  group_by( PATIENT_NUM, CONCEPT_CD, period ) %>%
-#  summarise( n = n())
+finalTableFilteredCheck <- finalTableFiltered %>%
+  filter( vartype == "obtained") %>%
+  group_by( patient_num, concept_cd, period ) %>%
+  summarise( n = n())
 
-#toCheck <- finalTableFilteredCheck[ finalTableFilteredCheck$n > 1, ]
+toCheck <- finalTableFilteredCheck[ finalTableFilteredCheck$n > 1, ]
 ```
 
 redcap_repeat_instance
