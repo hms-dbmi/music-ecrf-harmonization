@@ -1,0 +1,70 @@
+formName	Section.Header	Keyword	Position
+laboratory_values	Lymphocyte Subsets: CD4/CD8 ratio	cd4.*cd8	anywhere
+laboratory_values	Albumin (g/dL)	albumin	beginning
+laboratory_values	APTT or PTT (seconds)	APTT	anywhere
+laboratory_values	APTT or PTT (seconds)	PTT	anywhere
+laboratory_values	AST/SGOT (U/L)	aspartate aminotransferase	beginning
+laboratory_values	ALT/SGPT (U/L)	alanine aminotransferase	beginning
+laboratory_values	B-type natriuretic peptide (BNP) (pg/mL)	BNP	beginning
+laboratory_values	Complement levels: C3 (mg/dL)	C3	beginning
+laboratory_values	Complement levels: C4 (mg/dL)	C4	beginning
+laboratory_values	"Lymphocyte Subsets: CD+19, Absolute"	cd19.*numbr	beginning
+laboratory_values	Lymphocyte Subsets: CD19+ (%)	cd19.*pcent	anywhere
+laboratory_values	"Lymphocyte Subsets: CD3+, Absolute"	CD3	anywhere
+laboratory_values	Lymphocyte Subsets: CD3-%/CD16+ or CD56+%	CD3.*CD56.*CD16.*pcent	anywhere
+laboratory_values	"Lymphocyte Subsets: CD3+ CD4+, Absolute"	cd3.*cd4.*numbr	beginning
+laboratory_values	Lymphocyte Subsets: CD3+%/CD4+%	cd3.*cd4.*pcent	anywhere
+laboratory_values	"Lymphocyte Subsets: CD3+ CD8+, Absolute"	cd3.*cd8.*numbr	beginning
+laboratory_values	Lymphocyte Subsets: CD3+%/CD8+%	cd3.*cd8.*pcent	anywhere
+laboratory_values	Lymphocyte Subsets: CD3+ (%)	cd3.*pcent	anywhere
+laboratory_values	Creatine kinase (U/L)	Creatine kinase	beginning
+laboratory_values	Creatinine (mg/dL)	Creatinine	beginning
+laboratory_values	"C-Reactive Protein, CRP (circle: mg/L or mg/dL)"	c reactive protein	beginning
+laboratory_values	D-dimer (mcg/mL FEU)	D-dimer	anywhere
+laboratory_values	Direct bilirubin (mg/dL)	Bilirubin.*direct	beginning
+laboratory_values	ESR (mm/hr)	Erythrocyte sedimentation rate	beginning
+laboratory_values	Ferritin (ng/mL)	ferritin	beginning
+laboratory_values	Fibrinogen (mg/dL)	fibrinogen	beginning
+laboratory_values	Gamma-glutamyl transferase (GGT/GGTP) (U/L)	GGT	beginning
+laboratory_values	Glucose (mg/dL)	Glucose	beginning
+laboratory_values	Hematocrit (%)	Hematocrit	beginning
+laboratory_values	Hemoglobin (g/dL)	Hemoglobin	beginning
+laboratory_values	Cytokine panel: IFN-gamma (pg/mL)	interferon gamma	beginning
+laboratory_values	Immunoglobulin levels: IgA (mg/dL)	IgA	beginning
+laboratory_values	Immunoglobulin levels: IgE (mg/dL)	IgE	beginning
+laboratory_values	Immunoglobulin levels: IgG (mg/dL)	IgG	beginning
+laboratory_values	Immunoglobulin levels: IgM (mg/dL)	IgM	beginning
+laboratory_values	Cytokine panel: IL-1 (pg/mL)	Interleukin 1	beginning
+laboratory_values	Cytokine panel: IL-10 (pg/mL)	Interleukin 10	beginning
+laboratory_values	Cytokine panel: IL-12 (pg/mL)	Interleukin 12	beginning
+laboratory_values	Cytokine panel: IL-13 (pg/mL)	Interleukin 13	beginning
+laboratory_values	Cytokine panel: IL-2 receptor soluble serum (pg/mL)	Interleukin 2	beginning
+laboratory_values	Cytokine panel: IL-2 (pg/mL)	Interleukin 2	beginning
+laboratory_values	Cytokine panel: IL-4 (pg/mL)	Interleukin 4	beginning
+laboratory_values	Cytokine panel: IL-5 (pg/mL)	Interleukin 5	beginning
+laboratory_values	Cytokine panel: IL-6 (pg/mL)	Interleukin 6	beginning
+laboratory_values	Cytokine panel: IL-8 (pg/mL)	Interleukin 8	beginning
+laboratory_values	INR (units)	INR	beginning
+laboratory_values	LDH (U/L)	LDH	beginning
+laboratory_values	Lymphocytes (%)	Lymphocytes	beginning
+laboratory_values	Neutrophils (%)	Neutrophils	beginning
+laboratory_values	Platelets (x10^3/uL or x10^9/L)	Platelets	beginning
+laboratory_values	Potassium (mmol/L)	Potassium	beginning
+laboratory_values	Procalcitonin (ng/mL)	Procalcitonin	beginning
+laboratory_values	PT (seconds)	Coagulation tissue factor 	anywhere
+laboratory_values	Sodium (mmol/L)	Sodium	beginning
+laboratory_values	Lymphocyte Subsets: %T-sum		
+laboratory_values	Thrombin time (seconds)	thrombin time	anywhere
+laboratory_values	Cytokine panel: TNF-alpha (pg/mL)	Tumor necrosis factor.alpha:	beginning
+laboratory_values	Total bilirubin (mg/dL)	Bilirubin.*total	beginning
+laboratory_values	Total protein (g/dL)	total protein	beginning
+laboratory_values	Triglycerides (circle: mg/dL or mmol/L)	Triglycerides	beginning
+laboratory_values	Troponin T (ng/mL)	Troponin T	beginning
+laboratory_values	WBC Count (x10^3/uL or 10^9/L)	leukocytes	
+laboratory_values	SARS CoV-2 NT PCR	sars-cov-2Ê	
+laboratory_values	Urea (BUN) (mg/dL)	Urea nitrogen	beginning
+laboratory_values	Lactate (mmol/L)	Lactate	beginning
+laboratory_values	Troponin I (ng/mL)	Troponin I	beginning
+laboratory_values	Bicarbonate (mmol/L)	Bicarbonate	beginning
+laboratory_values	Complement levels: AH50 (%)	AH50	anywhere
+laboratory_values	Complement levels: CH50 (%)	CH50	anywhere
