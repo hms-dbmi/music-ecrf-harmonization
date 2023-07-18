@@ -14,7 +14,7 @@ library(readxl)
 
 # Load TCH concept descriptions
 ```{r}
-tch_concepts <- read.csv("../../laboratory_values/local_ref/texasChildren/concept_dimension.csv")
+tch_concepts <- read.delim("../../laboratory_values/local_ref/texasChildren/concept_dimension.tsv")
 ```
 
 # Load the manually generated keywords
