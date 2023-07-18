@@ -40,10 +40,10 @@ lab_data <- lab_data %>%
   dplyr::select( patient_num, concept_cd, start_date, tval_char, nval_num, units_cd, date, inout_cd )
 
 write.table( lab_data, 
-             file ="../local_ref/texasChildren/misc_lab_observations.csv",
+             file ="../local_ref/texasChildren/misc_lab_observations.tsv",
              col.names = TRUE, 
              row.names = FALSE, 
-             sep       = ",", 
+             sep       = "/t", 
              quote     = FALSE )
 ```
 
@@ -63,10 +63,10 @@ med_data <- med_data %>%
                  med_specification,inout_cd, date )
 
 write.table( med_data, 
-             file ="../local_ref/texasChildren/misc_med_data_observations.csv",
+             file ="../local_ref/texasChildren/misc_med_data_observations.tsv",
              col.names = TRUE, 
              row.names = FALSE, 
-             sep       = ",", 
+             sep       = "/t", 
              quote     = FALSE )
 ```
 
@@ -79,10 +79,10 @@ concept_dimension <- new_site_data %>%
   unique()
 
 write.table( concept_dimension, 
-             file ="../local_ref/texasChildren/concept_dimension.csv",
+             file ="../local_ref/texasChildren/concept_dimension.tsv",
              col.names = TRUE, 
              row.names = FALSE, 
-             sep       = ",", 
+             sep       = "/t", 
              quote     = FALSE )
 ```
 
