@@ -3,8 +3,8 @@ laboratory_values	Lymphocyte Subsets: CD4/CD8 ratio	cd4.*cd8	anywhere
 laboratory_values	Albumin (g/dL)	albumin	beginning
 laboratory_values	APTT or PTT (seconds)	APTT	anywhere
 laboratory_values	APTT or PTT (seconds)	PTT	anywhere
-laboratory_values	AST/SGOT (U/L)	aspartate aminotransferase	beginning
-laboratory_values	ALT/SGPT (U/L)	alanine aminotransferase	beginning
+laboratory_values	AST/SGOT (U/L)	AST	beginning
+laboratory_values	ALT/SGPT (U/L)	ALT	beginning
 laboratory_values	B-type natriuretic peptide (BNP) (pg/mL)	BNP	beginning
 laboratory_values	Complement levels: C3 (mg/dL)	C3	beginning
 laboratory_values	Complement levels: C4 (mg/dL)	C4	beginning
@@ -22,7 +22,7 @@ laboratory_values	Creatinine (mg/dL)	Creatinine	beginning
 laboratory_values	"C-Reactive Protein, CRP (circle: mg/L or mg/dL)"	c reactive protein	beginning
 laboratory_values	D-dimer (mcg/mL FEU)	D-dimer	anywhere
 laboratory_values	Direct bilirubin (mg/dL)	Bilirubin.*direct	beginning
-laboratory_values	ESR (mm/hr)	Erythrocyte sedimentation rate	beginning
+laboratory_values	ESR (mm/hr)	Sed rate	beginning
 laboratory_values	Ferritin (ng/mL)	ferritin	beginning
 laboratory_values	Fibrinogen (mg/dL)	fibrinogen	beginning
 laboratory_values	Gamma-glutamyl transferase (GGT/GGTP) (U/L)	GGT	beginning
@@ -51,11 +51,11 @@ laboratory_values	Neutrophils (%)	Neutrophils	beginning
 laboratory_values	Platelets (x10^3/uL or x10^9/L)	Platelets	beginning
 laboratory_values	Potassium (mmol/L)	Potassium	beginning
 laboratory_values	Procalcitonin (ng/mL)	Procalcitonin	beginning
-laboratory_values	PT (seconds)	Coagulation tissue factor 	anywhere
+laboratory_values	PT (seconds)	prothrombin time	anywhere
 laboratory_values	Sodium (mmol/L)	Sodium	beginning
 laboratory_values	Lymphocyte Subsets: %T-sum		
 laboratory_values	Thrombin time (seconds)	thrombin time	anywhere
-laboratory_values	Cytokine panel: TNF-alpha (pg/mL)	Tumor necrosis factor.alpha:	beginning
+laboratory_values	Cytokine panel: TNF-alpha (pg/mL)	Tumor necrosis fact	beginning
 laboratory_values	Total bilirubin (mg/dL)	Bilirubin.*total	beginning
 laboratory_values	Total protein (g/dL)	total protein	beginning
 laboratory_values	Triglycerides (circle: mg/dL or mmol/L)	Triglycerides	beginning
