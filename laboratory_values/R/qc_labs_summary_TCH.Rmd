@@ -156,6 +156,11 @@ We observe that the are some units that even referring to the same appear in a d
 # add the units transformation 
 check_summary$units_cd_transformed <- check_summary$units_cd
 check_summary$units_cd_transformed <- gsub( "sec", "seconds", check_summary$units_cd_transformed)
+check_summary$units_cd_transformed <- gsub( "SEC", "seconds", check_summary$units_cd_transformed)
+check_summary$units_cd_transformed <- gsub( "NG/ML", "ng/mL", check_summary$units_cd_transformed)
+check_summary$units_cd_transformed <- gsub( "mm/h", "mm/hr", check_summary$units_cd_transformed)
+check_summary$units_cd_transformed <- gsub( "hrr", "hr", check_summary$units_cd_transformed)
+check_summary$units_cd_transformed <- gsub( "(calc)", "", check_summary$units_cd_transformed)
 check_summary$units_cd_transformed <- gsub( "cells/mcL", "Absolute cells/microliter", check_summary$units_cd_transformed)
 check_summary$units_cd_transformed <- gsub( "unit/L", "U/L", check_summary$units_cd_transformed)
 check_summary$units_cd_transformed <- gsub( "K cells/uL", "x10^3/uL or x10^9/L", check_summary$units_cd_transformed)
