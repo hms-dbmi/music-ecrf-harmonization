@@ -1,0 +1,105 @@
+---
+title: "Generate Potential TCH to LOINC Mapping"
+author: "Simran Makwana & Alba Gutierrez"
+date: "07/18/2023"
+output: html_document
+---
+
+# Load Packages
+```{r}
+library(dplyr)
+library(lubridate)
+library(readxl)
+```
+
+# Load TCH concept descriptions
+```{r}
+tch_concepts <- read.csv("../../laboratory_values/local_ref/texasChildren/concept_dimension.csv")
+```
+
+# Load the manually generated keywords
+The full list of keywords can be viewed in the GitHub repository at this link.
+Same keywords have been modified compared to the lab_keywords first version. 
+- Creatinine keyword was before Creatine:, now is creatinine:
+- for uera, we have make it more general, from Urea: to Urea.
+- LDH did not have any keyword, added Lactate dehydrogenase:
+Set the 'cutOff' value. Keyword queries which exceed the cutoff will have the additional 'Ser/Plas' and 'Pt:Bld' filters applied.
+```{r}
+lab_keywords <- read.delim("../data/lab_keywords2.0_TCH.tsv" )
+lab_keywords <- lab_keywords %>%
+  dplyr::filter( Position %in% c('beginning', 'anywhere'))
+cutOff <- 10
+```
+
+# Extract the list of potential LOINC codes
+Search through the TCH concept descriptions for the keywords associated with the eCRF terms.
+```{r}
+lab_keywords$Keyword <- tolower( lab_keywords$Keyword)
+tch_concepts$concept_cd <- tolower( tch_concepts$concept_cd )
+for( i in 1:nrow(lab_keywords)){
+  position <- lab_keywords$Position[i]
+  if( position == "anywhere"){
+    generalQ<- tch_concepts %>% 
+      dplyr::filter( grepl( lab_keywords$Keyword[i], concept_cd))
+    }else if(position == "beginning"){
+      generalQ<- tch_concepts %>% 
+        dplyr::filter( grepl( paste0("^", lab_keywords$Keyword[i]),concept_cd))
+  }
+  
+  narrowQ <- generalQ %>% 
+    dplyr::filter( grepl( paste(c("*Ser/Plas:Qn", "*Pt:Bld:Qn"), collapse = "|"), concept_cd))
+  
+  if(i==1){
+    if( nrow(narrowQ) == 0 ){
+      output <- generalQ
+    }else if( nrow( generalQ ) > cutOff ){
+      output <- narrowQ
+    }else if( nrow( generalQ) > 0 ){
+      output <- generalQ
+    }else{
+      print( paste0("No entry found for keyword: ", lab_keywords$Keyword[i]))
+    }
+    print( paste0( nrow( output), " LOINC terms found for eCRF Term: ", lab_keywords$Section.Header[i], " with keyword: ", lab_keywords$Keyword[i]))
+    output$Section.Header <- lab_keywords$Section.Header[i]
+  }else{
+    if( nrow(narrowQ) == 0 ){
+      int_output <- generalQ
+    }else if( nrow( generalQ ) > cutOff ){
+      int_output <- narrowQ
+    }else if( nrow( generalQ) > 0 ){
+      int_output <- generalQ
+    }else{
+      print( paste0("No entry found for keyword: ", lab_keywords$Keyword[i]))
+    }
+    print( paste0( nrow( int_output), " LOINC terms found for eCRF Term: ", lab_keywords$Section.Header[i], " with keyword: ", lab_keywords$Keyword[i]))
+    if(is.na( int_output$concept_cd[1]) ){
+      int_output <- as.data.frame(matrix( ncol =3, nrow=1))
+      colnames( int_output) <- c("concept_cd", 
+                                 "concept_descripiton", "Section.Header")
+      int_output[1,] <- c("NA", "NA", lab_keywords$Section.Header[i])
+    }else{
+          int_output$Section.Header <- lab_keywords$Section.Header[i]
+
+    }
+    output <- rbind( output, int_output)
+  }
+}
+
+output <- unique(output)
+ranked_list <- output %>% 
+  dplyr::filter( concept_cd != "NA" ) %>%
+  dplyr::group_by(Section.Header) %>% 
+  dplyr::summarise(n = n_distinct(concept_cd)) %>% arrange(desc(n)) 
+
+missing_list <- output %>% 
+  dplyr::filter( concept_cd == "NA" ) %>%
+  dplyr::group_by(Section.Header) %>% 
+  dplyr::summarise(n = n_distinct(concept_cd)) %>% arrange(desc(n)) 
+
+
+```
+# Save the mapping to do a summary at patient level data and check which are the most accurate mappings and those incorrect or that need refinement. 
+
+```{r}
+write.csv(output, '../data/eCRF_to_TCH_forReview.csv', row.names = FALSE)
+```
