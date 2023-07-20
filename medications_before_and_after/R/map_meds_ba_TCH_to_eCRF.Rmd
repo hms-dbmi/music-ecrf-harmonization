@@ -77,7 +77,7 @@ tch_meds <- tch_meds %>%
 
 ### replace amoxicilin-pot by amoxicillin clavulanic 
 tch_keywords <- tch_meds %>%
-  dplyr::mutate( keyword = gsub("amoxicillin-pot", "amoxicillin clavulanic", keyword), 
+  dplyr::mutate( keyword = gsub("amoxicillin pot", "amoxicillin clavulanic", keyword), 
                  keyword = gsub("amoxicillin 500", "amoxicillin", keyword), 
                  keyword = gsub("amoxicillin 250", "amoxicillin", keyword)) %>%
   dplyr::select(concept_cd, keyword ) %>%
@@ -88,11 +88,28 @@ tch_keywords <- tch_meds %>%
 # From TCH to eCRF
 Check how many we find in common by exact match. 
 ```{r}
+ecrf_keywords$keyword <- trimws( ecrf_keywords$keyword)
+tch_keywords$keyword <- trimws( tch_keywords$keyword)
+
 toReview <- merge( ecrf_keywords, tch_keywords )
 
 potentialMissing <- ecrf_keywords %>%
   dplyr::filter( ! keyword %in% tch_keywords$keyword)
 
+### add some more information to investigate the missing ones
+### check which ones that are missing in TCH were present in BCH, and check those
+bchMapped <- read.csv("../../medications_before_and_after/data/bch_med_concept_summary_toReview.csv")
+
+potentialMissing <- potentialMissing %>%
+  dplyr::mutate( presentInBCH = ifelse( ECRF_CODE %in% bchMapped$ECRF_CODE, "yes", "no"))
+
+write.table(potentialMissing, 
+            file = "../../medications_before_and_after/data/tch_missing_med_concepts_toReview.txt", 
+            row.names = FALSE, 
+            col.names = TRUE, 
+            sep = "\t", 
+            quote = FALSE
+            )
 ```
 
 # Save mapping
