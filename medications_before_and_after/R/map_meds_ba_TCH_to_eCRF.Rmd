@@ -1,0 +1,112 @@
+---
+title: "Generate potential TCH to RXNORM Mapping"
+author: "Alba Gutierrez & Simran Makwana"
+date: "7/20/2023"
+output: html_document
+---
+
+Goal: Create a mapping from TCH codes to RXNORM codes
+
+Requirements: 
+- UMLS Database Subset (all RXNORM codes)
+- Medication Code List D (from MUSIC study)
+- Manually curated keywords for eCRF variables (manual_keywords_eCRF_to_RXNORM.csv)
+
+Output: CSV mapping file from TCH medications to RXNORM codes
+
+# Load Packages
+```{r}
+library(lubridate)
+library(tidyverse)
+library(data.table)
+```
+
+# Load the eCRF to RXNORM mapping
+Create a new column called keword, that is the ECRF generic name, to check how many we can map directly with the keyword on the TCH concept descriptions. 
+Most of the first words, are unique keywords. There are only 6 cases in which we need to take into account the second word to distinguish between different eCRF codes:
+- Erythromycin vs. Erythromycin and Sulfisoxazole
+- Isosorbide dinitrate vs. Isosorbide mononitrate
+- Ticlopidine HCl vs. Ticlopidine
+- Vitamin K vs. Vitamin C
+- Calcium Chloride vs. Calcium Glubionate
+- Amoxicillin vs. amoxicillin clavulanic
+
+We split the generic name by spaces (removing previously other characters) and then we create a keyword, using just the first word or the first and the second for the 5 previous cases. We will need to manually update Erythromycin and Sulfisoxazole (only case in which we need the 3 keywords)
+
+```{r}
+ecrf_to_rxnorm <- read.csv("../data/ecrf_to_rxnorm_mapping.csv") %>%
+  dplyr::mutate( ECRF_GENERIC_NAME = gsub("[/]", " ", ECRF_GENERIC_NAME),
+                 ECRF_GENERIC_NAME = gsub("-", " ", ECRF_GENERIC_NAME),
+                 first_word = tolower(sapply(strsplit( ECRF_GENERIC_NAME, " "), '[', 1)), 
+                 second_word = tolower(sapply(strsplit( ECRF_GENERIC_NAME, " "), '[', 2)), 
+                 second_word = ifelse( is.na(second_word)== TRUE, "", second_word), 
+                 keyword = ifelse( ! first_word %in% c("erythromycin", "isosorbide", "ticlopidine",
+                                                       "vitamin", "calcium", "amoxicillin"), first_word, paste0( first_word, " ",second_word))) %>%
+  dplyr::select( ECRF_CODE, ECRF_GENERIC_NAME, first_word, second_word, keyword ) %>%
+  unique()
+
+# replace the Erythromycin and by Erythromycin and Sulfisoxazole
+ecrf_keywords <- ecrf_to_rxnorm %>%
+  dplyr::mutate( keyword = gsub("erythromycin and", "erythromycin and sulfisoxazole", keyword)) %>%
+  dplyr::select(ECRF_CODE, keyword ) %>%
+  unique()
+```
+
+We have 282 keywords to look for and map in TCH. 
+
+# Load the TCH medications
+We have the medication description, as well as additional information of the route, and the type of visit for each medication. For mapping purposes we focus on the medication description, we have a total of 401 distinct medication descripitons (many are the same medication but in different dose, etc.) 
+```{r}
+tch_meds <- read.delim("../../laboratory_values/local_ref/texasChildren/misc_med_data_observations.tsv") 
+tch_meds <- tch_meds %>%
+  dplyr::select( concept_cd) %>%
+  unique()
+
+print(length(unique(tch_meds$concept_cd)))
+```
+We split the descriptions in words, and we select as keyword the first word. 
+
+```{r}
+tch_meds <- tch_meds %>%
+  dplyr::mutate( concept_cd = gsub("[/]", " ", concept_cd),
+                 concept_cd = gsub("-", " ", concept_cd),
+                 first_word = tolower(sapply(strsplit( concept_cd, " "), '[', 1)), 
+                 second_word = tolower(sapply(strsplit( concept_cd, " "), '[', 2)),
+                 keyword = ifelse( ! first_word %in% c("erythromycin", "isosorbide", "ticlopidine",
+                                                       "vitamin", "calcium", "amoxicillin"), first_word, paste0( first_word, " ",second_word)))
+
+### replace amoxicilin-pot by amoxicillin clavulanic 
+tch_keywords <- tch_meds %>%
+  dplyr::mutate( keyword = gsub("amoxicillin-pot", "amoxicillin clavulanic", keyword), 
+                 keyword = gsub("amoxicillin 500", "amoxicillin", keyword), 
+                 keyword = gsub("amoxicillin 250", "amoxicillin", keyword)) %>%
+  dplyr::select(concept_cd, keyword ) %>%
+  unique()
+```
+
+
+# From TCH to eCRF
+Check how many we find in common by exact match. 
+```{r}
+toReview <- merge( ecrf_keywords, tch_keywords )
+
+potentialMissing <- ecrf_keywords %>%
+  dplyr::filter( ! keyword %in% tch_keywords$keyword)
+
+```
+
+# Save mapping
+```{r}
+write.table(toReview, '../data/tch_to_ecrf_med_mapping.txt', 
+            row.names = FALSE, 
+            col.names = TRUE, 
+            sep = "\t", 
+            quote = FALSE)
+
+```
+
+
+
+
+
+
