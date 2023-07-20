@@ -23,13 +23,14 @@ library(data.table)
 
 # Load the eCRF to RXNORM mapping
 Create a new column called keword, that is the ECRF generic name, to check how many we can map directly with the keyword on the TCH concept descriptions. 
-Most of the first words, are unique keywords. There are only 6 cases in which we need to take into account the second word to distinguish between different eCRF codes:
+Most of the first words, are unique keywords. There are only 7 cases in which we need to take into account the second word to distinguish between different eCRF codes:
 - Erythromycin vs. Erythromycin and Sulfisoxazole
 - Isosorbide dinitrate vs. Isosorbide mononitrate
 - Ticlopidine HCl vs. Ticlopidine
 - Vitamin K vs. Vitamin C
 - Calcium Chloride vs. Calcium Glubionate
 - Amoxicillin vs. amoxicillin clavulanic
+- Ampicillin vs. Amipicillin/Sulbactam
 
 We split the generic name by spaces (removing previously other characters) and then we create a keyword, using just the first word or the first and the second for the 5 previous cases. We will need to manually update Erythromycin and Sulfisoxazole (only case in which we need the 3 keywords)
 
@@ -40,8 +41,7 @@ ecrf_to_rxnorm <- read.csv("../data/ecrf_to_rxnorm_mapping.csv") %>%
                  first_word = tolower(sapply(strsplit( ECRF_GENERIC_NAME, " "), '[', 1)), 
                  second_word = tolower(sapply(strsplit( ECRF_GENERIC_NAME, " "), '[', 2)), 
                  second_word = ifelse( is.na(second_word)== TRUE, "", second_word), 
-                 keyword = ifelse( ! first_word %in% c("erythromycin", "isosorbide", "ticlopidine",
-                                                       "vitamin", "calcium", "amoxicillin"), first_word, paste0( first_word, " ",second_word))) %>%
+                 keyword = ifelse( ! first_word %in% c("erythromycin", "isosorbide", "ticlopidine","vitamin", "calcium", "amoxicillin", "amipicillin"), first_word, paste0( first_word, " ",second_word))) %>%
   dplyr::select( ECRF_CODE, ECRF_GENERIC_NAME, first_word, second_word, keyword ) %>%
   unique()
 
@@ -73,13 +73,21 @@ tch_meds <- tch_meds %>%
                  first_word = tolower(sapply(strsplit( concept_cd, " "), '[', 1)), 
                  second_word = tolower(sapply(strsplit( concept_cd, " "), '[', 2)),
                  keyword = ifelse( ! first_word %in% c("erythromycin", "isosorbide", "ticlopidine",
-                                                       "vitamin", "calcium", "amoxicillin"), first_word, paste0( first_word, " ",second_word)))
+                                                       "vitamin", "calcium", "amoxicillin", 
+                                                       "ampicillin"), first_word, paste0( first_word, " ",second_word)))
 
 ### replace amoxicilin-pot by amoxicillin clavulanic 
 tch_keywords <- tch_meds %>%
   dplyr::mutate( keyword = gsub("amoxicillin pot", "amoxicillin clavulanic", keyword), 
                  keyword = gsub("amoxicillin 500", "amoxicillin", keyword), 
                  keyword = gsub("amoxicillin 250", "amoxicillin", keyword)) %>%
+  dplyr::select(concept_cd, keyword ) %>%
+  unique()
+
+### replace ampicillin inj by ampicillin
+tch_keywords <- tch_keywords %>%
+  dplyr::mutate( keyword = gsub("ampicillin inj", "ampicillin", keyword), 
+                 keyword = gsub("ampicillin sulbactam", "amipicillin sulbactam", keyword)) %>%
   dplyr::select(concept_cd, keyword ) %>%
   unique()
 ```
