@@ -1,0 +1,120 @@
+---
+title: "Generate medication summary for TCH"
+author: "Alba Gutierrez"
+date: "07/20/2023"
+output: html_document
+---
+
+# Load Packages
+```{r}
+library(dplyr)
+library(lubridate)
+library(tidyverse)
+library(data.table)
+```
+
+# From TCH to eCRF
+Load the mapping file generated with "map_meds_ba_TCH_to_eCRF"
+```{r}
+tch_to_ecrf <- read.delim('../data/tch_to_ecrf_med_mapping.txt')
+length(unique(tch_to_ecrf$ECRF_CODE))
+```
+In the TCH mapping we find 72 eCRF medication codes.
+
+
+
+# Medication patient level data
+We summarise the information of the codes that are present in the MISC patients. 
+```{r}
+meds_tch <- read.delim("../../laboratory_values/local_ref/texasChildren/misc_med_data_observations.tsv")
+
+# filter by the ones present in the eCRF and merge to get the eCRF code
+meds_tch <- meds_tch %>%
+  dplyr::filter( concept_cd %in% tch_to_ecrf$concept_cd ) %>%
+  dplyr::left_join( tch_to_ecrf ) %>%
+  unique()
+
+length(unique(meds_tch$ECRF_CODE))
+length(unique(meds_tch$concept_cd))
+```
+We find 35 eCRF medication codes present in the TCH MISC patients. 
+We make a summary to see how many MISC patients present each one, and in which date ranges. 
+
+First we add a column based on when the medication was prescribed, during the hospitalization, or before or after. 
+```{r}
+misc_admissionDate <- read.csv("../../laboratory_values/local_ref/texasChildren/misc_patient.csv")
+misc_admissionDate <- misc_admissionDate %>%
+  dplyr::mutate( misc_start_date = as.Date( `Admission.Date`, format = "%m/%d/%y"), 
+                 misc_end_date = as.Date( `Discharge.Date`, format = "%m/%d/%y")) %>%
+  dplyr::select( patient_num = 'MUSIC.Patient.ID', misc_start_date, misc_end_date ) %>%
+  unique() %>%
+  tidyr::drop_na()
+
+misc_meds_info <- merge( meds_tch, misc_admissionDate)
+
+# add a column to know if the medication was during or after the misc admission
+misc_meds_info$when <- ifelse( ymd( misc_meds_info$date ) < ymd( misc_meds_info$misc_start_date), "before", ifelse( ymd( misc_meds_info$date) > ymd( misc_meds_info$misc_end_date), "after", "during"))
+```
+
+As a sanity check, and to better understand the data, we will create two subsets, one with the "during" hospitalization, and one with the "before or after". The the during we check which ones were given with patient as inpatient. 
+
+```{r}
+during <- misc_meds_info %>%
+  dplyr::filter( when == "during")
+
+summary( as.factor( during$inout_cd))
+
+before_after <- misc_meds_info %>%
+  dplyr::filter( when != "during")
+summary( as.factor( before_after$inout_cd))
+```
+
+And we create the summary for each medication in our dataset. 
+- in this summary table, each row is a unique TCH concept. 
+```{r}
+during <- during %>%
+  #dplyr::filter( inout_cd == "INPATIENT") %>%
+  dplyr::select( patient_num, concept_cd, med_route, ECRF_CODE, date ) %>%
+  unique()
+
+patient_observation_summary_during <- during %>% 
+  group_by(concept_cd, med_route ) %>%
+  summarise(distinct_patients = length(unique(patient_num)),
+            distinct_observations = n()) %>%
+  left_join( tch_to_ecrf ) %>%
+  mutate( eCRF_name = "additional_medications_during_hospitalization")
+
+before_after <- before_after %>%
+  #dplyr::filter( inout_cd == "INPATIENT") %>%
+  dplyr::select( patient_num, concept_cd, med_route, ECRF_CODE, date ) %>%
+  unique()
+
+patient_observation_summary_ba <- before_after %>% 
+  group_by(concept_cd, med_route ) %>%
+  summarise(distinct_patients = length(unique(patient_num)),
+            distinct_observations = n()) %>%
+  left_join( tch_to_ecrf ) %>%
+  mutate( eCRF_name = "medications_before_and_after_hosp")
+```
+
+```{r}
+write.table(patient_observation_summary_during, 
+            '../data/tch_medsDuring_summary_toReview.txt', 
+            row.names = FALSE, 
+            col.names = TRUE, 
+            sep = "\t", 
+            quote = FALSE)
+
+write.table(patient_observation_summary_ba, 
+            '../data/tch_medsBA_summary_toReview.txt', 
+            row.names = FALSE, 
+            col.names = TRUE, 
+            sep = "\t", 
+            quote = FALSE)
+```
+
+
+
+
+
+
