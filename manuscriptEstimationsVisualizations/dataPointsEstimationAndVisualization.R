@@ -92,7 +92,7 @@ create_beautiful_radarchart <- function(data, color = "#00AFBB",
 # change the axis labels to see which is row value is, the color and add title
 create_beautiful_radarchart( data = perFormSummaryToPlot, 
                              caxislabels = c(0, 100, 200, 300, 400), 
-                             vlcex = 0.8,
+                             vlcex = 1,
                              color = "#E7B800", 
                              title = "Data Points Per Form")
 
@@ -234,6 +234,16 @@ bch_labs_pivot <- bch_labs %>%
                  var_name = gsub( "_", " ", sub('[_][^_]+$', ' ', variable)), 
                  dp = 1) 
 
+print( paste0( "There are a total of ", 
+               nrow( bch_labs_pivot ), 
+               " lab-related data points collected for BCH") ) 
+
+### estimate average number of data points per patient (not per type)
+dp_per_patient <- bch_labs_pivot %>% 
+  dplyr::group_by( record_id ) %>% 
+  dplyr::summarise( totals = sum(dp))
+
+summary(dp_per_patient)
 
 # group by record_id (patient id) and type and get the number of data points filled per type
 bch_lab_dp <- bch_labs_pivot %>%
@@ -293,3 +303,4 @@ legend(
   bty = "n", pch = 20 , col = c("#00AFBB", "#E7B800", "#FC4E07"),
   text.col = "black", cex = 1, pt.cex = 1.5
 )
+
