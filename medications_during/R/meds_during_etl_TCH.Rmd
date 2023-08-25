@@ -1,0 +1,329 @@
+---
+title: 'ETL: Medications During Hospitalization eCRF'
+author: "Simran Makwana"
+date: "9/16/2021"
+output: html_document
+---
+
+# This notebook contains the following steps:
+1.Load data extract for the concepts of interest
+2. Determine expected values for REDCap 
+3. Calculate medcur1_current column
+4. Transform and format
+
+# 0. Libraries
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+Here we specify for which patients we want to run the pipeline for.
+```{r}
+music_patients_admission_after_nov21 <- read.csv("../../laboratory_values/local_ref/texasChildren/misc_med_data_observations.csv")
+
+#redcap <- read.csv("../local_ref/redcap_output_medications_during.csv") %>%
+#  pull( record_id ) %>%
+#  unique()
+
+### we must additionally make sure we are not running the pipeline on any patients who were not discharged before the data refresh
+#REFRESH_DATE_CUTOFF <- mdy('11-01-2021')
+
+#newPatients <- music_patients_admission_after_nov21 %>%
+#  filter( ! MUSIC.ID %in% redcap,
+#          mdy(discharge_date) < REFRESH_DATE_CUTOFF)
+
+newPatients <- music_patients_admission_after_nov21$patient_num #run pipeline on all patients in tch - no data refresh
+
+
+# now we have our list of new poatient IDs we want to run the pipeline on.
+
+```
+
+
+# 1. Load data extract for the codes of interest
+Use the same query as medications_before_and_after -- see that pipeline for details
+```{r}
+# we flter the subset df to only include the patients of interest
+#misc_mapping <- read.csv("../../dataRefresh/local_ref/MUSIC_ID_MAPPING") %>%
+#  rename(PATIENT_NUM = PAT_NUM) %>%
+#  filter( MUSIC_ID %in% newPatients$MUSIC.ID )
+
+#df <- read.delim('../../dataRefresh/local_ref/ag440_music_meds_feb22.dsv') %>%
+#  filter(PATIENT_NUM %in% misc_mapping$PATIENT_NUM) #####
+
+df <- music_patients_admission_after_nov21
+
+# if the code is formatted like so: '2.00', convert to '02.00'
+fix_code_formatting <- function(x) {
+  ifelse(test = !grepl("[[:digit:]]{2}.", x), yes = (paste0('0', x)), no = (x))
+}
+
+datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
+  filter(Form.Name == 'additional_medications_during_hospitalization') %>%
+  select(Variable...Field.Name, Choices..Calculations..OR.Slider.Labels) %>%
+  separate(Variable...Field.Name, c('a', 'b', 'c'), sep = '_') %>%
+  filter(!b %in% c('na', 'type', 'name', 'start', 'ae')) %>%
+  mutate(a = str_replace(a, '[[:digit:]]+', ''),
+         Variable...Field.Name = paste0(a, 'X', '_', b, '_', c)) %>%
+  unique() %>% 
+  separate_rows(Choices..Calculations..OR.Slider.Labels, sep = '\\|') %>%
+  mutate(ECRF_CODE = str_replace(Choices..Calculations..OR.Slider.Labels, ',.*$', ''),
+         ECRF_CODE = str_trim(ECRF_CODE),
+         ECRF_CODE = fix_code_formatting(ECRF_CODE)) %>%
+  select(-Choices..Calculations..OR.Slider.Labels) %>% 
+  mutate(ECRF_CODE = fix_code_formatting(ECRF_CODE))
+
+#bch_med_concept_summary <- read_csv('../../medications_before_and_after/data/bch_med_concept_summary_toReview.csv') %>%
+#  filter(RXNORM_DESCS != 'greater than 5 RXNORM codes mapped to BCH code' | (CONCEPT_CD == 'ADMINMED:2797919' & ECRF_CODE == '07.08'))
+
+# why did we remove this in BCH? CONCEPT_CD == 'ADMINMED:2797919' & ECRF_CODE == '07.08' heparin
+tch_med_concept_summary <- read.delim('../../medications_before_and_after/data/tch_to_ecrf_med_mapping.txt')
+
+#bch_med_concept_summary <- left_join(bch_med_concept_summary, datadict, by = 'ECRF_CODE')
+
+#df <- left_join(df, bch_med_concept_summary %>% 
+#                  select(ECRF_CODE, CONCEPT_CD, Variable...Field.Name), by = 'CONCEPT_CD') 
+df <- left_join(df %>% 
+                  rename(CONCEPT_CD=concept_cd), 
+                tch_med_concept_summary %>% 
+                  mutate(ECRF_CODE = fix_code_formatting(ECRF_CODE)) %>% 
+                  select(ECRF_CODE, CONCEPT_CD=concept_cd), by = 'CONCEPT_CD') %>%
+  left_join(datadict  %>% select(ECRF_CODE, Variable...Field.Name))
+
+# NAs that appear are not present in our mapping / are not requested by the ECRF
+# we assign them the 99.99 code for 'other'
+df <- df %>%
+  mutate(ECRF_CODE = ifelse(is.na( ECRF_CODE ),
+                            '99.99',
+                            ECRF_CODE))
+
+# assumptions: 
+# - INOUT_CD = INPATIENT
+# - med_specification = GIVEN
+#df <- df %>% 
+#  filter(inout_cd == 'INPATIENT',
+#         med_specification == 'Given')
+
+```
+
+
+```{r}
+
+# we have some concepts which we want to remove, even from the 'other' mappings
+#concepts_toremove <- read.csv('../../medications_before_and_after/data/bch_concepts_to_remove.csv') %>% pull(CONCEPT_CD)
+
+
+# for 'other' medications, load in bch concept_dimension table for medications.
+# we onlyh report the names for unknown medications.
+# even though we are reporting all 'other' medications, we will remove the general sodium chloride concepts as they are not informative.
+#bch_concept_dim <- read.delim('../../medications_before_and_after/data/concept_dimensionMeds.dsv') %>%
+#  filter(!CONCEPT_CD %in% concepts_toremove) %>%
+#  select(CONCEPT_CD, NAME_CHAR) %>%
+#  # we have to manually add the concept for 'albumin human', based on clinician review with Simran Mahanta and Audery Dionne
+#  add_row(CONCEPT_CD = 'ADMINMED:2797321', NAME_CHAR = 'albumin human') %>%
+#  unique %>%
+#  group_by(CONCEPT_CD) %>% 
+#  summarise(NAME_CHAR = paste0(NAME_CHAR, collapse = ', '))
+
+
+
+#df <- df %>% 
+#  left_join(bch_concept_dim, by = 'CONCEPT_CD') %>%
+#  mutate(medhospX_name = ifelse(ECRF_CODE == '99.99',
+#                                tolower(NAME_CHAR),
+#                                '')) %>%
+#  filter(!is.na(medhospX_name))
+
+
+
+
+
+```
+
+
+```{r}
+# which medications do we report dates for?
+report_dates <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
+  filter(Form.Name == 'additional_medications_during_hospitalization', 
+         Variable...Field.Name == 'medhosp1_start_dt') %>%
+  pull(Branching.Logic..Show.field.only.if....)
+
+report_dates
+
+# we write the following regular expression to capture all of these codes:
+report_dates <- '26.|28.|99.99|09.99|09.03|09.09|18.03|18.04|18.06|18.09|18.10'
+```
+
+# 2. Filter to medication values during hospitalization
+
+```{r}
+misc_patient <- read.csv('../local_ref/../../laboratory_values/local_ref/texasChildren/misc_patient.csv') %>%
+  rename(ADMISSION_DATE = Admission.Date,
+         DISCHARGE_DATE = Discharge.Date,
+         patient_num = MUSIC.Patient.ID) %>%
+  mutate(patient_num = as.character(patient_num))
+
+df <- left_join(df, misc_patient)
+
+df <- df %>%
+  rename(START_DATE=start_date,) %>%
+  mutate(#date = dmy(sapply(strsplit( as.character(START_DATE), " "), '[', 1)),
+#         DISCHARGE_DATE = dmy(sapply(strsplit( as.character(END_DATE), " "), '[', 1)),
+         #DISCHARGE_DATE = dmy(sapply(strsplit( as.character(DISCHARGE_DATE), " "), '[', 1)),
+         #ADMISSION_DATE = dmy(sapply(strsplit( as.character(ADMISSIONDATE), " "), '[', 1)),
+    date = ymd(date), DISCHARGE_DATE = mdy(DISCHARGE_DATE), ADMISSION_DATE = mdy(ADMISSION_DATE),
+         days_after_admission = date - ADMISSION_DATE,
+         days_after_discharge = date - DISCHARGE_DATE) %>%
+  filter(days_after_admission >= 0,
+         days_after_discharge <= 0)# %>%
+  # here we also remove lidocaine concepts that are not IV.
+  #filter(!(CONCEPT_CD == 'ADMINMED:4103284' & TVAL_CHAR != 'ID'))
+
+```
+
+# Add additional columns
+- medhospX_type: overall category of medication
+- medhospX_start_dt: start date, mm-dd-yyyy *****This does not appear to be needed
+- medhospX_name: name of medication, only include for 'other' medications
+- med_num refers to the 'X' in the variable name. (internal)
+- redcap_repeat_instance refers to the form number. you can have 10 med_nums per form.
+```{r}
+
+# only report the dates for the specified medications. for all other medications, medhosp_start_dt should be blank
+# for medications where we are reporting the date, only report the 'start date', or the earliest date.
+df2 <- df %>% 
+  rename(PATIENT_NUM = patient_num) %>% mutate(medhospX_name = '') %>%
+  mutate(medhospX_start_dt = format(date, "%m/%d/%Y")) %>%
+  group_by(PATIENT_NUM, ECRF_CODE, medhospX_name) %>%
+  summarise(medhospX_start_dt = ifelse(grepl(report_dates, ECRF_CODE),
+                                    min(medhospX_start_dt),
+                                    ''),
+            CONCEPT_CD = first(CONCEPT_CD),
+            Variable...Field.Name = first(Variable...Field.Name)) %>%
+  ungroup() %>%
+  unique()
+
+
+
+df3 <- df2 %>%
+  group_by(PATIENT_NUM) %>%
+  arrange(ECRF_CODE) %>%
+  mutate(rownum = row_number(),
+         med_num = ifelse(rownum %% 10 == 0, 10, rownum %% 10),
+         redcap_repeat_instance = (rownum - 1) %/% 10 + 1,
+         medhospX_type = ifelse(ECRF_CODE == '99.99',
+                                '99.99',
+                                (str_replace(str_replace(ECRF_CODE, '\\...', ''), '^0', '')))) %>%
+  ungroup() %>%
+  select(-rownum) 
+
+# rename X in variable name depending on 'med_num'
+
+df4 <- df3 %>% 
+  mutate(Variable...Field.Name = str_replace(Variable...Field.Name, 'X', as.character(med_num)))
+
+
+
+```
+
+# Pivot into final format
+```{r}
+# pivot variable names
+out <- pivot_wider(df4,
+                  id_cols = c(PATIENT_NUM, medhospX_type, medhospX_name, redcap_repeat_instance, med_num, medhospX_start_dt),   
+                  names_from = Variable...Field.Name,
+                  values_from = ECRF_CODE,
+                  values_fill = NA) 
+
+# pivot medhospX_start_dt
+out2 <- out %>%
+  mutate(medhospX_start_dt_names = str_replace('medhospX_start_dt', 'X', as.character(med_num))) %>%
+  pivot_wider(
+    names_from = medhospX_start_dt_names,
+    values_from = medhospX_start_dt,
+    values_fill = NA)
+  
+
+# pivot medhospX_type
+out3 <- out2 %>%
+  mutate(medhospX_type_names = str_replace('medhospX_type', 'X', as.character(med_num))) %>%
+  pivot_wider(
+    names_from = medhospX_type_names,
+    values_from = medhospX_type,
+    values_fill = NA)
+
+# pivot medhospX_name
+out4 <- out3 %>%
+  mutate(medhospX_name_names = str_replace('medhospX_name', 'X', as.character(med_num))) %>%
+  pivot_wider(
+    names_from = medhospX_name_names,
+    values_from = medhospX_name,
+    values_fill = NA) %>%
+  select(-med_num)
+
+
+# map BCH ids to MUSIC IDs for REDCAP
+# id_mapping <- read.csv('../../local_ref/music_id_mapping.csv')
+#id_mapping <- misc_mapping
+out5 <- out4 %>% #left_join(out4, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) %>% 
+  ungroup() %>% 
+  rename(record_id = PATIENT_NUM) %>%
+  #rename(record_id = MUSIC_ID) %>%
+  mutate(redcap_event_name = "day_1_arm_1",
+         redcap_repeat_instrument = "additional_medications_during_hospitalization") %>%
+  relocate(record_id, redcap_event_name, redcap_repeat_instrument) 
+  
+# collapse rows by form
+#out6 <- out5 %>%
+#  group_by(record_id, redcap_repeat_instance) %>%
+#  summarise_all(~first(na.omit(.)))
+#out5 <- out4 %>%
+#  group_by(record_id, redcap_repeat_instance) %>%
+#  summarise_each(funs(first(.[!is.na(.)])))
+
+# remove NA column introduced by 'other' variables
+#out7 <- out6 %>% select(-grep('NA', colnames(out6)))
+
+
+```
+
+
+```{r}
+meds_data_point <- out5 %>%
+  select(-redcap_repeat_instance, -redcap_event_name, -redcap_repeat_instrument)
+meds_data_point_filtered <- meds_data_point %>%
+  tidyr::pivot_longer( cols = c(2:75), 
+                       names_to = "variable", 
+                       values_to = "value") %>%
+  dplyr::filter( value != "")
+
+```
+
+
+```{r}
+### write test output for test patients 120002 and 120003
+#write.csv(out7 %>%
+#            filter(record_id %in% c(120006, 120002, 120095, 120123)) %>%
+#            mutate(record_id = ifelse(record_id == 120006,
+#                                      888006, 
+#                                      ifelse(record_id == 120002,
+#                                             888002,
+#                                             ifelse(record_id == 120095,
+#                                                    888095,
+#                                                    888123)))),
+#          '../local_ref/redcap_TEST_output_medications_during.csv',
+#          row.names = FALSE, 
+#          na = '')
+
+# write output
+#write.csv(out7, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE, na = '')
+write.csv(out7, '../local_ref/DATA_REFRESH_NEW_PATIENTS_MAR22_redcap_output_medications_during.csv', row.names = FALSE, na = '')
+write.csv(out7 %>% filter(record_id %in% c(120122, 120123, 120124)),
+          '../local_ref/TEST_DATA_REFRESH_NEW_PATIENTS_MAR22_redcap_output_medications_during.csv',
+          row.names = FALSE, na = '')
+
+```
+
+
+
+

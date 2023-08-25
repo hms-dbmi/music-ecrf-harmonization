@@ -12,15 +12,15 @@ output: html_document
 library(tidyverse)
 library(lubridate)
 #lab_dictionary <- read.delim("../data/labDictionary_updated.txt", header = TRUE, sep = ' ')
-lab_dictionary <- read.csv('../data/eCRF_to_LOINC_forReview2.0.csv') 
-
+#lab_dictionary <- read.csv('../data/eCRF_to_LOINC_forReview2.0.csv') 
+lab_dictionary <- read.csv('~/Desktop/music-ecrf-harmonization/laboratory_values/data/eCRF_to_TCH_forReview copy.csv') %>% filter(!is.na(concept_cd))
 ecrf <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
   filter(Form.Name == 'laboratory_values') %>%
   select(variableName = Variable...Field.Name, Section.Header, formName = Form.Name) %>%
   mutate(Section.Header = ifelse(Section.Header == '', NA, Section.Header)) %>%
   tidyr::fill(Section.Header) 
 
-lab_dictionary <- right_join(lab_dictionary, ecrf, by = c('eCRF.TERM.DESCRIPTION' = 'Section.Header')) 
+lab_dictionary <- right_join(lab_dictionary, ecrf) 
 
 ```
 
@@ -66,7 +66,7 @@ all_labs <- read.csv('../local_ref/texasChildren/misc_lab_observations.csv') %>%
 #  filter( MUSIC_ID %in% newPatients$MUSIC.ID )
 
 subset_df <- all_labs %>%
-  filter( concept_cd %in% lab_dictionary$LOINC.CODE ) %>%
+  #filter( concept_cd %in% lab_dictionary$LOINC.CODE ) %>%
   rename('ADMISSION_DATE' = ADMISSIONDATE,
          'DISCHARGE_DATE' = DISCHARGE_DATE) #%>%
   #filter(PATIENT_NUM %in% misc_mapping$PATIENT_NUM) #####
@@ -111,9 +111,9 @@ Data transformation
 And we join this information with the follow-up information. 
 ```{r}
 subset_df$date <- sapply(strsplit( as.character(subset_df$start_date), " "), '[', 1)
-subset_df$time <- sapply(strsplit( as.character(subset_df$start_date), " "), '[', 2)
+subset_df$time <- sapply(strsplit( as.character(subset_df$start_date), " "), '[', 4)
 
-finalTable <- left_join( subset_df, lab_dictionary, by = c("concept_cd" = "LOINC.CODE") )
+finalTable <- left_join( subset_df, lab_dictionary, by = c('concept_cd' = 'concept_descripiton'))
 
 finalTable <- finalTable %>%
   mutate(date = dmy(date),
@@ -122,6 +122,9 @@ finalTable <- finalTable %>%
          days_after_admission = date - ADMISSION_DATE,
          days_after_discharge = date - DISCHARGE_DATE) #%>%
   #left_join( misc_followUp )
+
+finalTable <- finalTable %>% filter(!is.na(variableName))
+
 
 
 ```
@@ -415,38 +418,38 @@ Adding the variables:
 ```{r}
 
 ### If there is not a column, make a blank one
- out$immunog_obtained <- NA
- out$igg_obtained <- NA
- out$igm_obtained <- NA
- out$ige_obtained <- NA
- out$c3_obtained <- NA
- out$c4_obtained <- NA
- out$cd3_obtained <- NA
- out$cd3_abs_obtained <- NA
- out$cd3_cd4_obtained <- NA
- out$cd3_cd4_abs_obtained <- NA
- out$cd3_cd8_obtained <- NA
- out$lympho_obtained <- NA
- out$cd3_cd8_abs_obtained <- NA
- out$cd19_obtained <- NA
- out$cd3_cd16_cd56_obtained <- NA
- out$ac4_cd8_ratio_obtained <- NA
- out$tnf_alpha_obtained <- NA
- out$il_1_obtained <- NA
+ #out$immunog_obtained <- NA
+ #out$igg_obtained <- NA
+ #out$igm_obtained <- NA
+ #out$ige_obtained <- NA
+ #out$c3_obtained <- NA
+ #out$c4_obtained <- NA
+ #out$cd3_obtained <- NA
+ #out$cd3_abs_obtained <- NA
+ #out$cd3_cd4_obtained <- NA
+ #out$cd3_cd4_abs_obtained <- NA
+ #out$cd3_cd8_obtained <- NA
+ #out$lympho_obtained <- NA
+ #out$cd3_cd8_abs_obtained <- NA
+ #out$cd19_obtained <- NA
+ #out$cd3_cd16_cd56_obtained <- NA
+ #out$ac4_cd8_ratio_obtained <- NA
+ #out$tnf_alpha_obtained <- NA
+ #out$il_1_obtained <- NA
  out$il_2_obtained <- NA
- out$il_2_receptor_obtained <- NA
- out$il_4_obtained <- NA
- out$il_5_obtained <- NA
- out$il_6_obtained <- NA
- out$il_8_obtained <- NA
- out$il_10_obtained <- NA
+ #out$il_2_receptor_obtained <- NA
+ #out$il_4_obtained <- NA
+ #out$il_5_obtained <- NA
+ #out$il_6_obtained <- NA
+ #out$il_8_obtained <- NA
+ #out$il_10_obtained <- NA
  out$il_12_obtained <- NA
  out$il_13_obtained <- NA
  out$il_17_obtained <- NA
- out$ifn_gamma_obtained <- NA
- out$igg_obtained <- NA
- out$iga_obtained <- NA
- out$cd3_cd8_obtained <- NA
+ #out$ifn_gamma_obtained <- NA
+ #out$igg_obtained <- NA
+ #out$iga_obtained <- NA
+ #out$cd3_cd8_obtained <- NA
 
 out <- out %>% 
   group_by( record_id , redcap_repeat_instance ) %>%
