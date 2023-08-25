@@ -25,27 +25,14 @@ c3 (beaker),C3 (BEAKER),Complement levels: C3 (mg/dL)
 c4 (beaker),C4 (BEAKER),Complement levels: C4 (mg/dL)
 cd19+bcell numbr (beaker),CD19+BCELL NUMBR (BEAKER),"Lymphocyte Subsets: CD+19, Absolute"
 cd19+bcell pcent (beaker),CD19+BCELL PCENT (BEAKER),Lymphocyte Subsets: CD19+ (%)
-cd3+cd4+numbr (beaker),CD3+CD4+NUMBR (BEAKER),"Lymphocyte Subsets: CD3+, Absolute"
-cd3+cd4+pcent (beaker),CD3+CD4+PCENT (BEAKER),"Lymphocyte Subsets: CD3+, Absolute"
-cd3+cd56cd16+numbr (beaker),CD3+CD56CD16+NUMBR (BEAKER),"Lymphocyte Subsets: CD3+, Absolute"
-cd3+cd56cd16+pcent (beaker),CD3+CD56CD16+PCENT (BEAKER),"Lymphocyte Subsets: CD3+, Absolute"
-cd3+cd8+numbr (beaker),CD3+CD8+NUMBR (BEAKER),"Lymphocyte Subsets: CD3+, Absolute"
-cd3+cd8+pcent (beaker),CD3+CD8+PCENT (BEAKER),"Lymphocyte Subsets: CD3+, Absolute"
 cd3+tcell numbr (beaker),CD3+TCELL NUMBR (BEAKER),"Lymphocyte Subsets: CD3+, Absolute"
-cd3+tcell pcent (beaker),CD3+TCELL PCENT (BEAKER),"Lymphocyte Subsets: CD3+, Absolute"
-cd3-cd56cd16+numbr (beaker),CD3-CD56CD16+NUMBR (BEAKER),"Lymphocyte Subsets: CD3+, Absolute"
-cd3-cd56cd16+pcent (beaker),CD3-CD56CD16+PCENT (BEAKER),"Lymphocyte Subsets: CD3+, Absolute"
+cd3+tcell pcent (beaker),CD3+TCELL PCENT (BEAKER),Lymphocyte Subsets: CD3+ (%)
 cd3+cd56cd16+pcent (beaker),CD3+CD56CD16+PCENT (BEAKER),Lymphocyte Subsets: CD3-%/CD16+ or CD56+%
 cd3-cd56cd16+pcent (beaker),CD3-CD56CD16+PCENT (BEAKER),Lymphocyte Subsets: CD3-%/CD16+ or CD56+%
 cd3+cd4+numbr (beaker),CD3+CD4+NUMBR (BEAKER),"Lymphocyte Subsets: CD3+ CD4+, Absolute"
 cd3+cd4+pcent (beaker),CD3+CD4+PCENT (BEAKER),Lymphocyte Subsets: CD3+%/CD4+%
 cd3+cd8+numbr (beaker),CD3+CD8+NUMBR (BEAKER),"Lymphocyte Subsets: CD3+ CD8+, Absolute"
 cd3+cd8+pcent (beaker),CD3+CD8+PCENT (BEAKER),Lymphocyte Subsets: CD3+%/CD8+%
-cd3+cd4+pcent (beaker),CD3+CD4+PCENT (BEAKER),Lymphocyte Subsets: CD3+ (%)
-cd3+cd56cd16+pcent (beaker),CD3+CD56CD16+PCENT (BEAKER),Lymphocyte Subsets: CD3+ (%)
-cd3+cd8+pcent (beaker),CD3+CD8+PCENT (BEAKER),Lymphocyte Subsets: CD3+ (%)
-cd3+tcell pcent (beaker),CD3+TCELL PCENT (BEAKER),Lymphocyte Subsets: CD3+ (%)
-cd3-cd56cd16+pcent (beaker),CD3-CD56CD16+PCENT (BEAKER),Lymphocyte Subsets: CD3+ (%)
 creatine kinase (beaker),CREATINE KINASE (BEAKER),Creatine kinase (U/L)
 creatine kinase,CREATINE KINASE,Creatine kinase (U/L)
 creatinine,CREATININE,Creatinine (mg/dL)
