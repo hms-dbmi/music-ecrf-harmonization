@@ -304,3 +304,36 @@ legend(
   text.col = "black", cex = 1, pt.cex = 1.5
 )
 
+
+###################################################
+##### Medications During Hospitalization Form #####
+###################################################
+datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+
+datadict_med_only <- datadict %>% 
+  dplyr::filter(Form.Name == "additional_medications_during_hospitalization") %>%
+  dplyr::select( "Variable...Field.Name",  "Form.Name" ) %>%
+  dplyr::mutate( type = sapply(strsplit( Variable...Field.Name, "_"), tail, 1), 
+                 var_name = gsub( "_", " ", sub('[_][^_]+$', ' ', Variable...Field.Name)), 
+                 var_other = sapply(strsplit( Variable...Field.Name, "_"), head, 1)) 
+
+## meds
+meds_bch <- read.csv("medications_during/local_ref/redcap_output_medications_during.csv", 
+                     colClasses = "character") 
+
+#meds_data_point <- meds_bch %>%
+#  dplyr::select( -redcap_repeat_instance, -redcap_event_name, -redcap_repeat_instrument,
+#                 -medhosp1_name, -medhosp2_name,  -medhosp3_name, -medhosp4_name,
+#                 -medhosp5_name, -medhosp6_name,  -medhosp7_name, -medhosp8_name,
+#                 -medhosp9_name, -medhosp10_name)
+
+meds_data_point <- meds_bch %>%
+  dplyr::select( -redcap_repeat_instance, -redcap_event_name, -redcap_repeat_instrument)
+
+meds_data_point_filtered <- meds_data_point %>%
+  tidyr::pivot_longer( cols = c(2:ncol(meds_data_point)), 
+                       names_to = "variable", 
+                       values_to = "value") %>%
+  dplyr::filter( value != "")
+  
+  ##medhos
