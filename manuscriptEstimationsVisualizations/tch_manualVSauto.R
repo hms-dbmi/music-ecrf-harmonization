@@ -19,14 +19,29 @@ datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final vers
 #######################################
 ##### Laboratory values selection #####
 #######################################
+datadict <- datadict %>% 
+  dplyr::filter(Form.Name == "laboratory_values") 
+
 manual_tch <- manual_tch %>%
   dplyr::filter( redcap_repeat_instrument == "laboratory_values")
+manual_patients <- unique( manual_tch$record_id )
+print(paste0("MUSIC patients in the manual file: ", length( manual_patients)))
 
 auto_tch <- auto_tch %>%
   dplyr::filter( redcap_repeat_instrument == "laboratory_values")
+auto_patients <- unique( auto_tch$record_id )
+print(paste0("MUSIC patients in the auto file: ", length( auto_patients)))
 
-datadict <- datadict %>% 
-  dplyr::filter(Form.Name == "laboratory_values") 
+#leave only the patients in common between auto and manual 
+common_patients <- manual_patients[ manual_patients %in% auto_patients]
+print(paste0("MUSIC patients in common: ", length( common_patients)))
+
+auto_tch <- auto_tch %>%
+  dplyr::filter( record_id %in% common_patients ) 
+
+manual_patients <- manual_tch %>%
+  dplyr::filter( record_id %in% common_patients ) 
+
 
 ### Transform the data dictionary laboratory values do remove the "other" variables 
 datadict <- datadict %>%
@@ -60,7 +75,7 @@ manual_tch <- manual_tch %>%
 auto_tch <-  auto_tch %>%
   dplyr::mutate( id=paste0( record_id, "-",lab_values_visit)) %>%
   dplyr::select( -record_id, -lab_values_visit, - redcap_event_name, - redcap_repeat_instrument,-redcap_repeat_instance ) %>% # remove columns that are not needed
-  tidyr::pivot_longer( cols = c(1:228), 
+  tidyr::pivot_longer( cols = c(1:224), 
                        names_to = "variable", 
                        values_to = "value_auto") %>%
   dplyr::filter( value_auto != "") 
@@ -82,5 +97,27 @@ manualVsauto <- manualVsauto %>%
                  concordance = ifelse( value_manual == value_auto, "same", "different"))
 
 summary(as.factor( manualVsauto$concordance))
+7693/(7693+1196)
+
+# identify the differences 
+differences <- manualVsauto %>% 
+  dplyr::filter( concordance == "different" ) 
+summary(as.factor( differences$type))
+
+# evaluate the obtained differences
+# in how many cases the automatic extraction found a value that was not entered manual and vice-versa
+obtained_differences <- differences %>%
+  dplyr::filter( type == "obtained" ) %>%
+  dplyr::mutate( category = ifelse( value_manual == 0 & value_auto == 1, "addingInfo", "missingInfo" ))
+
+summary(as.factor( obtained_differences$category))
+
+obtained_differences <- obtained_differences %>%
+  dplyr::mutate( lab = gsub("_", " ", variable ), 
+                 lab = trimws( gsub( "obtained", "", lab )) ) %>%
+  dplyr::filter( category == "missingInfo")
+
+summary(as.factor( obtained_differences$lab))
+
 
 
