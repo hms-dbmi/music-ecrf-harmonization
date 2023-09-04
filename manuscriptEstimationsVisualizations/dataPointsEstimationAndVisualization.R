@@ -19,16 +19,23 @@ datadict_overlap <- read.csv('common_ref/S4j4d_updated_MUSIC_DataDictionary_2020
 counts_overlap <- datadict_overlap %>%
   dplyr::mutate(count = 1, 
                 `Auto.extraction` = as.character( trimws(`Auto.extraction`) ), 
-                `Auto.extraction` = gsub("N/A", "unknown", `Auto.extraction`), 
+                `Auto.extraction` = gsub("N/A", "Not Available", `Auto.extraction`), 
                 `Auto.extraction` = gsub("Yes \\(somewhat\\)", "Yes", `Auto.extraction`),
-                `Auto.extraction` = ifelse( ! `Auto.extraction` %in% c("unkown", "Yes"), "No", `Auto.extraction`)) %>%
+                `Auto.extraction` = ifelse( ! `Auto.extraction` %in% c("Yes"), "No", `Auto.extraction`)) %>%
   dplyr::group_by( `Form.Name`, `Auto.extraction`) %>%
   dplyr::summarise( n= sum( count )) %>%
   tidyr::pivot_wider( names_from = `Auto.extraction`, values_from = n, values_fill = 0 ) %>%
   dplyr::mutate( total = sum( Yes, No ), 
-                perc_autoPop = round(100*Yes/total, 2), 
-                perc_fromTotal = round( 100*total/2449,2)) %>%
-  dplyr::arrange( desc( perc_autoPop ) ) 
+                 perc = round(100*Yes/total, 2), 
+                perc_autoPop = paste0(Yes, " (", round(100*Yes/total, 2), "%)" ), 
+                perc_fromTotal = paste0(total, "(", round( 100*total/2449,2), "%)")) %>%
+  dplyr::arrange( desc( perc ) ) 
+
+write.table( counts_overlap, file = "./manuscriptEstimationsVisualizations/overlap_counts.txt", 
+             col.names = TRUE, 
+             row.names = FALSE, 
+             sep = "\t", 
+             quote = FALSE)
 
 ###############################
 ##### Read the dictionary #####
