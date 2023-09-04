@@ -13,7 +13,7 @@ library(tidyverse)
 library(lubridate)
 #lab_dictionary <- read.delim("../data/labDictionary_updated.txt", header = TRUE, sep = ' ')
 #lab_dictionary <- read.csv('../data/eCRF_to_LOINC_forReview2.0.csv') 
-lab_dictionary <- read.csv('~/Desktop/music-ecrf-harmonization/laboratory_values/data/eCRF_to_TCH_forReview copy.csv') %>% filter(!is.na(concept_cd))
+lab_dictionary <- read.csv('../../laboratory_values/data/eCRF_to_TCH_forReview_copy.csv') %>% filter(!is.na(concept_cd))
 ecrf <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
   filter(Form.Name == 'laboratory_values') %>%
   select(variableName = Variable...Field.Name, Section.Header, formName = Form.Name) %>%
