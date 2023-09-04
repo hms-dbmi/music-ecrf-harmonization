@@ -6,11 +6,13 @@ library(dplyr)
 ######################
 ##### Load files #####
 ######################
-# tch manual file downloaded from GitHub and located in the local ref folder, in the texas children subfolder
-manual_tch <- read.csv("../../laboratory_values/local_ref/texasChildren/MUSIC_DATA_2023-09-01_1508.csv", colClasses =  "character")
-
 # tch automatic file generated with our etl pipeline
 auto_tch <- read.csv('../../laboratory_values/local_ref/lab_output_texas.csv', colClasses ="character")
+
+# tch manual file downloaded from GitHub and located in the local ref folder, in the texas children subfolder
+manual_tch <- read.csv("../../laboratory_values/local_ref/texasChildren/MUSIC_DATA_2023-09-01_1508.csv", colClasses =  "character") %>%
+  filter( record_id %in% auto_tch$record_id ) #filtering by the common patients
+
 
 # MUSIC data dictionary from the general common_ref folder
 datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
@@ -24,24 +26,9 @@ datadict <- datadict %>%
 
 manual_tch <- manual_tch %>%
   dplyr::filter( redcap_repeat_instrument == "laboratory_values")
-manual_patients <- unique( manual_tch$record_id )
-print(paste0("MUSIC patients in the manual file: ", length( manual_patients)))
 
 auto_tch <- auto_tch %>%
   dplyr::filter( redcap_repeat_instrument == "laboratory_values")
-auto_patients <- unique( auto_tch$record_id )
-print(paste0("MUSIC patients in the auto file: ", length( auto_patients)))
-
-#leave only the patients in common between auto and manual 
-common_patients <- manual_patients[ manual_patients %in% auto_patients]
-print(paste0("MUSIC patients in common: ", length( common_patients)))
-
-auto_tch <- auto_tch %>%
-  dplyr::filter( record_id %in% common_patients ) 
-
-manual_patients <- manual_tch %>%
-  dplyr::filter( record_id %in% common_patients ) 
-
 
 ### Transform the data dictionary laboratory values do remove the "other" variables 
 datadict <- datadict %>%
@@ -84,11 +71,17 @@ auto_tch <- auto_tch %>%
                        values_to = "value_auto") %>%
   dplyr::filter( value_auto != "") 
 
+# select in the manual only the variables that we can automatically extract 
+nrow(manual_tch)
+manual_tch <- manual_tch %>%
+  dplyr::filter( variable %in% auto_tch$variable )
+nrow(manual_tch)
+
 ###################################################################
 ##### Merge auto and manual extraction to get the performance #####
 ###################################################################
 # merge both files by the id we have created and the variable name
-manualVsauto <- merge( auto_tch, manual_tch, by =c("id", "variable"))
+manualVsauto <- full_join( manual_tch, auto_tch, by =c("id", "variable"))
 
 #re-format dates
 manualVsauto <- manualVsauto %>%
@@ -101,34 +94,37 @@ manualVsauto <- manualVsauto %>%
                  concordance = ifelse( value_manual == value_auto, "same", "different"))
 
 summary(as.factor( manualVsauto$concordance))
-7935/(7935+1166)
+8028/(8028+1152)
 
 # identify the differences 
 differences <- manualVsauto %>% 
-  dplyr::filter( concordance == "different" ) 
-summary(as.factor( differences$type))
+  dplyr::mutate( concordance = ifelse( is.na( concordance), "different", concordance)) %>%
+  dplyr::filter( concordance != "same" )
+
+# adding info vs. missing info
+adding_info <- differences %>%
+  dplyr::filter( is.na( value_manual ))
+nrow(adding_info)
+
+missing_info <- differences %>%
+  dplyr::filter( is.na( value_auto ))
+
+nrow( missing_info)
 
 # evaluate the obtained differences
 # in how many cases the automatic extraction found a value that was not entered manual and vice-versa
-obtained_differences <- differences %>%
+obtained_differences <- missing_info %>%
   dplyr::filter( type == "obtained" ) %>%
-  dplyr::mutate( category = ifelse( value_manual == 0 & value_auto == 1, "addingInfo", "missingInfo" ))
+  dplyr::mutate( visit_num = sapply(strsplit( id, "-"), tail, 1),
+                 patient_num = sapply(strsplit( id, "-"), head, 1))
 
-summary(as.factor( obtained_differences$category))
+summary(as.factor( obtained_differences$visit_num))
 
-obtained_differences <- obtained_differences %>%
-  dplyr::mutate( lab = gsub("_", " ", variable ), 
-                 lab = trimws( gsub( "obtained", "", lab )) ) %>%
-  dplyr::filter( category == "missingInfo")
+visit <- obtained_differences %>% filter( visit_num == 6)
+summary(as.factor(visit$variable))
 
-summary(as.factor( obtained_differences$lab))
 
 dates_differences <- differences %>%
   dplyr::filter( type == "date" ) %>%
   dplyr::mutate( days_dif = as.Date(value_manual) - as.Date(value_auto))
 summary(as.numeric( dates_differences$days_dif))
-
-
-
-
-
