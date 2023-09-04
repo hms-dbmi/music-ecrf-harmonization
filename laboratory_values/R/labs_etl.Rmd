@@ -518,8 +518,8 @@ We add them here with the value for obtained being 0 IF there are other labs in 
 out <- out %>% 
   mutate(
     #troponin_l_obtained  = 0,
-    #     ah50_obtained  = ifelse(compl_obtained == 1, yes = '0', no = ''), 
-    #     ch50_obtained = ifelse(compl_obtained == 1, yes = '0', no = ''),
+         ah50_obtained  = ifelse(compl_obtained == 1, yes = '0', no = ''), 
+         ch50_obtained = ifelse(compl_obtained == 1, yes = '0', no = ''),
     #     nt_probnp_obtained = 0,
     #    cxcl9_obtained = ifelse(cytokine_obtained == 1, yes = '0', no = ''),
          sars_cov2_antig_obtained = '0')
