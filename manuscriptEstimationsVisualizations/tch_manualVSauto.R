@@ -66,16 +66,20 @@ datadict <- datadict %>%
 manual_tch <- manual_tch %>%
   dplyr::select( c("record_id", datadict$Variable...Field.Name) ) %>%
   dplyr::mutate( id=paste0( record_id, "-",lab_values_visit)) %>%
-  dplyr::select( -record_id, - lab_values_na, - lab_values_visit ) %>% # remove columns that are not needed
-  tidyr::pivot_longer( cols = c(1:313), 
+  dplyr::select( -record_id, - lab_values_na, - lab_values_visit ) 
+
+manual_tch <- manual_tch %>% # remove columns that are not needed
+  tidyr::pivot_longer( cols = c(1:ncol( manual_tch) - 1), 
                        names_to = "variable", 
                        values_to = "value_manual") %>%
   dplyr::filter( value_manual != "") 
 
 auto_tch <-  auto_tch %>%
   dplyr::mutate( id=paste0( record_id, "-",lab_values_visit)) %>%
-  dplyr::select( -record_id, -lab_values_visit, - redcap_event_name, - redcap_repeat_instrument,-redcap_repeat_instance ) %>% # remove columns that are not needed
-  tidyr::pivot_longer( cols = c(1:224), 
+  dplyr::select( -record_id, -lab_values_visit, - redcap_event_name, - redcap_repeat_instrument,-redcap_repeat_instance ) # remove columns that are not needed
+
+auto_tch <- auto_tch %>%
+  tidyr::pivot_longer( cols = c(1:ncol(auto_tch)-1), 
                        names_to = "variable", 
                        values_to = "value_auto") %>%
   dplyr::filter( value_auto != "") 
@@ -97,7 +101,7 @@ manualVsauto <- manualVsauto %>%
                  concordance = ifelse( value_manual == value_auto, "same", "different"))
 
 summary(as.factor( manualVsauto$concordance))
-7693/(7693+1196)
+7935/(7935+1166)
 
 # identify the differences 
 differences <- manualVsauto %>% 
@@ -118,6 +122,13 @@ obtained_differences <- obtained_differences %>%
   dplyr::filter( category == "missingInfo")
 
 summary(as.factor( obtained_differences$lab))
+
+dates_differences <- differences %>%
+  dplyr::filter( type == "date" ) %>%
+  dplyr::mutate( days_dif = as.Date(value_manual) - as.Date(value_auto))
+summary(as.numeric( dates_differences$days_dif))
+
+
 
 
 
