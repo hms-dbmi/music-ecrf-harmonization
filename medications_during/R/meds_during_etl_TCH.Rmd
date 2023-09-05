@@ -171,9 +171,11 @@ df <- df %>%
 #         DISCHARGE_DATE = dmy(sapply(strsplit( as.character(END_DATE), " "), '[', 1)),
          #DISCHARGE_DATE = dmy(sapply(strsplit( as.character(DISCHARGE_DATE), " "), '[', 1)),
          #ADMISSION_DATE = dmy(sapply(strsplit( as.character(ADMISSIONDATE), " "), '[', 1)),
-    date = ymd(date), DISCHARGE_DATE = mdy(DISCHARGE_DATE), ADMISSION_DATE = mdy(ADMISSION_DATE),
-         days_after_admission = date - ADMISSION_DATE,
-         days_after_discharge = date - DISCHARGE_DATE) %>%
+    date = ymd(date), 
+    DISCHARGE_DATE = as.Date( DISCHARGE_DATE, format = "%m/%d/%y"), 
+    ADMISSION_DATE = as.Date( ADMISSION_DATE, format = "%m/%d/%y"),
+         days_after_admission = as.numeric(date - ADMISSION_DATE),
+         days_after_discharge = as.numeric(date - DISCHARGE_DATE)) %>%
   filter(days_after_admission >= 0,
          days_after_discharge <= 0)# %>%
   # here we also remove lidocaine concepts that are not IV.
@@ -193,7 +195,7 @@ df <- df %>%
 # for medications where we are reporting the date, only report the 'start date', or the earliest date.
 df2 <- df %>% 
   rename(PATIENT_NUM = patient_num) %>% mutate(medhospX_name = '') %>%
-  mutate(medhospX_start_dt = format(date, "%m/%d/%Y")) %>%
+  mutate(medhospX_start_dt = format(date, "%Y-%m-%d")) %>%
   group_by(PATIENT_NUM, ECRF_CODE, medhospX_name) %>%
   summarise(medhospX_start_dt = ifelse(grepl(report_dates, ECRF_CODE),
                                     min(medhospX_start_dt),
@@ -292,7 +294,7 @@ out5 <- out4 %>% #left_join(out4, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) 
 meds_data_point <- out5 %>%
   select(-redcap_repeat_instance, -redcap_event_name, -redcap_repeat_instrument)
 meds_data_point_filtered <- meds_data_point %>%
-  tidyr::pivot_longer( cols = c(2:75), 
+  tidyr::pivot_longer( cols = c(2:ncol(meds_data_point)), 
                        names_to = "variable", 
                        values_to = "value") %>%
   dplyr::filter( value != "")
@@ -317,10 +319,10 @@ meds_data_point_filtered <- meds_data_point %>%
 
 # write output
 #write.csv(out7, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE, na = '')
-write.csv(out7, '../local_ref/DATA_REFRESH_NEW_PATIENTS_MAR22_redcap_output_medications_during.csv', row.names = FALSE, na = '')
-write.csv(out7 %>% filter(record_id %in% c(120122, 120123, 120124)),
-          '../local_ref/TEST_DATA_REFRESH_NEW_PATIENTS_MAR22_redcap_output_medications_during.csv',
-          row.names = FALSE, na = '')
+write.csv(out5, '../local_ref/tch_medications_during.csv', row.names = FALSE, na = '')
+#write.csv(out7 %>% filter(record_id %in% c(120122, 120123, 120124)),
+#          '../local_ref/TEST_DATA_REFRESH_NEW_PATIENTS_MAR22_redcap_output_medications_during.csv',
+#          row.names = FALSE, na = '')
 
 ```
 
