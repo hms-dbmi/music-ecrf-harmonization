@@ -84,6 +84,7 @@ nrow(manual_tch)
 manualVsauto <- full_join( manual_tch, auto_tch, by =c("id", "variable"))
 
 #re-format dates
+#changing NA auto values to 0 when manual is 0 and auto is NA 
 manualVsauto <- manualVsauto %>%
   dplyr::mutate( type = sapply(strsplit( variable, "_"), tail, 1),
                  value_auto =  ifelse( type == "date",  
@@ -91,10 +92,12 @@ manualVsauto <- manualVsauto %>%
                                value_auto), 
                  value_manual = as.character( trimws( value_manual)), 
                  value_auto = as.character( trimws( value_auto)), 
+                 value_auto = ifelse( value_manual == 0 & is.na(value_auto), 0, value_auto ),
                  concordance = ifelse( value_manual == value_auto, "same", "different"))
 
-summary(as.factor( manualVsauto$concordance))
-8028/(8028+1152)
+results <- summary(as.factor( manualVsauto$concordance))
+results
+round(as.numeric(100* results["same"]/(results["same"]+results["different"])), 2)
 
 # identify the differences 
 differences <- manualVsauto %>% 
@@ -128,3 +131,86 @@ dates_differences <- differences %>%
   dplyr::filter( type == "date" ) %>%
   dplyr::mutate( days_dif = as.Date(value_manual) - as.Date(value_auto))
 summary(as.numeric( dates_differences$days_dif))
+
+##############################
+##### Add the statistics #####
+##############################
+# binomial test
+# proportions and 95% CI 
+
+#remmove everything from the environment 
+rm(list=ls())
+
+#########################
+##### Re-Load files #####
+#########################
+# tch automatic file generated with our etl pipeline
+auto_tch <- read.csv('../../medications_during/local_ref/tch_medications_during.csv', colClasses ="character")
+
+# tch manual file downloaded from GitHub and located in the local ref folder, in the texas children subfolder
+manual_tch <- read.csv("../../laboratory_values/local_ref/texasChildren/MUSIC_DATA_2023-09-01_1508.csv", colClasses =  "character") %>%
+  filter( record_id %in% auto_tch$record_id ) #filtering by the common patients
+
+
+# MUSIC data dictionary from the general common_ref folder
+datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+
+
+#######################################
+##### Medication values selection #####
+#######################################
+datadict <- datadict %>% 
+  dplyr::filter(Form.Name == "additional_medications_during_hospitalization") 
+
+manual_tch <- manual_tch %>%
+  dplyr::filter( redcap_repeat_instrument == "additional_medications_during_hospitalization")
+
+auto_tch <- auto_tch %>%
+  dplyr::filter( redcap_repeat_instrument == "additional_medications_during_hospitalization")
+
+###########################################
+##### Transform the tables to compare #####
+###########################################
+auto_tch <-  auto_tch %>%
+  dplyr::mutate( id=paste0( record_id, "-",redcap_repeat_instance)) %>%
+  dplyr::select( -record_id, -redcap_repeat_instance, - redcap_event_name, - redcap_repeat_instrument,-redcap_repeat_instance ) # remove columns that are not needed
+
+auto_tch <- auto_tch %>%
+  tidyr::pivot_longer( cols = c(1:ncol(auto_tch)-1), 
+                       names_to = "variable", 
+                       values_to = "value_auto") %>%
+  dplyr::filter( value_auto != "") 
+
+manual_tch <- manual_tch %>%
+  dplyr::select( c("record_id", "redcap_repeat_instance", datadict$Variable...Field.Name) ) %>%
+  dplyr::mutate( id=paste0( record_id, "-",redcap_repeat_instance)) %>%
+  dplyr::select( -record_id, -redcap_repeat_instance ) 
+
+manual_tch <- manual_tch %>% # remove columns that are not needed
+  tidyr::pivot_longer( cols = c(1:ncol( manual_tch) - 1), 
+                       names_to = "variable", 
+                       values_to = "value_manual") %>%
+  dplyr::filter( value_manual != "") 
+
+
+
+
+###################################################################
+##### Merge auto and manual extraction to get the performance #####
+###################################################################
+# merge both files by the id we have created and the variable name
+manualVsauto <- full_join( manual_tch, auto_tch, by =c("id", "variable"))
+
+# if manual is 0 and auto is NA transform NA into 0
+manualVsauto <- manualVsauto %>%
+  dplyr::mutate( type = sapply(strsplit( variable, "_"), tail, 1), 
+                 value_manual = as.character( trimws( value_manual)), 
+                 value_auto = as.character( trimws( value_auto)), 
+                 value_auto = ifelse( value_manual == 0 & is.na(value_auto), 0, value_auto ),
+                 concordance = ifelse( value_manual == value_auto, "same", "different")) %>%
+  dplyr::filter( type !=  "name")
+
+results <- summary(as.factor( manualVsauto$concordance))
+results
+round(as.numeric(100* results["same"]/(results["same"]+results["different"])), 2)
+
