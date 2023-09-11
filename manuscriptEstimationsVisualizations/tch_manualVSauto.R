@@ -2,20 +2,20 @@
 ##### Load R libraries #####
 ############################
 library(dplyr)
-
+setwd("/Users/alba/Desktop/music-ecrf-harmonization/manuscriptEstimationsVisualizations/")
 ######################
 ##### Load files #####
 ######################
 # tch automatic file generated with our etl pipeline
-auto_tch <- read.csv('../../laboratory_values/local_ref/lab_output_texas.csv', colClasses ="character")
+auto_tch <- read.csv('../laboratory_values/local_ref/lab_output_texas.csv', colClasses ="character")
 
 # tch manual file downloaded from GitHub and located in the local ref folder, in the texas children subfolder
-manual_tch <- read.csv("../../laboratory_values/local_ref/texasChildren/MUSIC_DATA_2023-09-01_1508.csv", colClasses =  "character") %>%
+manual_tch <- read.csv("../laboratory_values/local_ref/texasChildren/MUSIC_DATA_2023-09-01_1508.csv", colClasses =  "character") %>%
   filter( record_id %in% auto_tch$record_id ) #filtering by the common patients
 
 
 # MUSIC data dictionary from the general common_ref folder
-datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+datadict <- read.csv('../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
 
 
 #######################################
@@ -99,6 +99,7 @@ results <- summary(as.factor( manualVsauto$concordance))
 results
 round(as.numeric(100* results["same"]/(results["same"]+results["different"])), 2)
 
+
 # identify the differences 
 differences <- manualVsauto %>% 
   dplyr::mutate( concordance = ifelse( is.na( concordance), "different", concordance)) %>%
@@ -145,15 +146,15 @@ rm(list=ls())
 ##### Re-Load files #####
 #########################
 # tch automatic file generated with our etl pipeline
-auto_tch <- read.csv('../../medications_during/local_ref/tch_medications_during.csv', colClasses ="character")
+auto_tch <- read.csv('../medications_during/local_ref/tch_medications_during.csv', colClasses ="character")
 
 # tch manual file downloaded from GitHub and located in the local ref folder, in the texas children subfolder
-manual_tch <- read.csv("../../laboratory_values/local_ref/texasChildren/MUSIC_DATA_2023-09-01_1508.csv", colClasses =  "character") %>%
+manual_tch <- read.csv("../laboratory_values/local_ref/texasChildren/MUSIC_DATA_2023-09-01_1508.csv", colClasses =  "character") %>%
   filter( record_id %in% auto_tch$record_id ) #filtering by the common patients
 
 
 # MUSIC data dictionary from the general common_ref folder
-datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+datadict <- read.csv('../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
 
 
 #######################################
@@ -213,4 +214,40 @@ manualVsauto <- manualVsauto %>%
 results <- summary(as.factor( manualVsauto$concordance))
 results
 round(as.numeric(100* results["same"]/(results["same"]+results["different"])), 2)
+
+
+
+subset_manual <- manualVsauto %>%
+  dplyr::filter( !is.na(value_manual)) %>%
+  dplyr::mutate( record_id = paste0( sapply(strsplit( id, "-"), head, 1), "-", value_manual) ) %>%
+  dplyr::select( record_id ) %>%
+  unique()
+
+subset_manual <- manualVsauto %>%
+  dplyr::filter( !is.na(value_manual)) %>%
+  dplyr::mutate( ids = paste0( sapply(strsplit( id, "-"), head, 1), "-", value_manual) ) %>%
+  dplyr::select( ids ) %>%
+  unique()
+subset_auto <- manualVsauto %>%
+  dplyr::mutate( ids = paste0( sapply(strsplit( id, "-"), head, 1), "-", value_auto) ) %>%
+  dplyr::select( ids ) %>%
+  unique()
+
+
+common <- subset_manual[ subset_manual$ids %in% subset_auto$ids , ]
+
+test <- manualVsauto %>% 
+  dplyr::filter(type != 'dt') %>% 
+  dplyr::mutate( record_id = sapply(strsplit( id, "-"), head, 1)) %>%
+  dplyr::group_by(record_id) %>% 
+  dplyr::summarise(manual_codes = list(value_manual), 
+                  auto_codes = list(value_auto )) %>% 
+  dplyr::mutate(manual_not_auto = manual_codes[!manual_codes %in% auto_codes], auto_not_manual = auto_codes[!auto_codes %in% manual_codes])
+
+a <- manualVsauto %>% filter(type != 'dt') %>% mutate( record_id =  sapply(strsplit( id, "-"), head, 1))%>% select(record_id, value_manual)
+b <- manualVsauto %>% filter(type != 'dt') %>% mutate( record_id =  sapply(strsplit( id, "-"), head, 1))%>% select(record_id, value_auto)
+comp <- left_join(a,b)
+
+
+
 
