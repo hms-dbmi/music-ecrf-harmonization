@@ -11,6 +11,15 @@ setwd("/Users/alba/Desktop/music-ecrf-harmonization/manuscriptEstimationsVisuali
 ######################
 ##### Load files #####
 ######################
+#for reference, SQL code to generate this data
+
+#create table MISC_patients_data_mapped as
+#select o.encounter_num, o.patient_num, o.concept_cd, o.start_date, p.mrn 
+#from observation_fact o 
+#inner join MRN_PATUUID_PATNUM p
+#on o.patient_num = p.pat_num
+#where patient_num in (select pat_num from MRN_PATUUID_PATNUM where MRN in (select MRN from MUSIC_PATIENTSLIST));
+
 ehr_data <- read.delim("../local_ref/EHR_MUSICpatients_data.dsv")
 
 #######################################################
