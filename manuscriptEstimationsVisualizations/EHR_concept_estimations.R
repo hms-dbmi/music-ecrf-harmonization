@@ -109,11 +109,5 @@ ggplot2::ggplot(data = average_per_monthSubset, ggplot2::aes( x = value_toPlot, 
   xlab("months") + ylab("average concepts (55 patients)")
 
 
-###### estimate for the during admission period the day instead of month
-ehr_data_over_time_toPlot <- ehr_data_over_time %>%
-  dplyr::mutate( days_diff = as.numeric( date - admission_date )) 
-
-toplotAdmission <- ehr_data_over_time_toPlot %>%
-  dplyr::filter( during_admission == "during")
 
 
