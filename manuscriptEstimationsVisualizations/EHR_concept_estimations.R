@@ -91,7 +91,7 @@ average_per_month <- concepts_month_patient %>%
 average_per_monthSubset <- average_per_month %>%
   dplyr::filter( value_toPlot >= -24 & value_toPlot <= 24 ) %>%
   dplyr::mutate( period = ifelse( value_toPlot > 6, "after study period", 
-                                 ifelse( value_toPlot < -0.5, "before study period", "study period")))
+                                 ifelse( value_toPlot <= -0.5, "before study period", "study period")))
 
 ggplot2::ggplot(data = average_per_monthSubset, ggplot2::aes( x = value_toPlot, y = average)) +
   ggplot2::geom_point( size = 0.1) +
