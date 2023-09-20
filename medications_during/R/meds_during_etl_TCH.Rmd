@@ -55,7 +55,8 @@ df <- music_patients_admission_after_nov21
 
 # if the code is formatted like so: '2.00', convert to '02.00'
 fix_code_formatting <- function(x) {
-  ifelse(test = !grepl("[[:digit:]]{2}.", x), yes = (paste0('0', x)), no = (x))
+  ifelse(test = is.na(x), yes = NA, 
+         no = ifelse(test = !grepl("[[:digit:]]{2}.", x), yes = (paste0('0', x)), no = (x)))
 }
 
 datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
@@ -80,6 +81,28 @@ datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final vers
 tch_med_concept_summary <- read.delim('../../medications_before_and_after/data/tch_to_ecrf_med_mapping.txt')
 
 #bch_med_concept_summary <- left_join(bch_med_concept_summary, datadict, by = 'ECRF_CODE')
+
+###TCH SPECIFIC: ADD ADDITIONAL CODES
+unassigned_meds <- df %>% select(concept_cd, med_route) %>% unique()
+write.csv(unassigned_meds, '../tch_unassigned_meds.csv', quote = FALSE)
+# ecrf has been searched for remaining codes and updated in tch_unassigned_meds_withcodes.csv
+unassigned_meds_withcodes <- read_csv('../tch_unassigned_meds_withcodes.csv') %>%
+  select(-med_route) %>% 
+  filter(!CONCEPT_CD %in% tch_med_concept_summary$concept_cd) %>%
+  unique() %>%
+  filter(!is.na(CONCEPT_CD))
+
+
+tch_med_concept_summary <- tch_med_concept_summary %>% rbind(data.frame('keyword' = 'manual', 
+                                                                        'ECRF_CODE' = unassigned_meds_withcodes$ECRF_CODE, 
+                                                                        'concept_cd' = unassigned_meds_withcodes$CONCEPT_CD)) 
+
+
+#df1 <- df %>%
+#  left_join(unassigned_meds_withcodes %>% select(ECRF_CODE, CONCEPT_CD), by = 'CONCEPT_CD') %>%
+#  mutate(ECRF_CODE = ifelse(ECRF_CODE.x == "99.99" & !is.na(ECRF_CODE.y), ECRF_CODE.y, ECRF_CODE.x)) %>%
+#  select(-ECRF_CODE.x, -ECRF_CODE.y, -X, -X.1)
+
 
 #df <- left_join(df, bch_med_concept_summary %>% 
 #                  select(ECRF_CODE, CONCEPT_CD, Variable...Field.Name), by = 'CONCEPT_CD') 
@@ -133,9 +156,6 @@ df <- df %>%
 #                                tolower(NAME_CHAR),
 #                                '')) %>%
 #  filter(!is.na(medhospX_name))
-
-
-
 
 
 ```
