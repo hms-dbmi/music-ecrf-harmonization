@@ -150,12 +150,12 @@ df <- df %>%
 
 
 
-#df <- df %>% 
-#  left_join(bch_concept_dim, by = 'CONCEPT_CD') %>%
-#  mutate(medhospX_name = ifelse(ECRF_CODE == '99.99',
-#                                tolower(NAME_CHAR),
-#                                '')) %>%
-#  filter(!is.na(medhospX_name))
+df <- df %>% 
+  #left_join(bch_concept_dim, by = 'CONCEPT_CD') %>%
+  mutate(medhospX_name = ifelse(ECRF_CODE == '99.99',
+                                tolower(CONCEPT_CD),
+                                '')) %>%
+  filter(!is.na(medhospX_name))
 
 
 ```
@@ -214,7 +214,7 @@ df <- df %>%
 # only report the dates for the specified medications. for all other medications, medhosp_start_dt should be blank
 # for medications where we are reporting the date, only report the 'start date', or the earliest date.
 df2 <- df %>% 
-  rename(PATIENT_NUM = patient_num) %>% mutate(medhospX_name = '') %>%
+  rename(PATIENT_NUM = patient_num)  %>%
   mutate(medhospX_start_dt = format(date, "%Y-%m-%d")) %>%
   group_by(PATIENT_NUM, ECRF_CODE, medhospX_name) %>%
   summarise(medhospX_start_dt = ifelse(grepl(report_dates, ECRF_CODE),
@@ -296,15 +296,15 @@ out5 <- out4 %>% #left_join(out4, id_mapping %>% select(PATIENT_NUM, MUSIC_ID)) 
   relocate(record_id, redcap_event_name, redcap_repeat_instrument) 
   
 # collapse rows by form
-#out6 <- out5 %>%
-#  group_by(record_id, redcap_repeat_instance) %>%
-#  summarise_all(~first(na.omit(.)))
+out6 <- out5 %>%
+  group_by(record_id, redcap_repeat_instance) %>%
+  summarise_all(~first(na.omit(.)))
 #out5 <- out4 %>%
 #  group_by(record_id, redcap_repeat_instance) %>%
 #  summarise_each(funs(first(.[!is.na(.)])))
 
 # remove NA column introduced by 'other' variables
-#out7 <- out6 %>% select(-grep('NA', colnames(out6)))
+out7 <- out6 %>% select(-grep('NA', colnames(out6)))
 
 
 ```
@@ -339,7 +339,7 @@ meds_data_point_filtered <- meds_data_point %>%
 
 # write output
 #write.csv(out7, '../local_ref/redcap_output_medications_during.csv', row.names = FALSE, na = '')
-write.csv(out5, '../local_ref/tch_medications_during.csv', row.names = FALSE, na = '')
+write.csv(out7, '../local_ref/tch_medications_during_092023.csv', row.names = FALSE, na = '')
 #write.csv(out7 %>% filter(record_id %in% c(120122, 120123, 120124)),
 #          '../local_ref/TEST_DATA_REFRESH_NEW_PATIENTS_MAR22_redcap_output_medications_during.csv',
 #          row.names = FALSE, na = '')
