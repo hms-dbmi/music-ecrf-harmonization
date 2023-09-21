@@ -2,15 +2,15 @@
 ##### Load R libraries #####
 ############################
 library(dplyr)
-setwd("/Users/alba/Desktop/music-ecrf-harmonization/manuscriptEstimationsVisualizations/")
+setwd("/Users/smakwana/Desktop/music-ecrf-harmonization/manuscriptEstimationsVisualizations/")
 ######################
 ##### Load files #####
 ######################
 # tch automatic file generated with our etl pipeline
-auto_tch <- read.csv('../laboratory_values/local_ref/lab_output_texas.csv', colClasses ="character")
+auto_tch <- read.csv('../laboratory_values/local_ref/lab_output_texas_092023.csv', colClasses ="character")
 
 # tch manual file downloaded from GitHub and located in the local ref folder, in the texas children subfolder
-manual_tch <- read.csv("../laboratory_values/local_ref/texasChildren/MUSIC_DATA_2023-09-01_1508.csv", colClasses =  "character") %>%
+manual_tch <- read.csv("../laboratory_values/local_ref/texasChildren/MUSIC_DATA_2023-09-21_1136.csv", colClasses =  "character") %>%
   filter( record_id %in% auto_tch$record_id ) #filtering by the common patients
 
 
@@ -21,29 +21,105 @@ datadict <- read.csv('../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version
 #######################################
 ##### Laboratory values selection #####
 #######################################
-datadict <- datadict %>% 
+lab_datadict <- datadict %>% 
   dplyr::filter(Form.Name == "laboratory_values") 
-
-manual_tch <- manual_tch %>%
-  dplyr::filter( redcap_repeat_instrument == "laboratory_values")
 
 auto_tch <- auto_tch %>%
   dplyr::filter( redcap_repeat_instrument == "laboratory_values")
 
-### Transform the data dictionary laboratory values do remove the "other" variables 
-datadict <- datadict %>%
-  dplyr::select( "Variable...Field.Name",  "Form.Name" )%>%
-  dplyr::mutate( type = sapply(strsplit( Variable...Field.Name, "_"), tail, 1), 
-               var_name = gsub( "_", " ", sub('[_][^_]+$', ' ', Variable...Field.Name)), 
-               var_other = sapply(strsplit( Variable...Field.Name, "_"), head, 1), 
-               var_other = gsub("other1", "other", var_other), 
-               var_other = gsub("other2", "other", var_other), 
-               var_other = gsub("other3", "other", var_other), 
-               var_other = gsub("other4", "other", var_other), 
-               var_other = gsub("other5", "other", var_other)
-               ) %>% 
-  dplyr::filter( var_other != "other")
+manual_tch <- manual_tch %>%
+  dplyr::filter( redcap_repeat_instrument == "laboratory_values") #%>%
+  #dplyr::select(record_id, lab_datadict$Variable...Field.Name)
 
+
+
+
+### Transform the data dictionary laboratory values do remove the "other" variables 
+#datadict <- datadict %>%
+#  dplyr::select( "Variable...Field.Name",  "Form.Name" )%>%
+#  dplyr::mutate( type = sapply(strsplit( Variable...Field.Name, "_"), tail, 1), 
+#               var_name = gsub( "_", " ", sub('[_][^_]+$', ' ', Variable...Field.Name)), 
+#               var_other = sapply(strsplit( Variable...Field.Name, "_"), head, 1), 
+#               var_other = gsub("other1", "other", var_other), 
+#               var_other = gsub("other2", "other", var_other), 
+#               var_other = gsub("other3", "other", var_other), 
+#               var_other = gsub("other4", "other", var_other), 
+#               var_other = gsub("other5", "other", var_other)
+#               ) %>% 
+#  dplyr::filter( var_other != "other")
+
+
+
+
+#####
+# pivot longer
+#####
+auto1 <- auto_tch %>%
+  select(-redcap_event_name, -redcap_repeat_instance, -redcap_repeat_instrument, -redcap_repeat_instance) %>%
+  pivot_longer(cols = ends_with('_obtained'), names_to = 'obtained', names_prefix = 'obtained_', values_to = 'obtained_val') %>%
+  pivot_longer(cols = ends_with('_value'), names_to = 'value', names_prefix = 'value_', values_to = 'value_val') %>%
+  filter(gsub('_obtained', '', obtained) == gsub('_value', '', value)) %>%
+  pivot_longer(cols = ends_with('_unit'), names_to = 'unit', names_prefix = 'unit_', values_to = 'unit_val') %>%
+  filter(gsub('_obtained', '', obtained) == gsub('_unit', '', unit)) %>%
+  pivot_longer(cols = ends_with('_date'), names_to = 'date', names_prefix = 'date_', values_to = 'date_val') %>%
+  filter(gsub('_obtained', '', obtained) == gsub('_date', '', date)) %>%
+  mutate(variableName = gsub('_obtained', '', obtained)) %>%
+  select(record_id, lab_values_visit, variableName, obtained_val, value_val, unit_val, date_val) %>%
+  unique() %>%
+  filter(!obtained_val %in% c(NA, 0, '')) %>%
+  arrange(record_id, lab_values_visit, variableName)
+
+manual1 <- manual_tch %>%
+  pivot_longer(cols = ends_with('_obtained'), names_to = 'obtained', names_prefix = 'obtained_', values_to = 'obtained_val') %>%
+  pivot_longer(cols = ends_with('_value'), names_to = 'value', names_prefix = 'value_', values_to = 'value_val') %>%
+  filter(gsub('_obtained', '', obtained) == gsub('_value', '', value)) %>%
+  pivot_longer(cols = ends_with('_unit'), names_to = 'unit', names_prefix = 'unit_', values_to = 'unit_val') %>%
+  filter(gsub('_obtained', '', obtained) == gsub('_unit', '', unit)) %>%
+  pivot_longer(cols = ends_with('_date'), names_to = 'date', names_prefix = 'date_', values_to = 'date_val') %>%
+  filter(gsub('_obtained', '', obtained) == gsub('_date', '', date)) %>%
+  mutate(variableName = gsub('_obtained', '', obtained)) %>%
+  select(record_id, lab_values_visit, variableName, obtained_val, value_val, unit_val, date_val) %>%
+  unique() %>%
+  filter(!obtained_val %in% c(NA, 0, '')) %>%
+  arrange(record_id, lab_values_visit, variableName)
+  
+diff <- full_join(auto1, manual1, by = c('record_id', 'lab_values_visit', 'variableName'), suffix = c('.auto', '.manual')) %>%
+  mutate(unit_val.manual = trimws(unit_val.manual),
+         date_val.manual = trimws(date_val.manual))
+
+auto_only <- sum(is.na(diff$obtained_val.manual), is.na(diff$value_val.manual), is.na(diff$unit_val.manual), is.na(diff$date_val.manual))
+manual_only <- sum(is.na(diff$obtained_val.auto), is.na(diff$value_val.auto), is.na(diff$unit_val.auto), is.na(diff$date_val.auto))
+match <- sum(diff$obtained_val.auto == diff$obtained_val.manual,
+             diff$value_val.auto == diff$value_val.manual,
+             diff$unit_val.auto == diff$unit_val.manual,
+             diff$date_val.auto == diff$date_val.manual, na.rm = TRUE)
+
+mismatch <- sum(diff$obtained_val.auto != diff$obtained_val.manual,
+                diff$value_val.auto != diff$value_val.manual,
+                diff$unit_val.auto != diff$unit_val.manual,
+                diff$date_val.auto != diff$date_val.manual, na.rm = TRUE)
+
+misdf <- diff %>% 
+  filter(value_val.auto != value_val.manual)
+
+
+##### pivot longer for meds #####
+
+med_datadict <- datadict %>% 
+  dplyr::filter(Form.Name == "additional_medications_during_hospitalization") 
+
+auto_tch <- read.csv('../medications_during/local_ref/tch_medications_during_092023.csv', colClasses ="character")
+auto_tch <- auto_tch %>%
+  dplyr::filter( redcap_repeat_instrument == "additional_medications_during_hospitalization")
+
+manual_tch <- manual_tch %>%
+  dplyr::filter( redcap_repeat_instrument == "additional_medications_during_hospitalization") %>%
+  dplyr::select(record_id, med_datadict$Variable...Field.Name)
+
+
+#?
+
+#####
 
 #################################################################################
 ##### Select automatic filling variables from the auto and manual TCH files #####
@@ -51,7 +127,7 @@ datadict <- datadict %>%
 # in both cases we create a id that is a combination of the patient id and the lab_values_visit
 
 manual_tch <- manual_tch %>%
-  dplyr::select( c("record_id", datadict$Variable...Field.Name) ) %>%
+  dplyr::select( c("record_id", lab_datadict$Variable...Field.Name) ) %>%
   dplyr::mutate( id=paste0( record_id, "-",lab_values_visit)) %>%
   dplyr::select( -record_id, - lab_values_na, - lab_values_visit ) 
 
@@ -85,23 +161,23 @@ manualVsauto <- full_join( manual_tch, auto_tch, by =c("id", "variable"))
 
 #re-format dates
 #changing NA auto values to 0 when manual is 0 and auto is NA 
-manualVsauto <- manualVsauto %>%
+manualVsauto2 <- manualVsauto %>%
   dplyr::mutate( type = sapply(strsplit( variable, "_"), tail, 1),
-                 value_auto =  ifelse( type == "date",  
-                               as.character( as.Date( value_auto, format = "%m/%d/%Y")),
-                               value_auto), 
+                 #value_auto =  #ifelse( type == "date",  
+                               #as.character( as.Date( value_auto, format = "%m/%d/%Y")),
+                               #value_auto), 
                  value_manual = as.character( trimws( value_manual)), 
                  value_auto = as.character( trimws( value_auto)), 
                  value_auto = ifelse( value_manual == 0 & is.na(value_auto), 0, value_auto ),
                  concordance = ifelse( value_manual == value_auto, "same", "different"))
 
-results <- summary(as.factor( manualVsauto$concordance))
+results <- summary(as.factor( manualVsauto2$concordance))
 results
 round(as.numeric(100* results["same"]/(results["same"]+results["different"])), 2)
 
 
 # identify the differences 
-differences <- manualVsauto %>% 
+differences <- manualVsauto2 %>% 
   dplyr::mutate( concordance = ifelse( is.na( concordance), "different", concordance)) %>%
   dplyr::filter( concordance != "same" )
 
