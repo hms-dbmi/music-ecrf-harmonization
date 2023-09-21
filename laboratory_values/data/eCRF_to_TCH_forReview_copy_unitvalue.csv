@@ -2,8 +2,8 @@ concept_cd,concept_descripiton,Section.Header,unit_value
 4544-3,4544-3,Hematocrit (%),-88
 6690-2,6690-2,WBC Count (x10^3/uL or 10^9/L),1
 718-7,718-7,Hemoglobin (g/dL),-88
-731-0,731-0,Lymphocytes (%),-88
-751-8,751-8,Neutrophils (%),-88
+731-7,731-7,Lymphocytes (%),-88
+711-6,711-6,Neutrophils (%),-88
 777-3,777-3,Platelets (x10^3/uL or x10^9/L),1
 albumin,ALBUMIN,Albumin (g/dL),-88
 albumin (beaker),ALBUMIN (BEAKER),Albumin (g/dL),-88
@@ -155,8 +155,7 @@ sodium phosphate injection 0.05 mmole/ml,SODIUM PHOSPHATE INJECTION 0.05 MMOLE/M
 sodium phosphate injection 0.12 mmole/ml,SODIUM PHOSPHATE INJECTION 0.12 MMOLE/ML,Sodium (mmol/L),-88
 sodium urine (beaker),SODIUM URINE (BEAKER),Sodium (mmol/L),-88
 thrombin time (beaker),THROMBIN TIME (BEAKER),Thrombin time (seconds),seconds
-total protein csf (beaker),TOTAL PROTEIN CSF (BEAKER),Total protein (g/dL),g/dL
-total protein urine (beaker),TOTAL PROTEIN URINE (BEAKER),Total protein (g/dL),g/dL
+total protein (beaker),TOTAL PROTEIN (BEAKER),Total protein (g/dL),g/dL
 triglycerides,TRIGLYCERIDES,Triglycerides (circle: mg/dL or mmol/L),NA
 troponin i,TROPONIN I,Troponin I (ng/mL),-88
 troponin i (beaker),TROPONIN I (BEAKER),Troponin I (ng/mL),-88
