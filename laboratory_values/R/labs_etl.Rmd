@@ -652,17 +652,18 @@ Write output to test upload using dummy IDs 666001 to 666011
 #                               'dummy_id' = c(666001:666011))
 # use same dummy ID mapping each time
 
-load('../local_ref/dummy_ID_mapping.RData')
-out2 <- out %>% 
-  filter(record_id %in% dummy_ID_mapping$original_id) %>%
-  left_join(dummy_ID_mapping, by = c('record_id' = 'original_id')) %>%
-  ungroup() %>%
-  select(-record_id) %>%
-  rename('record_id' = 'dummy_id') %>%
-  select(record_id, everything())
+#load('../local_ref/dummy_ID_mapping.RData')
+#out2 <- out %>% 
+#  filter(record_id %in% dummy_ID_mapping$original_id) %>%
+#  left_join(dummy_ID_mapping, by = c('record_id' = 'original_id')) %>%
+#  ungroup() %>%
+#  select(-record_id) %>%
+#  rename('record_id' = 'dummy_id') %>%
+#  select(record_id, everything())
+#write.csv(out2, '../local_ref/lab_output_texas_092023_subsetforredcap.csv', row.names = FALSE, na = '')
 
-write.csv(out2, '../local_ref/lab_output_texas_092023_subsetforredcap.csv', row.names = FALSE, na = '')
-save(dummy_ID_mapping, file = '../local_ref/dummy_ID_mapping.RData')
+write.csv(out, '../local_ref/lab_output_texas_092023_subsetforredcap.csv', row.names = FALSE, na = '')
+#save(dummy_ID_mapping, file = '../local_ref/dummy_ID_mapping.RData')
 
 ```
 
