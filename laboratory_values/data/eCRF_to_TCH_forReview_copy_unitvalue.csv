@@ -1,0 +1,164 @@
+concept_cd,concept_descripiton,Section.Header,unit_value
+4544-3,4544-3,Hematocrit (%),-88
+6690-2,6690-2,WBC Count (x10^3/uL or 10^9/L),1
+718-7,718-7,Hemoglobin (g/dL),-88
+731-0,731-0,Lymphocytes (%),-88
+751-8,751-8,Neutrophils (%),-88
+777-3,777-3,Platelets (x10^3/uL or x10^9/L),1
+albumin,ALBUMIN,Albumin (g/dL),-88
+albumin (beaker),ALBUMIN (BEAKER),Albumin (g/dL),-88
+albumin csf (beaker),ALBUMIN CSF (BEAKER),Albumin (g/dL),-88
+albumin human 25 % intravenous soln,ALBUMIN HUMAN 25 % INTRAVENOUS SOLN,Albumin (g/dL),-88
+albumin human 5 % intravenous soln,ALBUMIN HUMAN 5 % INTRAVENOUS SOLN,Albumin (g/dL),-88
+alt,ALT,ALT/SGPT (U/L),-88
+alt (beaker),ALT (BEAKER),ALT/SGPT (U/L),-88
+aptt,APTT,APTT or PTT (seconds),NA
+ast,AST,AST/SGOT (U/L),-88
+ast (beaker),AST (BEAKER),AST/SGOT (U/L),-88
+astrovirus (beaker),ASTROVIRUS (BEAKER),AST/SGOT (U/L),-88
+bicarbonate (beaker),BICARBONATE (BEAKER),Bicarbonate (mmol/L),-88
+bilirubin total,BILIRUBIN TOTAL,Total bilirubin (mg/dL),-88
+bilirubin total (beaker),BILIRUBIN TOTAL (BEAKER),Total bilirubin (mg/dL),-88
+bilirubin unconjugated (beaker),BILIRUBIN UNCONJUGATED (BEAKER),Total bilirubin (mg/dL),-88
+"bilirubin, direct","BILIRUBIN, DIRECT",Direct bilirubin (mg/dL),-88
+"bilirubin, indirect","BILIRUBIN, INDIRECT",Direct bilirubin (mg/dL),-88
+bnp plasma,BNP PLASMA,B-type natriuretic peptide (BNP) (pg/mL),NA
+bnp plasma (beaker),BNP PLASMA (BEAKER),B-type natriuretic peptide (BNP) (pg/mL),NA
+c reactive protein,C REACTIVE PROTEIN,"C-Reactive Protein, CRP (circle: mg/L or mg/dL)",NA
+c reactive protein (beaker),C REACTIVE PROTEIN (BEAKER),"C-Reactive Protein, CRP (circle: mg/L or mg/dL)",2
+c3 (beaker),C3 (BEAKER),Complement levels: C3 (mg/dL),-88
+c4 (beaker),C4 (BEAKER),Complement levels: C4 (mg/dL),-88
+carbon dioxide (beaker),CARBON DIOXIDE (BEAKER),Bicarbonate (mmol/L),-88
+cd19+bcell numbr (beaker),CD19+BCELL NUMBR (BEAKER),"Lymphocyte Subsets: CD+19, Absolute",/uL
+cd19+bcell pcent (beaker),CD19+BCELL PCENT (BEAKER),Lymphocyte Subsets: CD19+ (%),-88
+cd3-cd56cd16+pcent (beaker),CD3-CD56CD16+PCENT (BEAKER),Lymphocyte Subsets: CD3-%/CD16+ or CD56+%,-88
+cd3+cd4+numbr (beaker),CD3+CD4+NUMBR (BEAKER),"Lymphocyte Subsets: CD3+ CD4+, Absolute",/uL
+cd3+cd4+pcent (beaker),CD3+CD4+PCENT (BEAKER),Lymphocyte Subsets: CD3+%/CD4+%,-88
+cd3+cd56cd16+pcent (beaker),CD3+CD56CD16+PCENT (BEAKER),Lymphocyte Subsets: CD3-%/CD16+ or CD56+%,-88
+cd3+cd8+numbr (beaker),CD3+CD8+NUMBR (BEAKER),"Lymphocyte Subsets: CD3+ CD8+, Absolute",/uL
+cd3+cd8+pcent (beaker),CD3+CD8+PCENT (BEAKER),Lymphocyte Subsets: CD3+%/CD8+%,-88
+cd3+tcell numbr (beaker),CD3+TCELL NUMBR (BEAKER),"Lymphocyte Subsets: CD3+, Absolute",/uL
+cd3+tcell pcent (beaker),CD3+TCELL PCENT (BEAKER),Lymphocyte Subsets: CD3+ (%),-88
+cd4 to cd8 ratio (beaker),CD4 TO CD8 RATIO (BEAKER),Lymphocyte Subsets: CD4/CD8 ratio,-88
+creatine kinase,CREATINE KINASE,Creatine kinase (U/L),-88
+creatine kinase (beaker),CREATINE KINASE (BEAKER),Creatine kinase (U/L),-88
+creatinine,CREATININE,Creatinine (mg/dL),-88
+creatinine (beaker),CREATININE (BEAKER),Creatinine (mg/dL),-88
+creatinine urine (beaker),CREATININE URINE (BEAKER),Creatinine (mg/dL),-88
+creatinine whole blood (poct),CREATININE WHOLE BLOOD (POCT),Creatinine (mg/dL),-88
+"creatinine, random urine","CREATININE, RANDOM URINE",Creatinine (mg/dL),-88
+d-dimer quantitative,D-DIMER QUANTITATIVE,D-dimer (mcg/mL FEU),NA
+ferritin,FERRITIN,Ferritin (ng/mL),-88
+ferritin (beaker),FERRITIN (BEAKER),Ferritin (ng/mL),-88
+fibrinogen,FIBRINOGEN,Fibrinogen (mg/dL),-88
+fibrinogen (beaker),FIBRINOGEN (BEAKER),Fibrinogen (mg/dL),-88
+ggt,GGT,Gamma-glutamyl transferase (GGT/GGTP) (U/L),-88
+ggt (beaker),GGT (BEAKER),Gamma-glutamyl transferase (GGT/GGTP) (U/L),-88
+glucose,GLUCOSE,Glucose (mg/dL),-88
+glucose (beaker),GLUCOSE (BEAKER),Glucose (mg/dL),-88
+glucose urine,GLUCOSE URINE,Glucose (mg/dL),NA
+glucose urine (beaker),GLUCOSE URINE (BEAKER),Glucose (mg/dL),NA
+hematocrit wb (beaker),HEMATOCRIT WB (BEAKER),Hematocrit (%),-88
+hemoglobin,HEMOGLOBIN,Hemoglobin (g/dL),-88
+hemoglobin a1c,HEMOGLOBIN A1C,Hemoglobin (g/dL),-88
+hemoglobin a1c (beaker),HEMOGLOBIN A1C (BEAKER),Hemoglobin (g/dL),-88
+iga (beaker),IGA (BEAKER),Immunoglobulin levels: IgA (mg/dL),-88
+ige,IGE,Immunoglobulin levels: IgE (mg/dL),-88
+ige (beaker),IGE (BEAKER),Immunoglobulin levels: IgE (mg/dL),-88
+igg (beaker),IGG (BEAKER),Immunoglobulin levels: IgG (mg/dL),-88
+"igg alb ratio, csf (beaker)","IGG ALB RATIO, CSF (BEAKER)",Immunoglobulin levels: IgG (mg/dL),-88
+igg csf (beaker),IGG CSF (BEAKER),Immunoglobulin levels: IgG (mg/dL),-88
+igg index oligp (beaker),IGG INDEX OLIGP (BEAKER),Immunoglobulin levels: IgG (mg/dL),-88
+igg serum (beaker),IGG SERUM (BEAKER),Immunoglobulin levels: IgG (mg/dL),-88
+igg/alb ratio serum oligp (beaker),IGG/ALB RATIO SERUM OLIGP (BEAKER),Immunoglobulin levels: IgG (mg/dL),-88
+igm (beaker),IGM (BEAKER),Immunoglobulin levels: IgM (mg/dL),-88
+inr,INR,INR (units),NA
+inr (beaker),INR (BEAKER),INR (units),NA
+interferon gamma,INTERFERON GAMMA,Cytokine panel: IFN-gamma (pg/mL),-88
+interleukin 1 beta,INTERLEUKIN 1 BETA,Cytokine panel: IL-1 (pg/mL),-88
+interleukin 10,INTERLEUKIN 10,Cytokine panel: IL-1 (pg/mL),-88
+interleukin 10,INTERLEUKIN 10,Cytokine panel: IL-10 (pg/mL),-88
+interleukin 12,INTERLEUKIN 12,Cytokine panel: IL-1 (pg/mL),-88
+interleukin 12,INTERLEUKIN 12,Cytokine panel: IL-12 (pg/mL),-88
+interleukin 13,INTERLEUKIN 13,Cytokine panel: IL-1 (pg/mL),-88
+interleukin 13,INTERLEUKIN 13,Cytokine panel: IL-13 (pg/mL),-88
+interleukin 17,INTERLEUKIN 17,Cytokine panel: IL-1 (pg/mL),-88
+interleukin 2,INTERLEUKIN 2,Cytokine panel: IL-2 receptor soluble serum (pg/mL),-88
+interleukin 2,INTERLEUKIN 2,Cytokine panel: IL-2 (pg/mL),-88
+"interleukin 2 receptor (cd25), soluble","INTERLEUKIN 2 RECEPTOR (CD25), SOLUBLE",Cytokine panel: IL-2 receptor soluble serum (pg/mL),-88
+"interleukin 2 receptor (cd25), soluble","INTERLEUKIN 2 RECEPTOR (CD25), SOLUBLE",Cytokine panel: IL-2 (pg/mL),-88
+interleukin 4,INTERLEUKIN 4,Cytokine panel: IL-4 (pg/mL),-88
+interleukin 5,INTERLEUKIN 5,Cytokine panel: IL-5 (pg/mL),-88
+interleukin 6,INTERLEUKIN 6,Cytokine panel: IL-6 (pg/mL),-88
+interleukin 8,INTERLEUKIN 8,Cytokine panel: IL-8 (pg/mL),-88
+lactate (beaker),LACTATE (BEAKER),Lactate (mmol/L),-88
+lactated ringers + additives inj,LACTATED RINGERS + ADDITIVES INJ,Lactate (mmol/L),-88
+lactated ringers infusion (anesthesia),LACTATED RINGERS INFUSION (ANESTHESIA),Lactate (mmol/L),-88
+lactated ringers intravenous soln,LACTATED RINGERS INTRAVENOUS SOLN,Lactate (mmol/L),-88
+lactated ringers intravenous soln (bolus),LACTATED RINGERS INTRAVENOUS SOLN (BOLUS),Lactate (mmol/L),-88
+ldh,LDH,LDH (U/L),-88
+ldh (beaker),LDH (BEAKER),LDH (U/L),-88
+ldhi (beaker),LDHI (BEAKER),LDH (U/L),-88
+ldhi bf result (beaker),LDHI BF RESULT (BEAKER),LDH (U/L),-88
+lymphocytes,LYMPHOCYTES,Lymphocytes (%),-88
+lymphocytes bf (beaker),LYMPHOCYTES BF (BEAKER),Lymphocytes (%),-88
+NA,NA,Platelets (x10^3/uL or x10^9/L),NA
+NA,NA,Troponin T (ng/mL),NA
+NA,NA,Complement levels: AH50 (%),NA
+NA,NA,Complement levels: CH50 (%),NA
+neutrophils,NEUTROPHILS,Neutrophils (%),NA
+neutrophils bf (beaker),NEUTROPHILS BF (BEAKER),Neutrophils (%),NA
+potassium,POTASSIUM,Potassium (mmol/L),NA
+potassium (beaker),POTASSIUM (BEAKER),Potassium (mmol/L),NA
+potassium & sodium phosphates 280-160-250 mg oral pack,POTASSIUM & SODIUM PHOSPHATES 280-160-250 MG ORAL PACK,Potassium (mmol/L),NA
+potassium chloride 20 meq oral pack,POTASSIUM CHLORIDE 20 MEQ ORAL PACK,Potassium (mmol/L),NA
+potassium chloride 40 meq/15ml (20%) oral soln,POTASSIUM CHLORIDE 40 MEQ/15ML (20%) ORAL SOLN,Potassium (mmol/L),NA
+potassium chloride er 10 meq oral cpcr,POTASSIUM CHLORIDE ER 10 MEQ ORAL CPCR,Potassium (mmol/L),NA
+potassium chloride inj for po use 2 meq/ml,POTASSIUM CHLORIDE INJ FOR PO USE 2 MEQ/ML,Potassium (mmol/L),NA
+potassium chloride injection 0.06 meq/ml,POTASSIUM CHLORIDE INJECTION 0.06 MEQ/ML,Potassium (mmol/L),NA
+potassium chloride injection 0.08 meq/ml,POTASSIUM CHLORIDE INJECTION 0.08 MEQ/ML,Potassium (mmol/L),NA
+potassium chloride injection 0.3 meq/ml,POTASSIUM CHLORIDE INJECTION 0.3 MEQ/ML,Potassium (mmol/L),NA
+potassium chloride injection 0.4 meq/ml,POTASSIUM CHLORIDE INJECTION 0.4 MEQ/ML,Potassium (mmol/L),NA
+potassium phosphate dibasic injection 0.04 mmol/ml,POTASSIUM PHOSPHATE DIBASIC INJECTION 0.04 MMOL/ML,Potassium (mmol/L),NA
+potassium phosphate dibasic injection 0.06 mmol/ml,POTASSIUM PHOSPHATE DIBASIC INJECTION 0.06 MMOL/ML,Potassium (mmol/L),NA
+potassium phosphate dibasic injection 0.07 mmol/ml,POTASSIUM PHOSPHATE DIBASIC INJECTION 0.07 MMOL/ML,Potassium (mmol/L),NA
+potassium phosphate dibasic injection 0.3 mmol/ml,POTASSIUM PHOSPHATE DIBASIC INJECTION 0.3 MMOL/ML,Potassium (mmol/L),NA
+potassium phosphate inj for po use 3 mmol/ml,POTASSIUM PHOSPHATE INJ FOR PO USE 3 MMOL/ML,Potassium (mmol/L),NA
+potassium urine (beaker),POTASSIUM URINE (BEAKER),Potassium (mmol/L),NA
+procalcitonin,PROCALCITONIN,Procalcitonin (ng/mL),NA
+procalcitonin (beaker),PROCALCITONIN (BEAKER),Procalcitonin (ng/mL),NA
+prothrombin time,PROTHROMBIN TIME,PT (seconds),NA
+prothrombin time,PROTHROMBIN TIME,Thrombin time (seconds),NA
+ptt (beaker),PTT (BEAKER),APTT or PTT (seconds),NA
+ptt hepzyme (beaker),PTT HEPZYME (BEAKER),APTT or PTT (seconds),NA
+sed rate (beaker),SED RATE (BEAKER),ESR (mm/hr),-88
+"sed rate by modified westergren, manual","SED RATE BY MODIFIED WESTERGREN, MANUAL",ESR (mm/hr),-88
+sodium,SODIUM,Sodium (mmol/L),-88
+sodium (beaker),SODIUM (BEAKER),Sodium (mmol/L),-88
+sodium bicarbonate 4.2 % iv soln,SODIUM BICARBONATE 4.2 % IV SOLN,Sodium (mmol/L),-88
+sodium bicarbonate 8.4 % intravenous soln,SODIUM BICARBONATE 8.4 % INTRAVENOUS SOLN,Sodium (mmol/L),-88
+sodium bicarbonate 8.4 % iv soln,SODIUM BICARBONATE 8.4 % IV SOLN,Sodium (mmol/L),-88
+sodium chloride (bacteriostatic) 0.9% (ns) inj (op-time),SODIUM CHLORIDE (BACTERIOSTATIC) 0.9% (NS) INJ (OP-TIME),Sodium (mmol/L),-88
+sodium chloride 0.45 % + additives inj,SODIUM CHLORIDE 0.45 % + ADDITIVES INJ,Sodium (mmol/L),-88
+sodium chloride 0.45 % intravenous soln,SODIUM CHLORIDE 0.45 % INTRAVENOUS SOLN,Sodium (mmol/L),-88
+sodium chloride 0.9 % + additives inj,SODIUM CHLORIDE 0.9 % + ADDITIVES INJ,Sodium (mmol/L),-88
+sodium chloride 0.9 % infusion (anesthesia),SODIUM CHLORIDE 0.9 % INFUSION (ANESTHESIA),Sodium (mmol/L),-88
+sodium chloride 0.9 % inhalation nebu,SODIUM CHLORIDE 0.9 % INHALATION NEBU,Sodium (mmol/L),-88
+sodium chloride 0.9 % injection soln,SODIUM CHLORIDE 0.9 % INJECTION SOLN,Sodium (mmol/L),-88
+sodium chloride 0.9 % intravenous soln,SODIUM CHLORIDE 0.9 % INTRAVENOUS SOLN,Sodium (mmol/L),-88
+sodium chloride 0.9 % intravenous soln (bolus),SODIUM CHLORIDE 0.9 % INTRAVENOUS SOLN (BOLUS),Sodium (mmol/L),-88
+sodium chloride 0.9% (ns) inj (op-time),SODIUM CHLORIDE 0.9% (NS) INJ (OP-TIME),Sodium (mmol/L),-88
+sodium chloride 0.9% (ns) prime bag,SODIUM CHLORIDE 0.9% (NS) PRIME BAG,Sodium (mmol/L),-88
+sodium chloride 0.9% carrier intravenous infusion,SODIUM CHLORIDE 0.9% CARRIER INTRAVENOUS INFUSION,Sodium (mmol/L),-88
+sodium chloride 0.9% inj flush,SODIUM CHLORIDE 0.9% INJ FLUSH,Sodium (mmol/L),-88
+sodium phosphate injection 0.05 mmole/ml,SODIUM PHOSPHATE INJECTION 0.05 MMOLE/ML,Sodium (mmol/L),-88
+sodium phosphate injection 0.12 mmole/ml,SODIUM PHOSPHATE INJECTION 0.12 MMOLE/ML,Sodium (mmol/L),-88
+sodium urine (beaker),SODIUM URINE (BEAKER),Sodium (mmol/L),-88
+thrombin time (beaker),THROMBIN TIME (BEAKER),Thrombin time (seconds),seconds
+total protein csf (beaker),TOTAL PROTEIN CSF (BEAKER),Total protein (g/dL),g/dL
+total protein urine (beaker),TOTAL PROTEIN URINE (BEAKER),Total protein (g/dL),g/dL
+triglycerides,TRIGLYCERIDES,Triglycerides (circle: mg/dL or mmol/L),NA
+troponin i,TROPONIN I,Troponin I (ng/mL),-88
+troponin i (beaker),TROPONIN I (BEAKER),Troponin I (ng/mL),-88
+tumor necrosis fact,TUMOR NECROSIS FACT,Cytokine panel: TNF-alpha (pg/mL),-88
+urea nitrogen (bun),UREA NITROGEN (BUN),Urea (BUN) (mg/dL),NA

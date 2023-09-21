@@ -55,9 +55,18 @@ df <- music_patients_admission_after_nov21
 
 # if the code is formatted like so: '2.00', convert to '02.00'
 fix_code_formatting <- function(x) {
-  ifelse(test = is.na(x), yes = NA, 
-         no = ifelse(test = !grepl("[[:digit:]]{2}.", x), yes = (paste0('0', x)), no = (x)))
-}
+  
+  y <- x
+  
+  if(!is.na(x)) {
+    if (!grepl("[[:digit:]]{2}.", x)) {y <- paste0('0', x)} 
+    if (!grepl(".[[:digit:]]{2}", y)) {y <- paste0(y, '0')}
+  }
+    
+  return(y)
+    
+  }
+  
 
 datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv') %>%
   filter(Form.Name == 'additional_medications_during_hospitalization') %>%
@@ -69,10 +78,8 @@ datadict <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final vers
   unique() %>% 
   separate_rows(Choices..Calculations..OR.Slider.Labels, sep = '\\|') %>%
   mutate(ECRF_CODE = str_replace(Choices..Calculations..OR.Slider.Labels, ',.*$', ''),
-         ECRF_CODE = str_trim(ECRF_CODE),
-         ECRF_CODE = fix_code_formatting(ECRF_CODE)) %>%
-  select(-Choices..Calculations..OR.Slider.Labels) %>% 
-  mutate(ECRF_CODE = fix_code_formatting(ECRF_CODE))
+         ECRF_CODE = str_trim(ECRF_CODE)) %>%
+  select(-Choices..Calculations..OR.Slider.Labels) 
 
 #bch_med_concept_summary <- read_csv('../../medications_before_and_after/data/bch_med_concept_summary_toReview.csv') %>%
 #  filter(RXNORM_DESCS != 'greater than 5 RXNORM codes mapped to BCH code' | (CONCEPT_CD == 'ADMINMED:2797919' & ECRF_CODE == '07.08'))
@@ -95,7 +102,8 @@ unassigned_meds_withcodes <- read_csv('../tch_unassigned_meds_withcodes.csv') %>
 
 tch_med_concept_summary <- tch_med_concept_summary %>% rbind(data.frame('keyword' = 'manual', 
                                                                         'ECRF_CODE' = unassigned_meds_withcodes$ECRF_CODE, 
-                                                                        'concept_cd' = unassigned_meds_withcodes$CONCEPT_CD)) 
+                                                                        'concept_cd' = unassigned_meds_withcodes$CONCEPT_CD)) %>%
+  mutate(ECRF_CODE = sapply(FUN = fix_code_formatting, ECRF_CODE))
 
 
 #df1 <- df %>%
@@ -109,7 +117,7 @@ tch_med_concept_summary <- tch_med_concept_summary %>% rbind(data.frame('keyword
 df <- left_join(df %>% 
                   rename(CONCEPT_CD=concept_cd), 
                 tch_med_concept_summary %>% 
-                  mutate(ECRF_CODE = fix_code_formatting(ECRF_CODE)) %>% 
+                  mutate(ECRF_CODE = sapply(FUN = fix_code_formatting, ECRF_CODE)) %>% 
                   select(ECRF_CODE, CONCEPT_CD=concept_cd), by = 'CONCEPT_CD') %>%
   left_join(datadict  %>% select(ECRF_CODE, Variable...Field.Name))
 
@@ -343,6 +351,21 @@ write.csv(out7, '../local_ref/tch_medications_during_092023.csv', row.names = FA
 #write.csv(out7 %>% filter(record_id %in% c(120122, 120123, 120124)),
 #          '../local_ref/TEST_DATA_REFRESH_NEW_PATIENTS_MAR22_redcap_output_medications_during.csv',
 #          row.names = FALSE, na = '')
+
+```
+
+write dummy id data for test upload to redcap
+```{r}
+load('../../laboratory_values/local_ref/dummy_ID_mapping.RData')
+out8 <- out7 %>% 
+  filter(record_id %in% dummy_ID_mapping$original_id) %>%
+  left_join(dummy_ID_mapping, by = c('record_id' = 'original_id')) %>%
+  ungroup() %>%
+  select(-record_id) %>%
+  rename('record_id' = 'dummy_id') %>% 
+  select(record_id, everything())
+
+write.csv(out8, '../local_ref/tch_medications_during_092023_subsetforredcap.csv', row.names = FALSE, na = '')
 
 ```
 
