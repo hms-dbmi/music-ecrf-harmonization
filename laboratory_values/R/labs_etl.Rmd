@@ -65,6 +65,8 @@ all_labs <- read.csv('../local_ref/texasChildren/misc_lab_observations.csv') %>%
            DISCHARGE_DATE = Discharge.Date, 
            patient_num = MUSIC.Patient.ID)) %>% 
     filter(inout_cd == 'INPATIENT') %>%
+    #filter(inout_cd %in% c('INPATIENT', 'Other')) %>%
+
   select(-X, -X.1)
 
 #misc_mapping <- read.csv("../../dataRefresh/local_ref/MUSIC_ID_MAPPING") %>%
@@ -181,8 +183,10 @@ getLabValue <- function(row) {
       value = '1'
     }else if( row['variableName'] == 'platelets_unit'){
       value = '1'
-    }else if( row['variableName'] == 'total_protein_unit'){
-      value = 'g/dL'
+    #}else if( row['variableName'] == 'total_protein_unit'){
+    #  value = 'g/dL'
+    }else if( row['variableName'] == 'crp_unit'){
+      value = '2'
     }else if( row['variableName'] == 'cd19_abs_unit'){
       value = '/uL'
     }else if (row['variableName'] == 'cd3_cd4_abs_unit'){
@@ -665,6 +669,8 @@ Write output to test upload using dummy IDs 666001 to 666011
 #write.csv(out2, '../local_ref/lab_output_texas_092023_subsetforredcap.csv', row.names = FALSE, na = '')
 
 write.csv(out, '../local_ref/lab_output_texas_092023.csv', row.names = FALSE, na = '')
+#write.csv(out, '../local_ref/lab_output_texas_092023_testInpatient_other.csv', row.names = FALSE, na = '')
+
 #save(dummy_ID_mapping, file = '../local_ref/dummy_ID_mapping.RData')
 
 ```
