@@ -1,0 +1,136 @@
+---
+title: "Concordance estimation: manual entry vs. automatic entry"
+author: "Alba Gutiérrez-Sacristán & Simran Makwana"
+date: "2023-09-22"
+output: html_document
+---
+
+# Load libraries
+```{r}
+rm(list=)
+library(dplyr)
+library(tidyr)
+```
+
+# Load the files
+We need 3 files as input:
+- The TCH automatic file generated with our etl pipeline
+- The TCH manual file, downloaded from REDCap with the manual data entered
+- The MUSIC data dictionary
+```{r}
+auto_tch <- read.csv('../laboratory_values/local_ref/lab_output_texas_092023.csv', colClasses ="character")
+#auto_tch <- read.csv('../laboratory_values/local_ref/lab_output_texas_092023_testInpatient_other.csv', colClasses ="character")
+
+manual_tch <- read.csv("../laboratory_values/local_ref/texasChildren/MUSIC_DATA_2023-09-01_1508.csv", colClasses =  "character") %>%
+  filter( record_id %in% auto_tch$record_id ) #filtering by the common patients
+
+# MUSIC data dictionary from the general common_ref folder
+datadict <- read.csv('../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+```
+
+# Laboratory values selection
+```{r}
+lab_datadict <- datadict %>% 
+  dplyr::filter(Form.Name == "laboratory_values") 
+
+auto_tch <- auto_tch %>%
+  dplyr::filter( redcap_repeat_instrument == "laboratory_values")
+
+manual_tch <- manual_tch %>%
+  dplyr::filter( redcap_repeat_instrument == "laboratory_values") %>%
+  dplyr::select(record_id, lab_datadict$Variable...Field.Name)
+```
+
+# Identify the data in-scope
+We define the data in scope as those variables that can be automatically extractable, and the we can then compare in the manual vs. automatic data entry. 
+
+## Reformat the data
+Create an id based on the patient ID and the visit value and pivot the data to have tables with 3 columns:
+- id 
+- variable
+- value
+
+```{r}
+manual_tch <- manual_tch %>%
+  dplyr::select( c("record_id", lab_datadict$Variable...Field.Name) ) %>%
+  dplyr::mutate( id=paste0( record_id, "-",lab_values_visit)) %>%
+  dplyr::select( -record_id, - lab_values_na, - lab_values_visit ) 
+
+manual_tch <- manual_tch %>% # remove columns that are not needed
+  tidyr::pivot_longer( cols = c(1:ncol( manual_tch) - 1), 
+                       names_to = "variable", 
+                       values_to = "value_manual") %>%
+  dplyr::filter( ! value_manual %in% c("", " ")) 
+
+auto_tch <-  auto_tch %>%
+  dplyr::mutate( id=paste0( record_id, "-",lab_values_visit)) %>%
+  dplyr::select( -record_id, -lab_values_visit, - redcap_event_name, - redcap_repeat_instrument,-redcap_repeat_instance ) # remove columns that are not needed
+
+auto_tch <- auto_tch %>%
+  tidyr::pivot_longer( cols = c(1:ncol(auto_tch)-1), 
+                       names_to = "variable", 
+                       values_to = "value_auto") %>%
+  dplyr::filter( value_auto != "") 
+
+```
+
+Identify the variables that are in scope (auto extract possible). 
+```{r}
+nrow(manual_tch)
+manual_tch_in_scope <- manual_tch %>%
+  dplyr::filter( variable %in% auto_tch$variable )
+nrow(manual_tch_in_scope)
+
+manual_tch_Not_in_scope <- manual_tch %>%
+  dplyr::filter( ! variable %in% auto_tch$variable )
+
+toCheck <- as.data.frame( table( manual_tch_Not_in_scope$variable))
+```
+# Get the concordance 
+We merge the manual_tch_in_scope with the auto_tch one, and we estimate for how many cases the value is the same in both. 
+```{r}
+manualVsauto <- left_join( manual_tch_in_scope, auto_tch, by =c("id", "variable"))
+```
+
+We #re-format dates changing NA auto values to 0 when manual is 0 and auto is NA and removing .0 from 4.0, 13.0 etc. 
+We also remove white spaces and make sure everything is comparable. 
+Finally we do the comparison to assign which cases are the same and which ones are different.
+```{r}
+#manualVsauto2 <- manualVsauto
+manualVsauto <- manualVsauto %>%
+  dplyr::mutate( value_manual = as.character( trimws( value_manual)), 
+                 value_manual = ifelse( grepl( "\\.0$", value_manual) == TRUE, 
+                                        gsub("\\.0", "", value_manual), value_manual ),
+                 value_auto = as.character( trimws( value_auto)), 
+                 value_auto = gsub("<", "", value_auto ),
+                 value_auto = ifelse( grepl( "\\.0$", value_auto) == TRUE, 
+                                        gsub("\\.0", "", value_auto), value_auto ))
+
+manualVsauto <- manualVsauto %>%
+  dplyr::mutate( type = sapply(strsplit( variable, "_"), tail, 1),
+                 #value_auto =  #ifelse( type == "date",  
+                               #as.character( as.Date( value_auto, format = "%m/%d/%Y")),
+                               #value_auto), 
+                 value_manual = as.character( trimws( value_manual)), 
+                 value_auto = as.character( trimws( value_auto)), 
+                 value_auto = ifelse( value_manual == 0 & is.na(value_auto), 0, value_auto ),
+                 concordance = ifelse( value_manual == value_auto, "same", "different"))
+```
+
+Get a summary of the results
+```{r}
+results <- summary(as.factor( manualVsauto$concordance))
+results
+round(as.numeric(100* results["same"]/nrow(manualVsauto)), 2)
+
+different <- manualVsauto %>% filter( concordance == "different")
+missing <- manualVsauto %>% filter( is.na(concordance) )
+different <- different %>% mutate( patient = sapply(strsplit( id, "-"), '[', 1), visit = sapply(strsplit( id, "-"), '[', 2))
+obtained <- different %>% filter( type == "obtained" & value_auto == 0)
+```
+
+
+# Session Information Summary
+```{r}
+sessionInfo()
+```
