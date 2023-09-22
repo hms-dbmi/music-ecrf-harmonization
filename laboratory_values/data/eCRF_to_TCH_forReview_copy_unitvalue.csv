@@ -2,8 +2,10 @@ concept_cd,concept_descripiton,Section.Header,unit_value
 4544-3,4544-3,Hematocrit (%),-88
 6690-2,6690-2,WBC Count (x10^3/uL or 10^9/L),1
 718-7,718-7,Hemoglobin (g/dL),-88
-731-7,731-7,Lymphocytes (%),-88
-711-6,711-6,Neutrophils (%),-88
+737-7,737-7,Lymphocytes (%),-88
+731-0,731-0,Lymphocytes (%),-88
+771-6,771-6,Neutrophils (%),-88
+NEUTROPHILS,NEUTROPHILS,Neutrophils (%),-88
 777-3,777-3,Platelets (x10^3/uL or x10^9/L),1
 albumin,ALBUMIN,Albumin (g/dL),-88
 albumin (beaker),ALBUMIN (BEAKER),Albumin (g/dL),-88
@@ -20,10 +22,12 @@ bicarbonate (beaker),BICARBONATE (BEAKER),Bicarbonate (mmol/L),-88
 bilirubin total,BILIRUBIN TOTAL,Total bilirubin (mg/dL),-88
 bilirubin total (beaker),BILIRUBIN TOTAL (BEAKER),Total bilirubin (mg/dL),-88
 bilirubin unconjugated (beaker),BILIRUBIN UNCONJUGATED (BEAKER),Total bilirubin (mg/dL),-88
+bilirubin conjugated (beaker),BILIRUBIN CONJUGATED (BEAKER),Direct bilirubin (mg/dL),-88
 "bilirubin, direct","BILIRUBIN, DIRECT",Direct bilirubin (mg/dL),-88
 "bilirubin, indirect","BILIRUBIN, INDIRECT",Direct bilirubin (mg/dL),-88
 bnp plasma,BNP PLASMA,B-type natriuretic peptide (BNP) (pg/mL),NA
 bnp plasma (beaker),BNP PLASMA (BEAKER),B-type natriuretic peptide (BNP) (pg/mL),NA
+nt pro bnp (beaker),NT PRO BNP (BEAKER),NT-proBNP (pg/mL),-88
 c reactive protein,C REACTIVE PROTEIN,"C-Reactive Protein, CRP (circle: mg/L or mg/dL)",NA
 c reactive protein (beaker),C REACTIVE PROTEIN (BEAKER),"C-Reactive Protein, CRP (circle: mg/L or mg/dL)",2
 c3 (beaker),C3 (BEAKER),Complement levels: C3 (mg/dL),-88
@@ -48,6 +52,7 @@ creatinine urine (beaker),CREATININE URINE (BEAKER),Creatinine (mg/dL),-88
 creatinine whole blood (poct),CREATININE WHOLE BLOOD (POCT),Creatinine (mg/dL),-88
 "creatinine, random urine","CREATININE, RANDOM URINE",Creatinine (mg/dL),-88
 d-dimer quantitative,D-DIMER QUANTITATIVE,D-dimer (mcg/mL FEU),NA
+d dimer (beaker),D DIMER (BEAKER),D-dimer (mcg/mL FEU),NA
 ferritin,FERRITIN,Ferritin (ng/mL),-88
 ferritin (beaker),FERRITIN (BEAKER),Ferritin (ng/mL),-88
 fibrinogen,FIBRINOGEN,Fibrinogen (mg/dL),-88
@@ -106,8 +111,6 @@ NA,NA,Platelets (x10^3/uL or x10^9/L),NA
 NA,NA,Troponin T (ng/mL),NA
 NA,NA,Complement levels: AH50 (%),NA
 NA,NA,Complement levels: CH50 (%),NA
-neutrophils,NEUTROPHILS,Neutrophils (%),NA
-neutrophils bf (beaker),NEUTROPHILS BF (BEAKER),Neutrophils (%),NA
 potassium,POTASSIUM,Potassium (mmol/L),NA
 potassium (beaker),POTASSIUM (BEAKER),Potassium (mmol/L),NA
 potassium & sodium phosphates 280-160-250 mg oral pack,POTASSIUM & SODIUM PHOSPHATES 280-160-250 MG ORAL PACK,Potassium (mmol/L),NA
@@ -128,7 +131,7 @@ potassium urine (beaker),POTASSIUM URINE (BEAKER),Potassium (mmol/L),NA
 procalcitonin,PROCALCITONIN,Procalcitonin (ng/mL),NA
 procalcitonin (beaker),PROCALCITONIN (BEAKER),Procalcitonin (ng/mL),NA
 prothrombin time,PROTHROMBIN TIME,PT (seconds),NA
-prothrombin time,PROTHROMBIN TIME,Thrombin time (seconds),NA
+protime (beaker),PROTIME (BEAKER),PT (seconds),NA
 ptt (beaker),PTT (BEAKER),APTT or PTT (seconds),NA
 ptt hepzyme (beaker),PTT HEPZYME (BEAKER),APTT or PTT (seconds),NA
 sed rate (beaker),SED RATE (BEAKER),ESR (mm/hr),-88
@@ -155,9 +158,12 @@ sodium phosphate injection 0.05 mmole/ml,SODIUM PHOSPHATE INJECTION 0.05 MMOLE/M
 sodium phosphate injection 0.12 mmole/ml,SODIUM PHOSPHATE INJECTION 0.12 MMOLE/ML,Sodium (mmol/L),-88
 sodium urine (beaker),SODIUM URINE (BEAKER),Sodium (mmol/L),-88
 thrombin time (beaker),THROMBIN TIME (BEAKER),Thrombin time (seconds),seconds
-total protein (beaker),TOTAL PROTEIN (BEAKER),Total protein (g/dL),g/dL
+protein total (beaker),PROTEIN TOTAL (BEAKER),Total protein (g/dL),g/dL
 triglycerides,TRIGLYCERIDES,Triglycerides (circle: mg/dL or mmol/L),NA
 troponin i,TROPONIN I,Troponin I (ng/mL),-88
 troponin i (beaker),TROPONIN I (BEAKER),Troponin I (ng/mL),-88
 tumor necrosis fact,TUMOR NECROSIS FACT,Cytokine panel: TNF-alpha (pg/mL),-88
 urea nitrogen (bun),UREA NITROGEN (BUN),Urea (BUN) (mg/dL),NA
+bun (beaker),BUN (BEAKER),Urea (BUN) (mg/dL),NA
+absolute neutrophils,ABSOLUTE NEUTROPHILS,Absolute neutrophil count,NA
+absolute lymphoctyes,ABSOLUTE LYMPHOCYTES,Absolute lymphocyte count,NA
