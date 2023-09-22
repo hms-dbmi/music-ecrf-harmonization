@@ -3,8 +3,7 @@ concept_cd,concept_descripiton,Section.Header,unit_value
 6690-2,6690-2,WBC Count (x10^3/uL or 10^9/L),1
 718-7,718-7,Hemoglobin (g/dL),-88
 737-7,737-7,Lymphocytes (%),-88
-731-0,731-0,Lymphocytes (%),-88
-771-6,771-6,Neutrophils (%),-88
+787-2,787-2,Neutrophils (%),-88
 NEUTROPHILS,NEUTROPHILS,Neutrophils (%),-88
 777-3,777-3,Platelets (x10^3/uL or x10^9/L),1
 albumin,ALBUMIN,Albumin (g/dL),-88
@@ -28,7 +27,7 @@ bilirubin conjugated (beaker),BILIRUBIN CONJUGATED (BEAKER),Direct bilirubin (mg
 bnp plasma,BNP PLASMA,B-type natriuretic peptide (BNP) (pg/mL),NA
 bnp plasma (beaker),BNP PLASMA (BEAKER),B-type natriuretic peptide (BNP) (pg/mL),NA
 nt pro bnp (beaker),NT PRO BNP (BEAKER),NT-proBNP (pg/mL),-88
-c reactive protein,C REACTIVE PROTEIN,"C-Reactive Protein, CRP (circle: mg/L or mg/dL)",NA
+c reactive protein,C REACTIVE PROTEIN,"C-Reactive Protein, CRP (circle: mg/L or mg/dL)",2
 c reactive protein (beaker),C REACTIVE PROTEIN (BEAKER),"C-Reactive Protein, CRP (circle: mg/L or mg/dL)",2
 c3 (beaker),C3 (BEAKER),Complement levels: C3 (mg/dL),-88
 c4 (beaker),C4 (BEAKER),Complement levels: C4 (mg/dL),-88
@@ -158,7 +157,7 @@ sodium phosphate injection 0.05 mmole/ml,SODIUM PHOSPHATE INJECTION 0.05 MMOLE/M
 sodium phosphate injection 0.12 mmole/ml,SODIUM PHOSPHATE INJECTION 0.12 MMOLE/ML,Sodium (mmol/L),-88
 sodium urine (beaker),SODIUM URINE (BEAKER),Sodium (mmol/L),-88
 thrombin time (beaker),THROMBIN TIME (BEAKER),Thrombin time (seconds),seconds
-protein total (beaker),PROTEIN TOTAL (BEAKER),Total protein (g/dL),g/dL
+protein total (beaker),PROTEIN TOTAL (BEAKER),Total protein (g/dL),-88
 triglycerides,TRIGLYCERIDES,Triglycerides (circle: mg/dL or mmol/L),NA
 troponin i,TROPONIN I,Troponin I (ng/mL),-88
 troponin i (beaker),TROPONIN I (BEAKER),Troponin I (ng/mL),-88
