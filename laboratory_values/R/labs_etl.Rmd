@@ -18,6 +18,8 @@ ecrf <- read.csv('../../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_
   filter(Form.Name == 'laboratory_values') %>%
   select(variableName = Variable...Field.Name, Section.Header, formName = Form.Name) %>%
   mutate(Section.Header = ifelse(Section.Header == '', NA, Section.Header)) %>%
+  mutate(Section.Header = gsub("\n", " ", Section.Header), 
+         Section.Header = gsub("  ", " ", Section.Header )) %>%
   tidyr::fill(Section.Header) 
 
 lab_dictionary <- right_join(lab_dictionary, ecrf, by = 'Section.Header') %>%
@@ -270,9 +272,9 @@ lab_values_visit
 #######
 # Code to deal with multiple concept codes for lymphocytes and neutrophils
 # We consolidate all concepts to one code
-finalTable <- finalTable %>%
-  mutate(concept_cd = gsub('LAB:3775664', 'LAB:3775715', concept_cd),
-         concept_cd = gsub('LAB:3775663', 'LAB:3775714', concept_cd))
+#finalTable <- finalTable %>%
+#  mutate(concept_cd = gsub('LAB:3775664', 'LAB:3775715', concept_cd),
+#         concept_cd = gsub('LAB:3775663', 'LAB:3775714', concept_cd))
 
 #######
 
@@ -512,7 +514,7 @@ out <- out %>%
 
 There are some variables where we have a concept code for them in our mapping, but they are not present in any TCH MUSIC patients.
 We add them here with the value for obtained being 0 IF there are other labs in their panel... otherwise leave blank
-- troponin I
+- troponin T
 - ah50
 - ch50
 - nt-probnp
@@ -522,7 +524,7 @@ We add them here with the value for obtained being 0 IF there are other labs in 
 
 out <- out %>% 
   mutate(
-    #troponin_l_obtained  = 0,
+         troponin_t_obtained  = 0,
          ah50_obtained  = ifelse(compl_obtained == 1, yes = '0', no = ''), 
          ch50_obtained = ifelse(compl_obtained == 1, yes = '0', no = ''),
     #     nt_probnp_obtained = 0,
@@ -662,7 +664,7 @@ Write output to test upload using dummy IDs 666001 to 666011
 #  select(record_id, everything())
 #write.csv(out2, '../local_ref/lab_output_texas_092023_subsetforredcap.csv', row.names = FALSE, na = '')
 
-write.csv(out, '../local_ref/lab_output_texas_092023_subsetforredcap.csv', row.names = FALSE, na = '')
+write.csv(out, '../local_ref/lab_output_texas_092023.csv', row.names = FALSE, na = '')
 #save(dummy_ID_mapping, file = '../local_ref/dummy_ID_mapping.RData')
 
 ```
