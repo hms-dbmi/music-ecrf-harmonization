@@ -190,6 +190,8 @@ auto_tch <- auto_tch %>%
                        names_to = "variable", 
                        values_to = "value_auto") %>%
   dplyr::filter( value_auto != "") 
+print(paste0("Total medication values extracted automatically: ", nrow( auto_tch)))
+
 
 auto_tch_toCompare <- auto_tch %>%
   dplyr::mutate( mednum = sapply(strsplit( variable, "_"), head, 1),
@@ -197,7 +199,7 @@ auto_tch_toCompare <- auto_tch %>%
   dplyr::group_by( record_id, redcap_repeat_instance, mednum ) %>%
   dplyr::arrange(factor(medtype, levels = c("type", "code", "name", "start"))) %>%
   dplyr::summarise( counts = n(), 
-                    new_val = ifelse( counts == 1, value_auto, paste(value_auto, collapse="-")))
+                    new_val = ifelse( counts == 1, value_auto, paste(value_auto, collapse="*")))
 
 manual_tch <- manual_tch %>%
   dplyr::select( c("record_id", "redcap_repeat_instance",  datadict$Variable...Field.Name) ) %>%
@@ -209,13 +211,16 @@ manual_tch <- manual_tch %>% # remove columns that are not needed
                        values_to = "value_auto") %>%
   dplyr::filter( value_auto != "" & value_auto != 0 ) 
 
+print(paste0("Total medication values entered manually: ", nrow( manual_tch)))
+
+
 manual_tch_toCompare <- manual_tch %>%
   dplyr::mutate( mednum = sapply(strsplit( variable, "_"), head, 1),
                  medtype =  sapply(strsplit( variable, "_"), '[', 2))%>%
   dplyr::group_by( record_id, redcap_repeat_instance, mednum ) %>%
   dplyr::arrange(factor(medtype, levels = c("type", "code", "name", "start"))) %>%
   dplyr::summarise( counts = n(), 
-                    new_val = ifelse( counts == 1, value_auto, paste(value_auto, collapse="-")))
+                    new_val = ifelse( counts == 1, value_auto, paste(value_auto, collapse="*")))
 
 ```
 
@@ -226,69 +231,49 @@ manual_tch_toCompare <- manual_tch %>%
 manual <- manual_tch_toCompare %>%
   dplyr::ungroup() %>%
   dplyr::mutate( id = paste0( record_id, "###", new_val )) %>%
-  dplyr::select( record_id, manual_val = new_val, id ) %>%
+  dplyr::select( record_id, manual_val = new_val, manual_counts= counts, id ) %>%
   unique()
 
 auto <- auto_tch_toCompare %>%
   dplyr::ungroup() %>%
   dplyr::mutate( id = paste0( record_id, "###", new_val )) %>%
-  dplyr::select( record_id, auto_val = new_val, id ) %>%
+  dplyr::select( record_id, auto_val = new_val, auto_counts = counts, id ) %>%
   unique()
 
-manualVsauto <- full_join( manual, auto, by =c("id"))
+manualVsauto <- full_join( manual, auto, by =c("id", "record_id")) %>%
+  dplyr::mutate( auto_counts = ifelse( is.na(auto_counts), 0, auto_counts ), 
+                 manual_counts = ifelse( is.na(manual_counts), 0, manual_counts ), 
+                total_counts = ifelse( manual_counts == auto_counts, auto_counts, 
+                                        ifelse( manual_counts == 0, auto_counts, manual_counts))) %>%
+  dplyr::select( record_id, id, manual_val, auto_val, total_counts )
 
 manualNotAuto <- manual[ ! manual$id %in% auto$id, ]
 manualAndAuto <- manual[ manual$id %in% auto$id, ]
 
-# if manual is 0 and auto is NA transform NA into 0
-manualVsauto <- manualVsauto %>%
-  dplyr::mutate( manual_val = as.character( trimws( manual_val)), 
-                 auto_val = as.character( trimws( auto_val)), 
-                 auto_val = ifelse( manual_val == 0 & is.na(auto_val), 0, auto_val ),
-                 concordance = ifelse( manual_val == auto_val, "same", "different"))
-
-results <- summary(as.factor( manualVsauto$concordance))
-results
-round(as.numeric(100* results["same"]/(results["same"]+results["NA's"])), 2)
-
-
-
-subset_manual <- manualVsauto %>%
-  dplyr::filter( !is.na(manual_val)) %>%
-  dplyr::mutate( record_id = paste0( sapply(strsplit( id, "-"), head, 1), "-", manual_val) ) %>%
-  dplyr::select( record_id ) %>%
-  unique()
-
-subset_manual <- manualVsauto %>%
-  dplyr::filter( !is.na(manual_val)) %>%
-  dplyr::mutate( ids = paste0( sapply(strsplit( id, "-"), head, 1), "-", manual_val) ) %>%
-  dplyr::select( ids ) %>%
-  unique()
-subset_auto <- manualVsauto %>%
-  dplyr::mutate( ids = paste0( sapply(strsplit( id, "-"), head, 1), "-", auto_val) ) %>%
-  dplyr::select( ids ) %>%
-  unique()
+print(paste0( "Total medication values entered manually:", sum(manual$manual_counts))) 
+print(paste0( "Concordance: ", sum(manualAndAuto$manual_counts))) 
 ```
 
-## Concordance
-```{r, eval=FALSE}
-common <- subset_manual[ subset_manual$ids %in% subset_auto$ids , ]
+## Investigate the .99 meds
+```{r}
+otherMeds <- manualNotAuto %>%
+  dplyr::mutate( others = ifelse( grepl("\\.99", manual_val) == TRUE, "other" , "non")) %>%
+  dplyr::filter(others == "other" ) %>%
+  dplyr::select(manual_val, manual_counts ) %>%
+  unique()
 
-test <- manualVsauto %>% 
-  dplyr::filter(type != 'dt') %>% 
-  dplyr::mutate( record_id = sapply(strsplit( id, "-"), head, 1)) %>%
-  dplyr::group_by(record_id) %>% 
-  dplyr::summarise(manual_codes = list(value_manual), 
-                   auto_codes = list(value_auto )) %>% 
-  dplyr::mutate(manual_not_auto = manual_codes[!manual_codes %in% auto_codes], auto_not_manual = auto_codes[!auto_codes %in% manual_codes])
+medsVals <- otherMeds %>%
+  dplyr::mutate( med_description = ifelse( manual_counts == 4, 
+                                           sapply(strsplit( manual_val, "[*]"), '[', 3), 
+                                           ifelse( manual_counts == 3 & grepl("^99.99",manual_val)== TRUE, sapply(strsplit( manual_val, "[*]"), '[', 2),
+                                                   sapply(strsplit( manual_val, "[*]"), '[', 3))) ) %>% dplyr::select( med_description ) %>% unique()
 
-a <- manualVsauto %>% filter(type != 'dt') %>% mutate( record_id =  sapply(strsplit( id, "-"), head, 1))%>% select(record_id, manual_val)
-b <- manualVsauto %>% filter(type != 'dt') %>% mutate( record_id =  sapply(strsplit( id, "-"), head, 1))%>% select(record_id, auto_val)
-comp <- left_join(a,b)
-
+## save the values and look for the equivalent that we have in the EHR
+write.table( medsVals, file = "../medications_during/medsFreeText.txt", col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
 ```
 
-
+We mapped the meds that we found that we codified as 99.99 to the same name that they entered manually. We also found a typo on their end for Doxycyline, that is Doxycycline. We will update that on the manual description of the variables for further comparison. 
+Not all the meds they entered as .99 we have in the 99.99 category, some as Remdesivir or Enalapril, had their own category different than .99. 
 
 
 # Session Information Summary
