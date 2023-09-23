@@ -10,9 +10,11 @@ output: html_document
 rm(list=)
 library(dplyr)
 library(tidyr)
+library(eulerr)
 ```
 
-# Load the files
+# Laboratory values
+## Load the files
 We need 3 files as input:
 - The TCH automatic file generated with our etl pipeline
 - The TCH manual file, downloaded from REDCap with the manual data entered
@@ -28,7 +30,7 @@ manual_tch <- read.csv("../laboratory_values/local_ref/texasChildren/MUSIC_DATA_
 datadict <- read.csv('../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
 ```
 
-# Laboratory values selection
+## Laboratory values selection
 ```{r}
 lab_datadict <- datadict %>% 
   dplyr::filter(Form.Name == "laboratory_values") 
@@ -37,20 +39,29 @@ auto_tch <- auto_tch %>%
   dplyr::filter( redcap_repeat_instrument == "laboratory_values")
 
 manual_tch <- manual_tch %>%
-  dplyr::filter( redcap_repeat_instrument == "laboratory_values") %>%
-  dplyr::select(record_id, lab_datadict$Variable...Field.Name)
+  dplyr::filter( redcap_repeat_instrument == "laboratory_values")
 ```
 
-# Identify the data in-scope
+## Identify the data in-scope
 We define the data in scope as those variables that can be automatically extractable, and the we can then compare in the manual vs. automatic data entry. 
 
-## Reformat the data
+### Reformat the data
 Create an id based on the patient ID and the visit value and pivot the data to have tables with 3 columns:
 - id 
 - variable
 - value
 
 ```{r}
+totalManualVar <- manual_tch %>%
+  dplyr::select( c("record_id", lab_datadict$Variable...Field.Name) ) 
+
+totalManualVar <- totalManualVar %>%
+  tidyr::pivot_longer( cols = c(2:ncol( totalManualVar)), 
+                       names_to = "variable", 
+                       values_to = "value_manual") %>%
+  dplyr::filter( ! value_manual %in% c("", " ")) 
+nrow( totalManualVar)
+
 manual_tch <- manual_tch %>%
   dplyr::select( c("record_id", lab_datadict$Variable...Field.Name) ) %>%
   dplyr::mutate( id=paste0( record_id, "-",lab_values_visit)) %>%
@@ -73,7 +84,6 @@ auto_tch <- auto_tch %>%
   dplyr::filter( value_auto != "") 
 
 ```
-
 Identify the variables that are in scope (auto extract possible). 
 ```{r}
 nrow(manual_tch)
@@ -86,7 +96,7 @@ manual_tch_Not_in_scope <- manual_tch %>%
 
 toCheck <- as.data.frame( table( manual_tch_Not_in_scope$variable))
 ```
-# Get the concordance 
+## Get the concordance 
 We merge the manual_tch_in_scope with the auto_tch one, and we estimate for how many cases the value is the same in both. 
 ```{r}
 manualVsauto <- left_join( manual_tch_in_scope, auto_tch, by =c("id", "variable"))
@@ -127,6 +137,14 @@ different <- manualVsauto %>% filter( concordance == "different")
 missing <- manualVsauto %>% filter( is.na(concordance) )
 different <- different %>% mutate( patient = sapply(strsplit( id, "-"), '[', 1), visit = sapply(strsplit( id, "-"), '[', 2))
 obtained <- different %>% filter( type == "obtained" & value_auto == 0)
+```
+Plot the overlap
+```{r}
+totalA = sum(results)
+totalB = nrow(auto_tch)
+common = as.numeric(results["same"])
+vd <- euler(c(manual=totalA, auto=totalB, "manual&auto"= common))
+plot(vd, legend = TRUE, quantities =  list(type = c("counts", "percent")), fills = c("lightblue2", "lightyellow"))
 ```
 
 
