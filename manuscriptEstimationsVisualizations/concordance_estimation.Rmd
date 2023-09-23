@@ -148,6 +148,149 @@ plot(vd, legend = TRUE, quantities =  list(type = c("counts", "percent")), fills
 ```
 
 
+# Medication values 
+
+## Load the files
+We need 3 files as input:
+- The TCH automatic file generated with our etl pipeline
+- The TCH manual file, downloaded from REDCap with the manual data entered
+- The MUSIC data dictionary
+```{r}
+rm(list=ls())
+auto_tch <- read.csv('../medications_during/local_ref/tch_medications_during_092023.csv', colClasses ="character")
+
+# tch manual file downloaded from REDCap
+manual_tch <- read.csv("../laboratory_values/local_ref/texasChildren/MUSIC_DATA_2023-09-01_1508.csv", colClasses =  "character") %>%
+  filter( record_id %in% auto_tch$record_id ) #filtering by the common patients
+
+
+# MUSIC data dictionary from the general common_ref folder
+datadict <- read.csv('../common_ref/MUSIC_DataDictionary_V3_4Dec20_final version_clean_0.csv')
+```
+
+## Medication values selection
+```{r}
+datadict <- datadict %>% 
+  dplyr::filter(Form.Name == "additional_medications_during_hospitalization") 
+
+manual_tch <- manual_tch %>%
+  dplyr::filter( redcap_repeat_instrument == "additional_medications_during_hospitalization")
+
+auto_tch <- auto_tch %>%
+  dplyr::filter( redcap_repeat_instrument == "additional_medications_during_hospitalization")
+```
+
+## Transform into table that are comparables
+```{r}
+auto_tch <-  auto_tch %>%
+  dplyr::select( - redcap_event_name, - redcap_repeat_instrument ) # remove columns that are not needed
+
+auto_tch <- auto_tch %>%
+  tidyr::pivot_longer( cols = c(3:ncol(auto_tch)), 
+                       names_to = "variable", 
+                       values_to = "value_auto") %>%
+  dplyr::filter( value_auto != "") 
+
+auto_tch_toCompare <- auto_tch %>%
+  dplyr::mutate( mednum = sapply(strsplit( variable, "_"), head, 1),
+                 medtype =  sapply(strsplit( variable, "_"), '[', 2))%>%
+  dplyr::group_by( record_id, redcap_repeat_instance, mednum ) %>%
+  dplyr::arrange(factor(medtype, levels = c("type", "code", "name", "start"))) %>%
+  dplyr::summarise( counts = n(), 
+                    new_val = ifelse( counts == 1, value_auto, paste(value_auto, collapse="-")))
+
+manual_tch <- manual_tch %>%
+  dplyr::select( c("record_id", "redcap_repeat_instance",  datadict$Variable...Field.Name) ) %>%
+  dplyr::select( - med_na )
+
+manual_tch <- manual_tch %>% # remove columns that are not needed
+  tidyr::pivot_longer( cols = c(3:ncol(manual_tch)), 
+                       names_to = "variable", 
+                       values_to = "value_auto") %>%
+  dplyr::filter( value_auto != "" & value_auto != 0 ) 
+
+manual_tch_toCompare <- manual_tch %>%
+  dplyr::mutate( mednum = sapply(strsplit( variable, "_"), head, 1),
+                 medtype =  sapply(strsplit( variable, "_"), '[', 2))%>%
+  dplyr::group_by( record_id, redcap_repeat_instance, mednum ) %>%
+  dplyr::arrange(factor(medtype, levels = c("type", "code", "name", "start"))) %>%
+  dplyr::summarise( counts = n(), 
+                    new_val = ifelse( counts == 1, value_auto, paste(value_auto, collapse="-")))
+
+```
+
+## Merge auto and manual extraction to get the performance
+
+```{r}
+# merge both files by the id we have created and the variable name
+manual <- manual_tch_toCompare %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate( id = paste0( record_id, "###", new_val )) %>%
+  dplyr::select( record_id, manual_val = new_val, id ) %>%
+  unique()
+
+auto <- auto_tch_toCompare %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate( id = paste0( record_id, "###", new_val )) %>%
+  dplyr::select( record_id, auto_val = new_val, id ) %>%
+  unique()
+
+manualVsauto <- full_join( manual, auto, by =c("id"))
+
+manualNotAuto <- manual[ ! manual$id %in% auto$id, ]
+manualAndAuto <- manual[ manual$id %in% auto$id, ]
+
+# if manual is 0 and auto is NA transform NA into 0
+manualVsauto <- manualVsauto %>%
+  dplyr::mutate( manual_val = as.character( trimws( manual_val)), 
+                 auto_val = as.character( trimws( auto_val)), 
+                 auto_val = ifelse( manual_val == 0 & is.na(auto_val), 0, auto_val ),
+                 concordance = ifelse( manual_val == auto_val, "same", "different"))
+
+results <- summary(as.factor( manualVsauto$concordance))
+results
+round(as.numeric(100* results["same"]/(results["same"]+results["NA's"])), 2)
+
+
+
+subset_manual <- manualVsauto %>%
+  dplyr::filter( !is.na(manual_val)) %>%
+  dplyr::mutate( record_id = paste0( sapply(strsplit( id, "-"), head, 1), "-", manual_val) ) %>%
+  dplyr::select( record_id ) %>%
+  unique()
+
+subset_manual <- manualVsauto %>%
+  dplyr::filter( !is.na(manual_val)) %>%
+  dplyr::mutate( ids = paste0( sapply(strsplit( id, "-"), head, 1), "-", manual_val) ) %>%
+  dplyr::select( ids ) %>%
+  unique()
+subset_auto <- manualVsauto %>%
+  dplyr::mutate( ids = paste0( sapply(strsplit( id, "-"), head, 1), "-", auto_val) ) %>%
+  dplyr::select( ids ) %>%
+  unique()
+```
+
+## Concordance
+```{r, eval=FALSE}
+common <- subset_manual[ subset_manual$ids %in% subset_auto$ids , ]
+
+test <- manualVsauto %>% 
+  dplyr::filter(type != 'dt') %>% 
+  dplyr::mutate( record_id = sapply(strsplit( id, "-"), head, 1)) %>%
+  dplyr::group_by(record_id) %>% 
+  dplyr::summarise(manual_codes = list(value_manual), 
+                   auto_codes = list(value_auto )) %>% 
+  dplyr::mutate(manual_not_auto = manual_codes[!manual_codes %in% auto_codes], auto_not_manual = auto_codes[!auto_codes %in% manual_codes])
+
+a <- manualVsauto %>% filter(type != 'dt') %>% mutate( record_id =  sapply(strsplit( id, "-"), head, 1))%>% select(record_id, manual_val)
+b <- manualVsauto %>% filter(type != 'dt') %>% mutate( record_id =  sapply(strsplit( id, "-"), head, 1))%>% select(record_id, auto_val)
+comp <- left_join(a,b)
+
+```
+
+
+
+
 # Session Information Summary
 ```{r}
 sessionInfo()
