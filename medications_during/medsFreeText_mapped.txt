@@ -1,71 +1,54 @@
 med_description	ehr_description				
-Pantoprazole	pantoprazole inj 4 mg/ml*				
-Doxycycline	doxycycline hyclate 100 mg oral caps				
-Doxycycline	doxycycline hyclate 50 mg oral caps				
-Doxycycline	doxycycline monohydrate 25 mg/5ml oral susr				
-Doxycycline	doxycycline inj 1 mg/ml				
-Calcium carbonate	calcium carbonate antacid 500 mg oral chew				
-Influenza seasonal IIV4 vaccine	influenza seasonal iiv4 vaccine pf im susp		 		
-Polyethylene glycol	polyethylene glycol 3350 17 g oral pack       				
-Polyethylene glycol	polyethylene glycol po powd 8.5 g             				
-Polyethylene glycol	polyethylene glycol po powd 4.25 g            				
-Polyethylene glycol	polyethylene glycol 3350 17 gm/scoop oral powd				
-Rocuronium	rocuronium bromide 50 mg/5ml intravenous soln				
-Rocuronium	rocuronium injection 10 mg/ml (anesthesia)				
-Rocuronium	rocuronium inj 10 mg/ml (code/trauma)				
-Rocuronium	rocuronium cont infusion 5 mg/ml				
-Rocuronium	 rocuronium inj 5 mg/ml bolus from cont iv inf				
-Calcium gluconate	calcium gluconate injection 50 mg/ml 				
-Calcium gluconate	calcium gluconate 10 % iv soln 				
-Albumin	albumin human 25 % intravenous soln				
-Albumin	albumin human 5 % intravenous soln 				
-Antithrombin	antithrombin iii (human) inj (bolus)				
-pantoprazole	pantoprazole inj 4 mg/ml				
-Dexmedetomidine	dexmedetomidine cont iv infusion 4mcg/ml				
-Dexmedetomidine	dexmedetomidine injection (anesthesia)				
-Vecuronium	vecuronium bromide 10 mg intravenous solr				
-Vecuronium	vecuronium bromide cont infusion 1 mg/ml 				
-Vecuronium	vecuronium injection 10 mg (anesthesia) 				
-Vasopressin	vasopressin cont iv infusion 0.2 units/ml (standard) 				
-Vasopressin	vasopressin cont iv infusion 1 unit/ml (concentrated)				
-Vasopressin	vasopressin cont iv infusion                         				
-Vasopressin	vasopressin cont iv infusion 0.05 units/ml (neonatal)				
-Docusate	docusate sodium 50 mg oral caps    				
-Docusate	docusate sodium 50 mg/5ml oral liqd				
-Melatonin	melatonin 1 mg/ml oral liqd				
-Melatonin	melatonin 5 mg oral tabs   				
-Melatonin	melatonin 3 mg oral tabs				
-Sennosides	sennosides 8.8 mg/5ml oral syrp				
-Budesonide-Formoterol	budesonide-formoterol fumarate 80-4.5 mcg/act inhalation aero				
-Oxymetazoline	oxymetazoline hcl 0.05 % nasal soln				
-Thrombin	thrombin (recombinant) 5000 units apply ext solr				
-Sodium phosphate	sodium phosphate injection 0.05 mmole/ml                				
-Sodium phosphate	sodium phosphate injection 0.12 mmole/ml				
-Risperidone	risperidone 1 mg/ml oral soln				
-Acyclovir	acyclovir injection 10 mg/ml				
-Carbidopa-Levodopa	carbidopa-levodopa 25-100 mg oral tabs				
-Carbidopa-Levodopa	carbidopa-levodopa 25-100 mg oral tbdp				 
-Clonazepam	clonazepam po susp 0.1 mg/ml (tch) rx				
-Prochlorperazine	prochlorperazine edisylate 5 mg/ml inj soln				
-Lactulose	lactulose 10 gm/15ml oral soln				
-Medroxyprogesterone	medroxyprogesterone acetate 104 mg/0.65ml subcut susy				
-Levetiracetam	levetiracetam 500 mg oral tabs  				
-Levetiracetam	levetiracetam injection 15 mg/ml				
-Racepinephrine	racepinephrine hcl 2.25 % inhalation nebu				
-Promethazine	promethazine hcl 25 mg/ml injection soln				
-					
-					
- 					
-					
-					
-					
-					
-					
-					
-					
-					
-					
-					
-					
-					
- 					
+Doxycycline	doxycycline hyclate 100 mg oral caps
+Doxycycline	doxycycline hyclate 50 mg oral caps
+Doxycycline	doxycycline monohydrate 25 mg/5ml oral susr
+Doxycycline	doxycycline inj 1 mg/ml
+Calcium carbonate	calcium carbonate antacid 500 mg oral chew
+Influenza seasonal IIV4 vaccine	influenza seasonal iiv4 vaccine pf im susp
+Polyethylene glycol	polyethylene glycol 3350 17 g oral pack
+Polyethylene glycol	polyethylene glycol po powd 8.5 g
+Polyethylene glycol	polyethylene glycol po powd 4.25 g
+Polyethylene glycol	polyethylene glycol 3350 17 gm/scoop oral powd
+Rocuronium	rocuronium bromide 50 mg/5ml intravenous soln
+Rocuronium	rocuronium injection 10 mg/ml (anesthesia)
+Rocuronium	rocuronium inj 10 mg/ml (code/trauma)
+Rocuronium	rocuronium cont infusion 5 mg/ml
+Rocuronium	 rocuronium inj 5 mg/ml bolus from cont iv inf
+Calcium gluconate	calcium gluconate injection 50 mg/ml
+Calcium gluconate	calcium gluconate 10 % iv soln
+Albumin	albumin human 25 % intravenous soln
+Albumin	albumin human 5 % intravenous soln
+Antithrombin	antithrombin iii (human) inj (bolus)
+Pantoprazole	pantoprazole inj 4 mg/ml
+Dexmedetomidine	dexmedetomidine cont iv infusion 4mcg/ml
+Dexmedetomidine	dexmedetomidine injection (anesthesia)
+Vecuronium	vecuronium bromide 10 mg intravenous solr
+Vecuronium	vecuronium bromide cont infusion 1 mg/ml
+Vecuronium	vecuronium injection 10 mg (anesthesia)
+Vasopressin	vasopressin cont iv infusion 0.2 units/ml (standard)
+Vasopressin	vasopressin cont iv infusion 1 unit/ml (concentrated)
+Vasopressin	vasopressin cont iv infusion
+Vasopressin	vasopressin cont iv infusion 0.05 units/ml (neonatal)
+Docusate	docusate sodium 50 mg oral caps
+Docusate	docusate sodium 50 mg/5ml oral liqd
+Melatonin	melatonin 1 mg/ml oral liqd
+Melatonin	melatonin 5 mg oral tabs
+Melatonin	melatonin 3 mg oral tabs
+Sennosides	sennosides 8.8 mg/5ml oral syrp
+Budesonide-Formoterol	budesonide-formoterol fumarate 80-4.5 mcg/act inhalation aero
+Oxymetazoline	oxymetazoline hcl 0.05 % nasal soln
+Thrombin	thrombin (recombinant) 5000 units apply ext solr
+Sodium phosphate	sodium phosphate injection 0.05 mmole/ml
+Sodium phosphate	sodium phosphate injection 0.12 mmole/ml
+Risperidone	risperidone 1 mg/ml oral soln
+Acyclovir	acyclovir injection 10 mg/ml
+Carbidopa-Levodopa	carbidopa-levodopa 25-100 mg oral tabs
+Carbidopa-Levodopa	carbidopa-levodopa 25-100 mg oral tbdp
+Clonazepam	clonazepam po susp 0.1 mg/ml (tch) rx
+Prochlorperazine	prochlorperazine edisylate 5 mg/ml inj soln
+Lactulose	lactulose 10 gm/15ml oral soln
+Medroxyprogesterone	medroxyprogesterone acetate 104 mg/0.65ml subcut susy
+Levetiracetam	levetiracetam 500 mg oral tabs
+Levetiracetam	levetiracetam injection 15 mg/ml
+Racepinephrine	racepinephrine hcl 2.25 % inhalation nebu
+Promethazine	promethazine hcl 25 mg/ml injection soln
