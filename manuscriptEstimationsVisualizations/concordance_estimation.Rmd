@@ -42,6 +42,17 @@ manual_tch <- manual_tch %>%
   dplyr::filter( redcap_repeat_instrument == "laboratory_values")
 ```
 
+### Get the number of distinct laboratory variables
+```{r}
+labVar <- lab_datadict %>% 
+  dplyr::filter( Field.Label == "Obtained") %>%
+  dplyr::select( Section.Header ) %>%
+  unique()
+
+print(paste0("Total laboratory variables:", nrow(labVar)))
+```
+
+
 ## Identify the data in-scope
 We define the data in scope as those variables that can be automatically extractable, and the we can then compare in the manual vs. automatic data entry. 
 
@@ -180,6 +191,19 @@ auto_tch <- auto_tch %>%
   dplyr::filter( redcap_repeat_instrument == "additional_medications_during_hospitalization")
 ```
 
+
+
+### Get the number of distinct medication variables
+```{r}
+medVar <- datadict %>% 
+  dplyr::filter( grepl( "^Medication 1 Code", Field.Label)  == TRUE) %>%
+  dplyr::mutate( medCategory = gsub("Medication 1 Code", "", Field.Label )) %>%
+  dplyr::select( medCategory ) %>%
+  unique()
+
+print(paste0("Total medication categories:", nrow(medVar)))
+```
+
 ## Transform into table that are comparables
 ```{r}
 auto_tch <-  auto_tch %>%
@@ -190,6 +214,11 @@ auto_tch <- auto_tch %>%
                        names_to = "variable", 
                        values_to = "value_auto") %>%
   dplyr::filter( value_auto != "") 
+
+#remove the .99 ones
+auto_tch <- auto_tch %>%
+  dplyr::filter( grepl( "\\.99", value_auto ) == FALSE)
+  
 print(paste0("Total medication values extracted automatically: ", nrow( auto_tch)))
 
 
@@ -211,6 +240,10 @@ manual_tch <- manual_tch %>% # remove columns that are not needed
                        values_to = "value_auto") %>%
   dplyr::filter( value_auto != "" & value_auto != 0 ) 
 
+#remove the .99 ones
+manual_tch <- manual_tch %>%
+  dplyr::filter( grepl( "\\.99", value_auto ) == FALSE)
+  
 print(paste0("Total medication values entered manually: ", nrow( manual_tch)))
 
 
@@ -223,6 +256,7 @@ manual_tch_toCompare <- manual_tch %>%
                     new_val = ifelse( counts == 1, value_auto, paste(value_auto, collapse="*")))
 
 ```
+
 
 ## Merge auto and manual extraction to get the performance
 
@@ -265,26 +299,69 @@ vd <- euler(c(manual=totalA, auto=totalB, "manual&auto"= common))
 plot(vd, legend = TRUE, quantities =  list(type = c("counts", "percent")), fills = c("coral", "lightgrey"))
 ```
 
+## Get the number of labs and meds values automatically extracted for BCH
+
+```{r}
+rm(list=ls())
+
+bch_labs <- read.csv('../laboratory_values/local_ref/redcap_output_laboratory_values_updated.csv', colClasses ="character") %>%
+  dplyr::filter( redcap_repeat_instrument == "laboratory_values")
+length(unique(bch_labs$record_id))
+
+bch_labs <-  bch_labs %>%
+  dplyr::mutate( id=paste0( record_id, "-",lab_values_visit)) %>%
+  dplyr::select( -record_id, -lab_values_visit, - redcap_event_name, - redcap_repeat_instrument,-redcap_repeat_instance ) # remove columns that are not needed
+
+bch_labs <- bch_labs %>%
+  tidyr::pivot_longer( cols = c(1:ncol(bch_labs)-1), 
+                       names_to = "variable", 
+                       values_to = "value_auto") %>%
+  dplyr::filter( value_auto != "") 
+
+print(paste0("Laboratory values extracted for BCH: " , nrow( bch_labs)))
+
+####
+bch_meds <- read.csv('../medications_during/local_ref/redcap_output_medications_during.csv', colClasses ="character") %>%
+  dplyr::filter( redcap_repeat_instrument == "additional_medications_during_hospitalization")
+length(unique(bch_meds$record_id))
+
+bch_meds <-  bch_meds %>%
+  dplyr::select( - redcap_event_name, - redcap_repeat_instrument ) # remove columns that are not needed
+
+bch_meds <- bch_meds %>%
+  tidyr::pivot_longer( cols = c(3:ncol(bch_meds)), 
+                       names_to = "variable", 
+                       values_to = "value_auto") %>%
+  dplyr::filter( value_auto != "")  %>%
+  dplyr::filter( grepl( "\\.99", value_auto ) == FALSE)
+  
+print(paste0("Total medication values extracted automatically: ", nrow( bch_meds)))
+
+```
+
+
+
+####### No needed 
 ## Investigate the .99 meds
 ```{r}
 #identify the meds that are manually entered as .99 in their respective categories
-otherMeds <- manualNotAuto %>%
-  dplyr::mutate( others = ifelse( grepl("\\.99", manual_val) == TRUE, "other" , "non")) %>%
-  dplyr::filter(others == "other" ) %>%
-  dplyr::select(manual_val, manual_counts )
-
-print( paste0("Meds categorized as others: ", sum(otherMeds$manual_counts)))
-
-otherMeds <- otherMeds %>% unique()
-
-medsVals <- otherMeds %>%
-  dplyr::mutate( med_description = ifelse( manual_counts == 4, 
-                                           sapply(strsplit( manual_val, "[*]"), '[', 3), 
-                                           ifelse( manual_counts == 3 & grepl("^99.99",manual_val)== TRUE, sapply(strsplit( manual_val, "[*]"), '[', 2),
-                                                   sapply(strsplit( manual_val, "[*]"), '[', 3))) ) %>% dplyr::select( med_description ) %>% unique()
-
-## save the values and look for the equivalent that we have in the EHR
-write.table( medsVals, file = "../medications_during/medsFreeText.txt", col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
+# otherMeds <- manualNotAuto %>%
+#   dplyr::mutate( others = ifelse( grepl("\\.99", manual_val) == TRUE, "other" , "non")) %>%
+#   dplyr::filter(others == "other" ) %>%
+#   dplyr::select(manual_val, manual_counts )
+# 
+# print( paste0("Meds categorized as others: ", sum(otherMeds$manual_counts)))
+# 
+# otherMeds <- otherMeds %>% unique()
+# 
+# medsVals <- otherMeds %>%
+#   dplyr::mutate( med_description = ifelse( manual_counts == 4, 
+#                                            sapply(strsplit( manual_val, "[*]"), '[', 3), 
+#                                            ifelse( manual_counts == 3 & grepl("^99.99",manual_val)== TRUE, sapply(strsplit( manual_val, "[*]"), '[', 2),
+#                                                    sapply(strsplit( manual_val, "[*]"), '[', 3))) ) %>% dplyr::select( med_description ) %>% unique()
+# 
+# ## save the values and look for the equivalent that we have in the EHR
+# write.table( medsVals, file = "../medications_during/medsFreeText.txt", col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t")
 ```
 
 We mapped the meds that we found that we codified as 99.99 to the same name that they entered manually. We also found a typo on their end for Doxycyline, that is Doxycycline. We will update that on the manual description of the variables for further comparison. 
@@ -292,12 +369,12 @@ Not all the meds they entered as .99 we have in the 99.99 category, some as Remd
 
 ### Check the ones that are distinct than other, to identify potential mapping issues
 ```{r}
-missingMeds <- manualNotAuto %>%
-  dplyr::mutate( others = ifelse( grepl("\\.99", manual_val) == TRUE, "other" , "non")) %>%
-  dplyr::filter(others == "non" ) %>%
-  dplyr::mutate( medCode = sapply(strsplit( manual_val, "[*]"), '[', 2),)
-
-summary(as.factor(missingMeds$medCode))
+# missingMeds <- manualNotAuto %>%
+#   dplyr::mutate( others = ifelse( grepl("\\.99", manual_val) == TRUE, "other" , "non")) %>%
+#   dplyr::filter(others == "non" ) %>%
+#   dplyr::mutate( medCode = sapply(strsplit( manual_val, "[*]"), '[', 2),)
+# 
+# summary(as.factor(missingMeds$medCode))
 
 # we review the ones with the highest number of missing values:
 # 09.03: gamma globuline
@@ -311,53 +388,53 @@ To do this, we will take the "other medications" and we will:
 Once we adjust these two things, we will re-create the original dataset and re-estimate the concordance. 
 ```{r}
 # in the manual data one, we replace the X.99 by 99.99
-otherMeds <- manualNotAuto %>%
-  dplyr::mutate( others = ifelse( grepl("\\.99", manual_val) == TRUE, "other" , "non")) %>%
-  dplyr::filter(others == "other" ) %>%
-  dplyr::mutate( med_description = ifelse( manual_counts == 4, 
-                                           sapply(strsplit( manual_val, "[*]"), '[', 3), 
-                                           ifelse( manual_counts == 3 & grepl("^99.99",manual_val)== TRUE, sapply(strsplit( manual_val, "[*]"), '[', 2),
-                                                   sapply(strsplit( manual_val, "[*]"), '[', 3))) ) %>%
-  dplyr::mutate( med_description = tolower( med_description ),
-                 manual_val_updated = ifelse(grepl("^99.99",manual_val)== TRUE, 
-                                             manual_val,
-                                             paste0("99.99*", med_description)), 
-                 id = paste0(record_id,"###", manual_val_updated)) %>%
-  select( - med_description, -others)
-
-# in the automatic one, we rename the descriptions with the updated value and remove the date
-mappingOtherMeds <- read.delim("../medications_during/medsFreeText_mapped.txt") %>%
-  dplyr::select( med_description, ehr_description )
-mappingOtherMeds$med_description <- tolower( trimws(mappingOtherMeds$med_description))
-mappingOtherMeds$ehr_description <- trimws(mappingOtherMeds$ehr_description)
-
-auto_others <- auto_tch_toCompare %>%
-  dplyr::mutate( others = ifelse( grepl("^99.99", new_val) == TRUE, "other" , "non")) %>%
-  dplyr::filter( others == "other" ) %>%
-  dplyr::select( - others ) %>%
-  dplyr::mutate( ehr_description = sapply(strsplit( new_val, "[*]"), '[', 2)) %>%
-  dplyr::left_join( mappingOtherMeds )
-
+# otherMeds <- manualNotAuto %>%
+#   dplyr::mutate( others = ifelse( grepl("\\.99", manual_val) == TRUE, "other" , "non")) %>%
+#   dplyr::filter(others == "other" ) %>%
+#   dplyr::mutate( med_description = ifelse( manual_counts == 4, 
+#                                            sapply(strsplit( manual_val, "[*]"), '[', 3), 
+#                                            ifelse( manual_counts == 3 & grepl("^99.99",manual_val)== TRUE, sapply(strsplit( manual_val, "[*]"), '[', 2),
+#                                                    sapply(strsplit( manual_val, "[*]"), '[', 3))) ) %>%
+#   dplyr::mutate( med_description = tolower( med_description ),
+#                  manual_val_updated = ifelse(grepl("^99.99",manual_val)== TRUE, 
+#                                              manual_val,
+#                                              paste0("99.99*", med_description)), 
+#                  id = paste0(record_id,"###", manual_val_updated)) %>%
+#   select( - med_description, -others)
+# 
+# # in the automatic one, we rename the descriptions with the updated value and remove the date
+# mappingOtherMeds <- read.delim("../medications_during/medsFreeText_mapped.txt") %>%
+#   dplyr::select( med_description, ehr_description )
+# mappingOtherMeds$med_description <- tolower( trimws(mappingOtherMeds$med_description))
+# mappingOtherMeds$ehr_description <- trimws(mappingOtherMeds$ehr_description)
+# 
+# auto_others <- auto_tch_toCompare %>%
+#   dplyr::mutate( others = ifelse( grepl("^99.99", new_val) == TRUE, "other" , "non")) %>%
+#   dplyr::filter( others == "other" ) %>%
+#   dplyr::select( - others ) %>%
+#   dplyr::mutate( ehr_description = sapply(strsplit( new_val, "[*]"), '[', 2)) %>%
+#   dplyr::left_join( mappingOtherMeds )
+# 
 
 ### considered originally 99.99 we want to keep the date for the rest remove
 ### influenza seasonal IIV4 vaccine, vasopressin, oxymetazoline, risperidone, carbidopa-levodopa
-auto_others_mapped <- auto_others %>%
-  dplyr::filter( ! is.na( med_description )) %>%
-  dplyr::mutate( new_val_updated = ifelse( med_description %in% c("influenza seasonal IIV4 vaccine", "vasopressin", "oxymetazoline", "risperidone", "carbidopa-levodopa"), 
-                                           paste0("99.99*",med_description, sapply(strsplit( new_val, "[*]"), '[', 3)), paste0("99.99*", med_description )), 
-                 id = paste0(record_id,"###", new_val_updated))
-
-# estimate the additional values that would be mapped 
-commonOthers <- otherMeds[ otherMeds$id %in% auto_others_mapped$id, ]
+# auto_others_mapped <- auto_others %>%
+#   dplyr::filter( ! is.na( med_description )) %>%
+#   dplyr::mutate( new_val_updated = ifelse( med_description %in% c("influenza seasonal IIV4 vaccine", "vasopressin", "oxymetazoline", "risperidone", "carbidopa-levodopa"), 
+#                                            paste0("99.99*",med_description, sapply(strsplit( new_val, "[*]"), '[', 3)), paste0("99.99*", med_description )), 
+#                  id = paste0(record_id,"###", new_val_updated))
+# 
+# # estimate the additional values that would be mapped 
+# commonOthers <- otherMeds[ otherMeds$id %in% auto_others_mapped$id, ]
 ```
 
 Plot the overlap
 ```{r}
-totalA = sum(manual$manual_counts)
-totalB = nrow(auto_tch)
-common = sum(manualAndAuto$manual_counts)+sum(commonOthers$manual_counts)
-vd <- euler(c(manual=totalA, auto=totalB, "manual&auto"= common))
-plot(vd, legend = TRUE, quantities =  list(type = c("counts", "percent")), fills = c("coral", "lightgrey"))
+# totalA = sum(manual$manual_counts)
+# totalB = nrow(auto_tch)
+# common = sum(manualAndAuto$manual_counts)+sum(commonOthers$manual_counts)
+# vd <- euler(c(manual=totalA, auto=totalB, "manual&auto"= common))
+# plot(vd, legend = TRUE, quantities =  list(type = c("counts", "percent")), fills = c("coral", "lightgrey"))
 ```
 
 # Session Information Summary
