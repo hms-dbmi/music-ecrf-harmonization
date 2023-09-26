@@ -215,12 +215,6 @@ auto_tch <- auto_tch %>%
                        values_to = "value_auto") %>%
   dplyr::filter( value_auto != "") 
 
-#remove the .99 ones
-auto_tch <- auto_tch %>%
-  dplyr::filter( grepl( "\\.99", value_auto ) == FALSE)
-  
-print(paste0("Total medication values extracted automatically: ", nrow( auto_tch)))
-
 
 auto_tch_toCompare <- auto_tch %>%
   dplyr::mutate( mednum = sapply(strsplit( variable, "_"), head, 1),
@@ -229,6 +223,13 @@ auto_tch_toCompare <- auto_tch %>%
   dplyr::arrange(factor(medtype, levels = c("type", "code", "name", "start"))) %>%
   dplyr::summarise( counts = n(), 
                     new_val = ifelse( counts == 1, value_auto, paste(value_auto, collapse="*")))
+
+#remove the .99 ones
+auto_tch_toCompare <- auto_tch_toCompare %>%
+  dplyr::filter( grepl( "\\.99", new_val ) == FALSE)
+  
+print(paste0("Total medication values extracted automatically: ", sum( auto_tch_toCompare$counts)))
+
 
 manual_tch <- manual_tch %>%
   dplyr::select( c("record_id", "redcap_repeat_instance",  datadict$Variable...Field.Name) ) %>%
@@ -240,13 +241,6 @@ manual_tch <- manual_tch %>% # remove columns that are not needed
                        values_to = "value_auto") %>%
   dplyr::filter( value_auto != "" & value_auto != 0 ) 
 
-#remove the .99 ones
-manual_tch <- manual_tch %>%
-  dplyr::filter( grepl( "\\.99", value_auto ) == FALSE)
-  
-print(paste0("Total medication values entered manually: ", nrow( manual_tch)))
-
-
 manual_tch_toCompare <- manual_tch %>%
   dplyr::mutate( mednum = sapply(strsplit( variable, "_"), head, 1),
                  medtype =  sapply(strsplit( variable, "_"), '[', 2))%>%
@@ -254,6 +248,13 @@ manual_tch_toCompare <- manual_tch %>%
   dplyr::arrange(factor(medtype, levels = c("type", "code", "name", "start"))) %>%
   dplyr::summarise( counts = n(), 
                     new_val = ifelse( counts == 1, value_auto, paste(value_auto, collapse="*")))
+
+#remove the .99 ones
+manual_tch_toCompare <- manual_tch_toCompare %>%
+  dplyr::filter( grepl( "\\.99", new_val ) == FALSE)
+  
+print(paste0("Total medication values entered manually: ", sum( manual_tch_toCompare$counts)))
+
 
 ```
 
