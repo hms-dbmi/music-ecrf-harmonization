@@ -144,11 +144,33 @@ results <- summary(as.factor( manualVsauto$concordance))
 results
 round(as.numeric(100* results["same"]/nrow(manualVsauto)), 2)
 
+same <- manualVsauto %>% filter( concordance == "same")
 different <- manualVsauto %>% filter( concordance == "different")
 missing <- manualVsauto %>% filter( is.na(concordance) )
 different <- different %>% mutate( patient = sapply(strsplit( id, "-"), '[', 1), visit = sapply(strsplit( id, "-"), '[', 2))
 obtained <- different %>% filter( type == "obtained" & value_auto == 0)
+obtained_manual0 <- different %>% filter( type == "obtained" & value_manual == 0)
+
 ```
+Further investigate the results that are different. 
+```{r}
+different  %>% 
+  dplyr::filter( type == "obtained" ) %>%
+  dplyr::group_by( value_manual ) %>%
+  dplyr::summarise( n = n())
+
+dates_diff <- different %>%
+  dplyr::filter( type == "date") %>%
+  dplyr::mutate( dateDiff = as.Date(value_manual) - as.Date(value_auto))
+
+summary(as.factor( dates_diff$dateDiff))
+
+dates_diff %>%
+  dplyr::group_by( visit, dateDiff ) %>%
+  dplyr::summarise( n = n())
+```
+
+
 Plot the overlap
 ```{r}
 totalA = sum(results)
@@ -156,6 +178,37 @@ totalB = nrow(auto_tch)
 common = as.numeric(results["same"])
 vd <- euler(c(manual=totalA, auto=totalB, "manual&auto"= common))
 plot(vd, legend = TRUE, quantities =  list(type = c("counts", "percent")), fills = c("lightblue2", "lightyellow"))
+```
+
+## Get the values without using as reference the manual 
+Use a full join instead of a left join. 
+```{r}
+autoVsManual <- full_join( manual_tch_in_scope, auto_tch, by =c("id", "variable"))
+
+addingInfo <- autoVsManual %>%
+  dplyr::filter( is.na(value_manual) ) %>%
+  dplyr::mutate( visit = sapply(strsplit( id, "-"), '[', 2), 
+                 lab_var = sapply(strsplit( variable, "_"), '[', 1), 
+                 var_type = sapply(strsplit( variable, "_"), function(x) tail(x, n = 1)))
+
+summaryByVisitNum <- addingInfo %>%
+  dplyr::group_by( visit) %>%
+  dplyr::summarise(n = n())
+
+summaryOfTypes <- addingInfo %>%
+  dplyr::group_by( visit, var_type ) %>%
+  dplyr::summarise(n = n())
+
+manual_tch_in_scope %>%
+  dplyr::mutate( visit = sapply(strsplit( id, "-"), '[', 2)) %>%
+  dplyr::group_by( visit) %>%
+  dplyr::summarise(n = n())
+
+auto_tch %>%
+  dplyr::mutate( visit = sapply(strsplit( id, "-"), '[', 2)) %>%
+  dplyr::group_by( visit) %>%
+  dplyr::summarise(n = n())
+
 ```
 
 
