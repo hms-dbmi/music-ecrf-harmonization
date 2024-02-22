@@ -179,6 +179,23 @@ common = as.numeric(results["same"])
 vd <- euler(c(manual=totalA, auto=totalB, "manual&auto"= common))
 plot(vd, legend = TRUE, quantities =  list(type = c("counts", "percent")), fills = c("lightblue2", "lightyellow"))
 ```
+## Get the values of same and different by visit number
+```{r}
+manualVsauto_visitNum <- manualVsauto %>%
+  dplyr::mutate( visit_num = sapply(strsplit( id, "-"), '[', 2),
+                 concordance = ifelse( is.na( concordance), "different", concordance)) %>%
+  dplyr::group_by( visit_num, concordance ) %>%
+  dplyr::summarise( n = n()) 
+
+###
+manualVsauto_visitNum <- manualVsauto_visitNum %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by( visit_num ) %>%
+  dplyr::summarise( concordance = concordance,
+                    val = n,
+                    total = sum(n), 
+                    perc = round(n/total*100, 2))
+```
 
 ## Get the values without using as reference the manual 
 Use a full join instead of a left join. 
