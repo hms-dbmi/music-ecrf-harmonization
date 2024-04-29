@@ -107,6 +107,14 @@ manual_tch_Not_in_scope <- manual_tch %>%
 
 toCheck <- as.data.frame( table( manual_tch_Not_in_scope$variable))
 ```
+## For the auto-extraction, get how many variables we had per time point
+```{r}
+dim(auto_tch)
+
+numbers_table3 <- auto_tch %>%
+  dplyr::mutate( visit = sapply(strsplit( id, "-"), '[', 2))
+```
+
 ## Get the concordance 
 We merge the manual_tch_in_scope with the auto_tch one, and we estimate for how many cases the value is the same in both. 
 ```{r}
@@ -179,11 +187,13 @@ common = as.numeric(results["same"])
 vd <- euler(c(manual=totalA, auto=totalB, "manual&auto"= common))
 plot(vd, legend = TRUE, quantities =  list(type = c("counts", "percent")), fills = c("lightblue2", "lightyellow"))
 ```
+
 ## Get the values of same and different by visit number
 ```{r}
 manualVsauto_visitNum <- manualVsauto %>%
   dplyr::mutate( visit_num = sapply(strsplit( id, "-"), '[', 2),
                  concordance = ifelse( is.na( concordance), "different", concordance)) %>%
+  #dplyr::filter( id %in% auto_tch$id ) %>%
   dplyr::group_by( visit_num, concordance ) %>%
   dplyr::summarise( n = n()) 
 
@@ -197,10 +207,41 @@ manualVsauto_visitNum <- manualVsauto_visitNum %>%
                     perc = round(n/total*100, 2))
 ```
 
+
 ## Get the values without using as reference the manual 
 Use a full join instead of a left join. 
 ```{r}
 autoVsManual <- full_join( manual_tch_in_scope, auto_tch, by =c("id", "variable"))
+
+autoVsManual_t3 <- autoVsManual %>%
+  dplyr::mutate( visit = sapply(strsplit( id, "-"), '[', 2 )) %>%
+  dplyr::mutate( value_manual = as.character( trimws( value_manual)), 
+                 value_manual = ifelse( grepl( "\\.0$", value_manual) == TRUE, 
+                                        gsub("\\.0", "", value_manual), value_manual ),
+                 value_auto = as.character( trimws( value_auto)), 
+                 value_auto = gsub("<", "", value_auto ),
+                 value_auto = ifelse( grepl( "\\.0$", value_auto) == TRUE, 
+                                        gsub("\\.0", "", value_auto), value_auto ), 
+                 value_manual = as.character( trimws( value_manual)), 
+                 value_auto = as.character( trimws( value_auto)), 
+                 updated_auto = ifelse( value_manual == 0 & is.na(value_auto), 0, value_auto )) %>%
+  dplyr::mutate( concordance_real = ifelse( value_manual == value_auto, "same", "diff"),
+                 concordance_inf = ifelse( value_manual == updated_auto, "same", "diff"))
+
+tabl3_columnConcordance <- autoVsManual_t3 %>%
+  dplyr::filter( ! is.na( value_manual )) %>%
+  dplyr::group_by( visit, concordance_inf ) %>%
+  #dplyr::group_by( visit, concordance_real ) %>%
+  dplyr::summarise(n = n()) %>%
+  dplyr::arrange( visit )
+
+
+tabl3_columnAuto <- autoVsManual_t3 %>%
+  dplyr::filter( ! is.na( updated_auto )) %>%
+  #dplyr::filter( ! is.na( value_auto )) %>%
+  dplyr::group_by( visit ) %>%
+  dplyr::summarise(n = n()) %>%
+  dplyr::arrange( visit )
 
 addingInfo <- autoVsManual %>%
   dplyr::filter( is.na(value_manual) ) %>%
